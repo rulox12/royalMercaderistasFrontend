@@ -4,7 +4,7 @@ import { Box, Button, Container, Modal, Stack, SvgIcon, Typography } from '@mui/
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { PlatformsSearch } from 'src/sections/platforms/platforms-search'; 
 import { useState, useEffect } from 'react';
-import { getPlatforms } from 'src/services/PlatformService';
+import { getPlatforms } from 'src/services/platformService';
 import { PlatformsTable } from 'src/sections/platforms/platforms-table';
 import { PlatformsCreate } from 'src/sections/platforms/platforms-create';
 

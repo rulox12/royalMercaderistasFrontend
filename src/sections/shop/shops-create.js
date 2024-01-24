@@ -13,7 +13,7 @@ import {
   Unstable_Grid2 as Grid
 } from '@mui/material';
 import { createShop } from 'src/services/shopService';
-import { getPlatforms } from 'src/services/PlatformService';
+import { getPlatforms } from 'src/services/platformService';
 import { getLists } from 'src/services/listService';
 import { getUsers } from 'src/services/userService';
 import { getCities } from 'src/services/cityService';
