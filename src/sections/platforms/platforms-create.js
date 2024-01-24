@@ -13,7 +13,7 @@ import {
   Unstable_Grid2 as Grid
 } from '@mui/material';
 
-import { createPlatform } from 'src/services/PlatformService';
+import { createPlatform } from 'src/services/platformService';
 
 export const PlatformsCreate = () => {
   const [platform, setPlatform] = useState({
