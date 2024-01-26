@@ -80,4 +80,13 @@ export const items = [
       </SvgIcon>
     )
   },
+  {
+    title: 'Roles',
+    path: '/roles',
+    icon: (
+      <SvgIcon fontSize="small">
+        <ListBulletIcon />
+      </SvgIcon>
+    )
+  },
 ];

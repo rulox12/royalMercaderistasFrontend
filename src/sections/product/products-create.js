@@ -73,6 +73,7 @@ export const ProductsCreate = () => {
     try {
       const response = await createProduct(product);
       handleClick('success', 'Producto creado correctamente');
+      window.location.reload();
     } catch (error) {
       handleClick('error', 'Error al crear producto');
       console.log('Error al guardar producto:', error);

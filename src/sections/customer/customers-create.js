@@ -89,6 +89,7 @@ export const CustomersCreate = () => {
         password: '123456',
       };
       const response = await createUser(userWithPassword);
+      window.location.reload();
       handleClick('success','Usuario creado correctamente');
     } catch (error) {
       handleClick('error','Error al crear usuario');

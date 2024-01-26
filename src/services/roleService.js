@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getRoles = async () => {
     try {
@@ -12,4 +12,15 @@ const getRoles = async () => {
     }
 };
 
-export { getRoles };
+const createRole = async (role) => {
+    try {
+        const response = await axios.post(`${API_URL}/roles/create`, role);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating rol:', error);
+        throw error;
+    }
+};
+
+
+export { getRoles, createRole };
