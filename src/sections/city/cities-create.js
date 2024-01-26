@@ -52,6 +52,7 @@ export const CitiesCreate = () => {
       try {
         const response = await createCity(city);
         handleClick('success', 'Ciudad creada correctamente');
+        window.location.reload();
       } catch (error) {
         handleClick('error', 'Error creating city');
         console.log('Error saving city:', error);

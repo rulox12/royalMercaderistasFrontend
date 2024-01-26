@@ -22,7 +22,8 @@ export const ProductsCreate = () => {
     quantity: '',
     supplier: '',
     displayName: '',
-    internalProductNumber: ''
+    internalProductNumber: '',
+    position: ''
   });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
@@ -186,6 +187,19 @@ export const ProductsCreate = () => {
                   onChange={handleChange}
                   required
                   value={product.internalProductNumber}
+                />
+              </Grid>
+              <Grid
+                xs={12}
+                md={6}
+              >
+                <TextField
+                  fullWidth
+                  label="Posición"
+                  name="position"
+                  onChange={handleChange}
+                  required
+                  value={product.position}
                 />
               </Grid>
             </Grid>

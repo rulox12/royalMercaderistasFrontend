@@ -12,7 +12,6 @@ const getCities = async () => {
     }
 };
 
-
 const createCity = async (city) => {
     try {
         const response = await axios.post(`${API_URL}/cities`, city);
@@ -23,4 +22,16 @@ const createCity = async (city) => {
     }
 };
 
-export { getCities, createCity };
+
+const deleteCity = async (cityId) => {
+    try {
+        const response = await axios.delete(`${API_URL}/cities`, { data: { cityId } });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error delete city:', error);
+        return null;
+    }
+};
+
+export { getCities, createCity, deleteCity };

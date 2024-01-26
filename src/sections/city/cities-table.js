@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Card,
   Stack,
   Table,
@@ -10,11 +11,24 @@ import {
   Typography
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
+import { deleteCity } from 'src/services/cityService';
 
 export const CitiesTable = (props) => {
   const {
     items = [],
   } = props;
+
+  const handleDeleteClick = async (cityId) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este ciudad?')) {
+      const response = await deleteCity(cityId);
+      if(response){
+        window.alert('La eliminación fue exitosa.');
+        window.location.reload();
+      }else{
+        window.alert('Error al eliminar ciudad');
+      }
+    }
+  };
 
   return (
     <Card>
@@ -51,6 +65,9 @@ export const CitiesTable = (props) => {
                     </TableCell>
                     <TableCell>
                       {city.department}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outlined" color="error" onClick={() => handleDeleteClick(city._id)}>Eliminar</Button>
                     </TableCell>
                   </TableRow>
                 );

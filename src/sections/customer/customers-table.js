@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Card,
   Stack,
   Table,
@@ -10,11 +11,24 @@ import {
   Typography
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
+import { deleteUser } from 'src/services/userService';
 
 export const CustomersTable = (props) => {
   const {
     items = [],
   } = props;
+
+  const handleDeleteClick = async (userId) => {
+  if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+      const response = await deleteUser(userId);
+      if(response){
+        window.alert('La eliminación fue exitosa.');
+        window.location.reload();
+      }else{
+        window.alert('Error al eliminar usuario');
+      }
+    }
+  };
 
   return (
     <Card>
@@ -34,6 +48,9 @@ export const CustomersTable = (props) => {
                 </TableCell>
                 <TableCell>
                   Estado
+                </TableCell>
+                <TableCell>
+                  Acciones
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -63,6 +80,9 @@ export const CustomersTable = (props) => {
                     </TableCell>
                     <TableCell>
                       {customer.state ? 'Activo' : 'Inactivo'}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outlined" color="error" onClick={() => handleDeleteClick(customer._id)}>Eliminar</Button>
                     </TableCell>
                   </TableRow>
                 );

@@ -1,7 +1,7 @@
 import {
   Box,
+  Button,
   Card,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -10,11 +10,24 @@ import {
   Typography
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
+import { deleteProduct } from 'src/services/productService';
 
 export const ProductsTable = (props) => {
   const {
     items = [],
   } = props;
+
+  const handleDeleteClick = async (productId) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+      const response = await deleteProduct(productId);
+      if(response){
+        window.alert('La eliminación fue exitosa.');
+        window.location.reload();
+      }else{
+        window.alert('Error al eliminar producto');
+      }
+    }
+  };
 
   return (
     <Card>
@@ -37,6 +50,9 @@ export const ProductsTable = (props) => {
                 </TableCell>
                 <TableCell>
                   Nombre a Mostrar
+                </TableCell>
+                <TableCell>
+                  Acciones
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -63,6 +79,11 @@ export const ProductsTable = (props) => {
                     </TableCell>
                     <TableCell>
                       {product.displayName}
+                    </TableCell>
+                    <TableCell>
+                    <TableCell>
+                      <Button variant="outlined" color="error" onClick={() => handleDeleteClick(product._id)}>Eliminar</Button>
+                    </TableCell>
                     </TableCell>
                   </TableRow>
                 );

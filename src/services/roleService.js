@@ -22,5 +22,17 @@ const createRole = async (role) => {
     }
 };
 
+const deleteRole = async (roleId) => {
+    try {
+        const response = await axios.delete(`${API_URL}/roles`, { data: { roleId } });
 
-export { getRoles, createRole };
+        return response.data;
+    } catch (error) {
+        console.error('Error delete rol:', error);
+        throw error;
+    }
+};
+
+
+
+export { getRoles, createRole, deleteRole };
