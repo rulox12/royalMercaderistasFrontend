@@ -26,4 +26,4 @@ jobs:
           cd ~/project/royalMercaderistasFrontend
           git pull origin master
           git status
-          npm install
+          npm run build
