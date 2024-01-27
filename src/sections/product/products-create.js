@@ -12,11 +12,11 @@ import {
   Alert,
   Unstable_Grid2 as Grid
 } from '@mui/material';
-import { getProducts } from 'src/services/productService';
+import { getProducts, updateProduct } from 'src/services/productService';
 import { createProduct } from 'src/services/productService';
 
-export const ProductsCreate = () => {
-  const [product, setProduct] = useState({
+export const ProductsCreate = ({ product: initialProduct, isUpdate }) => {
+  const [product, setProduct] = useState(initialProduct || {
     name: '',
     presentation: '',
     quantity: '',
@@ -36,10 +36,12 @@ export const ProductsCreate = () => {
   };
 
   const handleClose = (event, reason) => {
+    console.log('hola');
     if (reason === 'clickaway') {
       return;
     }
     setOpen(false);
+    
   };
 
   const [products, setProducts] = useState([]);
@@ -72,18 +74,26 @@ export const ProductsCreate = () => {
 
   const handleSaveProduct = async () => {
     try {
-      const response = await createProduct(product);
-      handleClick('success', 'Producto creado correctamente');
+      if (isUpdate) {
+        await updateProduct(product._id, product);
+        handleClick('success', 'Producto actualizado correctamente');
+      } else {
+        await createProduct(product);
+        handleClick('success', 'Producto creado correctamente');
+      }
       window.location.reload();
     } catch (error) {
-      handleClick('error', 'Error al crear producto');
+      handleClick('error', 'Error al guardar producto');
       console.log('Error al guardar producto:', error);
     }
   };
 
   useEffect(() => {
     getProductsService();
-  }, []);
+    if (isUpdate) {
+      setProduct(initialProduct);
+    }
+  }, [initialProduct, isUpdate]);
 
   return (
     <form
@@ -116,6 +126,32 @@ export const ProductsCreate = () => {
               >
                 <TextField
                   fullWidth
+                  label="Posición"
+                  name="position"
+                  onChange={handleChange}
+                  required
+                  value={product.position}
+                />
+              </Grid>
+              <Grid
+                xs={12}
+                md={6}
+              >
+                <TextField
+                  fullWidth
+                  label="Referencia interna"
+                  name="internalProductNumber"
+                  onChange={handleChange}
+                  required
+                  value={product.internalProductNumber}
+                />
+              </Grid>
+              <Grid
+                xs={12}
+                md={6}
+              >
+                <TextField
+                  fullWidth
                   label="Nombre"
                   name="name"
                   onChange={handleChange}
@@ -134,20 +170,6 @@ export const ProductsCreate = () => {
                   onChange={handleChange}
                   required
                   value={product.presentation}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Cantidad"
-                  name="quantity"
-                  onChange={handleChange}
-                  required
-                  type="number"
-                  value={product.quantity}
                 />
               </Grid>
               <Grid
@@ -176,32 +198,8 @@ export const ProductsCreate = () => {
                   value={product.displayName}
                 />
               </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Referencia interna"
-                  name="internalProductNumber"
-                  onChange={handleChange}
-                  required
-                  value={product.internalProductNumber}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Posición"
-                  name="position"
-                  onChange={handleChange}
-                  required
-                  value={product.position}
-                />
-              </Grid>
+
+
             </Grid>
           </Box>
         </CardContent>

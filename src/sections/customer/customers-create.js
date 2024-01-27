@@ -139,6 +139,7 @@ export const CustomersCreate = () => {
                   SelectProps={{ native: true }}
                   value={user.documentType}
                 >
+                  <option value="">Seleccionar</option>
                   {documentTypes.map((option) => (
                     <option
                       key={option.value}
@@ -229,6 +230,7 @@ export const CustomersCreate = () => {
                   SelectProps={{ native: true }}
                   value={user.roleId}
                 >
+                  <option value="">Seleccionar</option>
                   {roles.map((role) => (
                     <option
                       key={role._id}

@@ -23,8 +23,17 @@ const Page = () => {
 
   const [products, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isUpdate, setIsUpdate] = useState(false);
+
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setSelectedProduct(null);
+    setIsUpdate(false);
+    setOpen(false);
+  }
+
 
   const getProductsService = async () => {
     try {
@@ -33,6 +42,13 @@ const Page = () => {
     } catch (error) {
       console.error('Error fetching products:', error);
     }
+  };
+
+  const handleProductUpdated = (updatedProduct) => {
+    console.log(updatedProduct);
+    setSelectedProduct(updatedProduct);
+    setIsUpdate(true);
+    handleOpen();
   };
 
   useEffect(() => {
@@ -83,6 +99,7 @@ const Page = () => {
             <ProductsTable
               count={products.length}
               items={products}
+              onProductUpdated={handleProductUpdated}
             />
             <Modal
               open={open}
@@ -92,10 +109,10 @@ const Page = () => {
             >
               <Box sx={style}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
-                  Crear Producto
+                  {isUpdate ? 'Actualizar Producto' : 'Crear Producto'}
                 </Typography>
                 <div id="modal-modal-description" sx={{ mt: 2 }}>
-                  <ProductsCreate />
+                  <ProductsCreate product={selectedProduct} isUpdate={isUpdate} />
                 </div>
               </Box>
             </Modal>

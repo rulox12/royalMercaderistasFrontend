@@ -23,6 +23,16 @@ const createProduct = async (product) => {
     }
 };
 
+const updateProduct = async (productId, product) => {
+    try {
+        const response = await axios.put(`${API_URL}/products/${productId}`, product);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+    }
+};
+
 const deleteProduct = async (productId) => {
     try {
         const response = await axios.delete(`${API_URL}/products`, { data: { productId } });
@@ -35,4 +45,4 @@ const deleteProduct = async (productId) => {
 };
 
 
-export { getProducts, createProduct, deleteProduct };
+export { getProducts, createProduct, deleteProduct, updateProduct };

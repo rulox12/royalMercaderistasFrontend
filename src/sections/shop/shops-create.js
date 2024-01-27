@@ -220,6 +220,7 @@ export const ShopsCreate = () => {
                   SelectProps={{ native: true }}
                   value={shop.platformId}
                 >
+                  <option value="">Seleccionar</option>
                   {platforms.map((platform) => (
                     <option
                       key={platform._id}
@@ -244,6 +245,7 @@ export const ShopsCreate = () => {
                   SelectProps={{ native: true }}
                   value={shop.cityId}
                 >
+                  <option value="">Seleccionar</option>
                   {cities.map((city) => (
                     <option
                       key={city._id}
@@ -269,6 +271,7 @@ export const ShopsCreate = () => {
                   SelectProps={{ native: true }}
                   value={shop.listId}
                 >
+                  <option value="">Seleccionar</option>
                   {lists.map((list) => (
                     <option
                       key={list._id}
@@ -293,6 +296,7 @@ export const ShopsCreate = () => {
                   SelectProps={{ native: true }}
                   value={shop.userId}
                 >
+                  <option value="">Seleccionar</option>
                   {users.map((user) => (
                     <option
                       key={user._id}

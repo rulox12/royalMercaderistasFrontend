@@ -9,24 +9,30 @@ import {
   TableRow,
   Typography
 } from '@mui/material';
+import { Stack } from '@mui/system';
 import { Scrollbar } from 'src/components/scrollbar';
 import { deleteProduct } from 'src/services/productService';
 
 export const ProductsTable = (props) => {
   const {
     items = [],
+    onProductUpdated
   } = props;
 
   const handleDeleteClick = async (productId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
       const response = await deleteProduct(productId);
-      if(response){
+      if (response) {
         window.alert('La eliminación fue exitosa.');
         window.location.reload();
-      }else{
+      } else {
         window.alert('Error al eliminar producto');
       }
     }
+  };
+
+  const handleProductUpdated = (product) => {
+    onProductUpdated(product);
   };
 
   return (
@@ -41,9 +47,6 @@ export const ProductsTable = (props) => {
                 </TableCell>
                 <TableCell>
                   Presentación
-                </TableCell>
-                <TableCell>
-                  Cantidad
                 </TableCell>
                 <TableCell>
                   Proveedor
@@ -72,18 +75,16 @@ export const ProductsTable = (props) => {
                       {product.presentation}
                     </TableCell>
                     <TableCell>
-                      {product.quantity}
-                    </TableCell>
-                    <TableCell>
                       {product.supplier}
                     </TableCell>
                     <TableCell>
                       {product.displayName}
                     </TableCell>
                     <TableCell>
-                    <TableCell>
-                      <Button variant="outlined" color="error" onClick={() => handleDeleteClick(product._id)}>Eliminar</Button>
-                    </TableCell>
+                      <Stack direction="row" spacing={2}>
+                        <Button variant="outlined" onClick={() => handleProductUpdated(product)}>Actualizar</Button>
+                        <Button variant="outlined" color="error" onClick={() => handleDeleteClick(product._id)}>Eliminar</Button>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 );
