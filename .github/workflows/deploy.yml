@@ -12,6 +12,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Change to directory with code
+        run: cd ${{ github.workspace }}
+
       - name: Install sshpass
         run: sudo apt-get install -y sshpass
 
