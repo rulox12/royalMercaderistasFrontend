@@ -16,4 +16,4 @@ jobs:
         run: sudo apt-get install -y sshpass
 
       - name: Deploy to VPS
-        run: sshpass -p ${{ secrets.SSH_PASSWORD }} scp -r . root@217.196.49.92:/root/project/royalMercaderistasFrontend
+        run: sshpass -p ${{ secrets.SSH_PASSWORD }} scp -o StrictHostKeyChecking=no -r . root@217.196.49.92:/root/project/royalMercaderistasFrontend
