@@ -112,7 +112,7 @@ export const ProductsCreate = ({ product: initialProduct, isUpdate }) => {
       </Snackbar>
       <Card>
         <CardHeader
-          subheader=""
+          subheader="" 
         />
         <CardContent sx={{ pt: 0 }}>
           <Box sx={{ m: -1.5 }}>
