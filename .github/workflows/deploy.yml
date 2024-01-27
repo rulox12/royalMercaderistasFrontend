@@ -23,7 +23,7 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
-          cd ~/hola
+          cd ~/project/royalMercaderistasFrontend
           git pull origin master
           git status
           npm install
