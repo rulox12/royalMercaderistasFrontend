@@ -12,13 +12,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Use SSH key
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Print SSH_PRIVATE_KEY
-        run: echo "${{ secrets.SSH_PRIVATE_KEY }}"
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
 
       - name: Deploy to VPS
-        run: scp -r . root@217.196.49.92:/root/project/royalMercaderistasFrontend
+        run: sshpass -p ${{ secrets.SSH_PASSWORD }} scp -r . root@217.196.49.92:/root/project/royalMercaderistasFrontend
