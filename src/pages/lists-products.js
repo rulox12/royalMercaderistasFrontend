@@ -25,7 +25,6 @@ const ListProductsPage = () => {
         salePrice: '',
         pvp: '',
       }));
-
       setListItems(initialList);
       setDataLoaded(true);
     } catch (error) {
@@ -45,7 +44,7 @@ const ListProductsPage = () => {
 
   const setDefaultValues = (productList) => {
     const updatedItems = products.map((product) => {
-      const foundProduct = productList.find((item) => item.productId === product._id);
+      const foundProduct = productList.find((item) => item.productId._id === product._id);
 
       return {
         productId: product._id,
@@ -61,8 +60,9 @@ const ListProductsPage = () => {
   useEffect(() => {
     getProductsService().then(() => {
       if (dataLoaded && id) {
+
         fetchProductsForListId(id).then((productList) => {
-          console.log(productList);
+          console.log('productos traidos', productList);
           setDefaultValues(productList);
         }).catch((error) => {
           console.error('Error fetching products for list:', error);

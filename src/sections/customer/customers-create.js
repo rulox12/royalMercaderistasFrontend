@@ -13,7 +13,7 @@ import {
   Unstable_Grid2 as Grid
 } from '@mui/material';
 import { getRoles } from 'src/services/roleService';
-import { createUser } from 'src/services/userService';
+import { createUser, updateUser } from 'src/services/userService';
 
 const documentTypes = [
   {
@@ -26,8 +26,8 @@ const documentTypes = [
   },
 ];
 
-export const CustomersCreate = () => {
-  const [user, setUser] = useState({
+export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
+  const [user, setUser] = useState(initialUser || {
     document: '',
     documentType: '',
     name: '',
@@ -40,7 +40,7 @@ export const CustomersCreate = () => {
   const [alertType, setAlertType] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
 
-  const handleClick = (type,message) => {
+  const handleClick = (type, message) => {
     setAlertType(type);
     setAlertMessage(message)
     setOpen(true);
@@ -84,15 +84,20 @@ export const CustomersCreate = () => {
 
   const handleSaveUser = async () => {
     try {
-      const userWithPassword = {
-        ...user,
-        password: '123456',
-      };
-      const response = await createUser(userWithPassword);
+      if (isUpdate) {
+        await updateUser(user._id, user);
+        handleClick('success', 'Usuario actualizado correctamente');
+      } else {
+        const userWithPassword = {
+          ...user,
+          password: '123456',
+        };
+        await createUser(userWithPassword);
+        handleClick('success', 'Usuario creado correctamente');
+      }
       window.location.reload();
-      handleClick('success','Usuario creado correctamente');
     } catch (error) {
-      handleClick('error','Error al crear usuario');
+      handleClick('error', 'Error al guardar usuario');
       console.log('Error al guardar usuario:', error);
     }
   };
@@ -100,6 +105,7 @@ export const CustomersCreate = () => {
   useEffect(() => {
     getRolesService();
   }, []);
+  
   return (
     <form
       autoComplete="off"
@@ -112,7 +118,7 @@ export const CustomersCreate = () => {
         <Alert onClose={handleClose}
           severity={alertType}
           sx={{ width: '100%' }}>
-            {alertMessage}
+          {alertMessage}
         </Alert>
       </Snackbar>
       <Card>

@@ -5,6 +5,7 @@ import ArchiveBoxIcon from '@heroicons/react/24/solid/ArchiveBoxIcon';
 import QueueListIcon from '@heroicons/react/24/solid/QueueListIcon';
 import BuildingLibraryIcon from '@heroicons/react/24/solid/BuildingLibraryIcon';
 import ListBulletIcon from '@heroicons/react/24/solid/ListBulletIcon';
+import UserGroupIcon from '@heroicons/react/24/solid/UserGroupIcon';
 import { SvgIcon } from '@mui/material';
 
 export const items = [
@@ -81,12 +82,21 @@ export const items = [
     )
   },
   {
-    title: 'Roles',
-    path: '/roles',
+    title: 'Proveedores',
+    path: '/suppliers',
     icon: (
       <SvgIcon fontSize="small">
-        <ListBulletIcon />
+        <UserGroupIcon />
       </SvgIcon>
     )
   },
+  // {
+  //   title: 'Roles',
+  //   path: '/roles',
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <ListBulletIcon />
+  //     </SvgIcon>
+  //   )
+  // },
 ];

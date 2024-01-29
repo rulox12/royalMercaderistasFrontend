@@ -35,17 +35,16 @@ export const ListTable = (props) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((element) => (
-                <TableRow hover key={element.id}>
+              {items.map((list) => (
+                <TableRow hover key={list._id}>
                   <TableCell>
                     <Typography variant="subtitle2">
-                      {element.name}
+                      {list.name}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    {/* Usar Link de Next.js para navegar a la página */}
-                    <Link href={`/lists-products?id=${element._id}`} passHref>
-                      <Button variant="outlined">Agregar productos o eliminar</Button>
+                    <Link href={`/lists-products?id=${list._id}`} passHref>
+                      <Button variant="outlined">Agregar o eliminar productos</Button>
                     </Link>
                   </TableCell>
                 </TableRow>

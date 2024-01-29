@@ -35,6 +35,16 @@ export const ProductsTable = (props) => {
     onProductUpdated(product);
   };
 
+  const cast = (product) => {
+    if (product.supplierId) {
+      const newProduct = { ...product }
+      newProduct.supplierId = newProduct.supplierId._id;
+      return newProduct
+    } else {
+      return product;
+    }
+  };
+
   return (
     <Card>
       <Scrollbar>
@@ -75,14 +85,14 @@ export const ProductsTable = (props) => {
                       {product.presentation}
                     </TableCell>
                     <TableCell>
-                      {product.supplier}
+                      {product.supplierId?.name}
                     </TableCell>
                     <TableCell>
                       {product.displayName}
                     </TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={2}>
-                        <Button variant="outlined" onClick={() => handleProductUpdated(product)}>Actualizar</Button>
+                        <Button variant="outlined" onClick={() => handleProductUpdated(cast(product))}>Actualizar</Button>
                         <Button variant="outlined" color="error" onClick={() => handleDeleteClick(product._id)}>Eliminar</Button>
                       </Stack>
                     </TableCell>

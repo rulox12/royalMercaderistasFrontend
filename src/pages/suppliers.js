@@ -2,11 +2,15 @@ import Head from 'next/head';
 import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
 import { Box, Button, Container, Modal, Stack, SvgIcon, Typography } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-import { ProductsTable } from 'src/sections/product/products-table';
-import { ProductsSearch } from 'src/sections/product/products-search';
-import { getProducts } from 'src/services/productService';
 import { useState, useEffect } from 'react';
-import { ProductsCreate } from 'src/sections/product/products-create';
+import { RolesSearch } from 'src/sections/role/roles-search';
+import { RolesTable } from 'src/sections/role/roles-table';
+import { RolesCreate } from 'src/sections/role/roles-create';
+import { getRoles } from 'src/services/roleService';
+import { getSuppliers } from 'src/services/supplierService';
+import { SuppliersSearch } from 'src/sections/supplier/suppliers-search';
+import { SuppliersTable } from 'src/sections/supplier/suppliers-table';
+import { SuppliersCreate } from 'src/sections/supplier/suppliers-create';
 
 const Page = () => {
   const style = {
@@ -21,44 +25,29 @@ const Page = () => {
     p: 4,
   };
 
-  const [products, setProducts] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [open, setOpen] = useState(false);
-
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isUpdate, setIsUpdate] = useState(false);
-
   const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setSelectedProduct(null);
-    setIsUpdate(false);
-    setOpen(false);
-  }
+  const handleClose = () => setOpen(false);
 
-  const getProductsService = async () => {
+  const getRolesService = async () => { 
     try {
-      const response = await getProducts();
-      setProducts(response);
+      const response = await getSuppliers();
+      setSuppliers(response); 
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Error fetching roles:', error);
     }
   };
 
-  const handleProductUpdated = (updatedProduct) => {
-    console.log(updatedProduct);
-    setSelectedProduct(updatedProduct);
-    setIsUpdate(true);
-    handleOpen();
-  };
-
   useEffect(() => {
-    getProductsService();
+    getRolesService();
   }, []);
 
   return (
     <>
       <Head>
         <title>
-          Productos
+          Proveedor
         </title>
       </Head>
       <Box
@@ -77,7 +66,7 @@ const Page = () => {
             >
               <Stack spacing={1}>
                 <Typography variant="h4">
-                  Productos
+                  Proveedores
                 </Typography>
               </Stack>
               <div>
@@ -90,16 +79,15 @@ const Page = () => {
                   )}
                   variant="contained"
                 >
-                  Agregar nuevo producto
+                  Agregar un nuevo proveedor
                 </Button>
               </div>
             </Stack>
-            <ProductsSearch />
-            <ProductsTable
-              count={products.length}
-              items={products}
-              onProductUpdated={handleProductUpdated}
-            />
+            <SuppliersSearch />
+            <SuppliersTable
+              count={suppliers.length} 
+              items={suppliers}
+              />
             <Modal
               open={open}
               onClose={handleClose}
@@ -108,10 +96,10 @@ const Page = () => {
             >
               <Box sx={style}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
-                  {isUpdate ? 'Actualizar Producto' : 'Crear Producto'}
+                  Crear Proveedor
                 </Typography>
                 <div id="modal-modal-description" sx={{ mt: 2 }}>
-                  <ProductsCreate product={selectedProduct} isUpdate={isUpdate} />
+                  <SuppliersCreate />
                 </div>
               </Box>
             </Modal>

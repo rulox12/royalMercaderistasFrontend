@@ -23,8 +23,16 @@ const Page = () => {
 
   const [customers, setCustomers] = useState([]);
   const [open, setOpen] = useState(false);
+
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isUpdate, setIsUpdate] = useState(false);
+
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setSelectedUser(null);
+    setIsUpdate(false);
+    setOpen(false);
+  }
 
   const getUsersService = async () => {
     try {
@@ -35,11 +43,15 @@ const Page = () => {
     }
   };
 
+  const handleUserUpdated = (updatedUser) => {
+    setSelectedUser(updatedUser);
+    setIsUpdate(true);
+    handleOpen();
+  };
+
   useEffect(() => {
     getUsersService();
   }, []);
-
-
 
   return (
     <>
@@ -86,6 +98,7 @@ const Page = () => {
             <CustomersTable
               count={customers.length}
               items={customers}
+              onUserUpdated={handleUserUpdated}
             />
             <Modal
               open={open}
@@ -95,10 +108,10 @@ const Page = () => {
             >
               <Box sx={style}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
-                  Crear Usuario
+                {isUpdate ? 'Actualizar Usuario' : 'Crear Usuario'}
                 </Typography>
                 <div id="modal-modal-description" sx={{ mt: 2 }}>
-                  <CustomersCreate />
+                  <CustomersCreate user={selectedUser} isUpdate={isUpdate} />
                 </div>
               </Box>
             </Modal>

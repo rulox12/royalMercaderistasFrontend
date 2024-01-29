@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -9,13 +9,14 @@ import {
   Divider,
   TextField,
   Snackbar,
-  Alert
+  Alert,
+  Unstable_Grid2 as Grid
 } from '@mui/material';
-import { createList } from 'src/services/listService';
+import { createSupplier } from 'src/services/supplierService';
 
-export const ListCreate = () => {
-  const [list, setList] = useState({
-    name: ''
+export const SuppliersCreate = () => {
+  const [supplier, setSupplier] = useState({
+    name: '',
   });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
@@ -36,25 +37,29 @@ export const ListCreate = () => {
 
   const handleChange = useCallback(
     (event) => {
-      setList((prevState) => ({
-        ...prevState,
+      setSupplier((prevSupplier) => ({
+        ...prevSupplier,
         [event.target.name]: event.target.value
       }));
     },
     []
   );
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      const response = await createList({ name: list.name });
-      handleClick('success', 'Elemento de la lista creado correctamente');
-      window.location.reload();
-    } catch (error) {
-      handleClick('error', 'Error al crear elemento de la lista');
-      console.log('Error al guardar elemento de la lista:', error);
-    }
-  };
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      try {
+        const response = await createSupplier(supplier);
+        handleClick('success', 'Proveedor creada correctamente');
+        window.location.reload();
+      } catch (error) {
+        handleClick('error', 'Error creating supplier');
+        console.log('Error saving role:', error);
+      }
+    },
+    [supplier]
+  );
+
 
   return (
     <form autoComplete="off" noValidate onSubmit={handleSubmit}>
@@ -67,20 +72,24 @@ export const ListCreate = () => {
         <CardHeader subheader="" />
         <CardContent sx={{ pt: 0 }}>
           <Box sx={{ m: -1.5 }}>
-            <TextField
-              fullWidth
-              label="Nombre"
-              name="name"
-              onChange={handleChange}
-              required
-              value={list.name}
-            />
+            <Grid container spacing={3}>
+              <Grid xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Nombre"
+                  name="name"
+                  onChange={handleChange}
+                  required
+                  value={supplier.name}
+                />
+              </Grid>
+            </Grid>
           </Box>
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained" type="submit">
-            Guardar Elemento
+          <Button variant="contained" onClick={handleSubmit}>
+            Guardar Proveedor
           </Button>
         </CardActions>
       </Card>

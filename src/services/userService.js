@@ -22,6 +22,16 @@ const createUser = async (user) => {
     }
 };
 
+const updateUser = async (userId, user) => {
+    try {
+        const response = await axios.put(`${API_URL}/users/${userId}`, user);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+    }
+};
+
 const deleteUser = async (userId) => {
     try {
         const response = await axios.delete(`${API_URL}/users`, { data: { userId } });
@@ -34,4 +44,4 @@ const deleteUser = async (userId) => {
 };
 
 
-export { getUsers, createUser, deleteUser };
+export { getUsers, createUser, deleteUser, updateUser };

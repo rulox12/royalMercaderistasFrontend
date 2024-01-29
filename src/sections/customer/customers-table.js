@@ -16,17 +16,32 @@ import { deleteUser } from 'src/services/userService';
 export const CustomersTable = (props) => {
   const {
     items = [],
+    onUserUpdated
   } = props;
 
   const handleDeleteClick = async (userId) => {
-  if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       const response = await deleteUser(userId);
-      if(response){
+      if (response) {
         window.alert('La eliminación fue exitosa.');
         window.location.reload();
-      }else{
+      } else {
         window.alert('Error al eliminar usuario');
       }
+    }
+  };
+
+  const handleUpdated = (user) => {
+    onUserUpdated(user);
+  };
+
+  const cast = (user) => {
+    if (user.roleId) {
+      const newUser = { ...user };
+      newUser.roleId = newUser.roleId._id;
+      return newUser;
+    } else {
+      return user;
     }
   };
 
@@ -50,6 +65,9 @@ export const CustomersTable = (props) => {
                   Estado
                 </TableCell>
                 <TableCell>
+                  Rol
+                </TableCell>
+                <TableCell>
                   Acciones
                 </TableCell>
               </TableRow>
@@ -68,7 +86,7 @@ export const CustomersTable = (props) => {
                         spacing={2}
                       >
                         <Typography variant="subtitle2">
-                          {customer.name} {customer.surname} 
+                          {customer.name} {customer.surname}
                         </Typography>
                       </Stack>
                     </TableCell>
@@ -79,10 +97,16 @@ export const CustomersTable = (props) => {
                       {customer.phone}
                     </TableCell>
                     <TableCell>
+                      {customer.roleId?.name}
+                    </TableCell>
+                    <TableCell>
                       {customer.state ? 'Activo' : 'Inactivo'}
                     </TableCell>
                     <TableCell>
-                      <Button variant="outlined" color="error" onClick={() => handleDeleteClick(customer._id)}>Eliminar</Button>
+                      <Stack direction="row" spacing={2}>
+                        <Button variant="outlined" onClick={() => handleUpdated(cast(customer))}>Actualizar</Button>
+                        <Button variant="outlined" color="error" onClick={() => handleDeleteClick(customer._id)}>Eliminar</Button>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 );

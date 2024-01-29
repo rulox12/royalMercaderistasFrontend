@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Card,
   Stack,
   Table,
@@ -10,11 +11,29 @@ import {
   Typography
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
+import { deleteShop } from 'src/services/shopService';
 
 export const ShopsTable = (props) => {
   const {
     items = [],
+    onShopUpdated
   } = props;
+
+  const handleDeleteClick = async (shopId) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este local?')) {
+      const response = await deleteShop(shopId);
+      if (response) {
+        window.alert('La eliminación fue exitosa.');
+        window.location.reload();
+      } else {
+        window.alert('Error al eliminar usuario');
+      }
+    }
+  };
+
+  const handleUpdated = (shop) => {
+    onShopUpdated(shop);
+  };
 
   return (
     <Card>
@@ -36,7 +55,7 @@ export const ShopsTable = (props) => {
                   Teléfono
                 </TableCell>
                 <TableCell>
-                  Estado
+                  Acciones
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -68,7 +87,10 @@ export const ShopsTable = (props) => {
                       {shop.phone}
                     </TableCell>
                     <TableCell>
-                      {shop.state ? 'Activo' : 'Inactivo'}
+                      <Stack direction="row" spacing={2}>
+                        <Button variant="outlined" onClick={() => handleUpdated(shop)}>Actualizar</Button>
+                        <Button variant="outlined" color="error" onClick={() => handleDeleteClick(shop._id)}>Eliminar</Button>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 );

@@ -12,14 +12,14 @@ import {
   Alert,
   Unstable_Grid2 as Grid
 } from '@mui/material';
-import { createShop } from 'src/services/shopService';
+import { createShop, updateShop } from 'src/services/shopService';
 import { getPlatforms } from 'src/services/platformService';
 import { getLists } from 'src/services/listService';
 import { getUsers } from 'src/services/userService';
 import { getCities } from 'src/services/cityService';
 
-export const ShopsCreate = () => {
-  const [shop, setShop] = useState({
+export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
+  const [shop, setShop] = useState(initialShop || {
     shopNumber: '',
     name: '',
     address: '',
@@ -55,8 +55,8 @@ export const ShopsCreate = () => {
   const [cities, setCities] = useState([]);
 
   const getUserService = async () => {
-  try {
-    const response = await getUsers();
+    try {
+      const response = await getUsers();
       setUsers(response);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -99,11 +99,18 @@ export const ShopsCreate = () => {
 
   const handleSaveShop = async () => {
     try {
-      const response = await createShop(shop);
-      handleClick('success', 'Tienda creada correctamente');
+      if (isUpdate) {
+        console.log('Este es el shop',shop)
+        await updateShop(shop._id, shop);
+        handleClick('success', 'Local actualizado correctamente');
+      } else {
+        await createShop(userWithPassword);
+        handleClick('success', 'Local creado correctamente');
+      }
+      window.location.reload();
     } catch (error) {
-      handleClick('error', 'Error al crear la tienda');
-      console.log('Error al guardar la tienda:', error);
+      handleClick('error', 'Error al guardar local');
+      console.log('Error al guardar local:', error);
     }
   };
 
@@ -172,7 +179,6 @@ export const ShopsCreate = () => {
                   label="Gerente"
                   name="manager"
                   onChange={handleChange}
-                  required
                   value={shop.manager}
                 />
               </Grid>
@@ -192,7 +198,6 @@ export const ShopsCreate = () => {
                   label="Jefe/Supervisor"
                   name="boss"
                   onChange={handleChange}
-                  required
                   value={shop.boss}
                 />
               </Grid>
@@ -202,7 +207,6 @@ export const ShopsCreate = () => {
                   label="Teléfono del jefe/supervisor"
                   name="bossPhone"
                   onChange={handleChange}
-                  required
                   value={shop.bossPhone}
                 />
               </Grid>

@@ -12,7 +12,6 @@ const getShops = async () => {
     }
 };
 
-
 const createShop = async (shop) => {
     try {
         const response = await axios.post(`${API_URL}/shops`, shop);
@@ -23,4 +22,28 @@ const createShop = async (shop) => {
     }
 };
 
-export { getShops, createShop };
+const updateShop = async (shopId, shop) => {
+    try {
+        const response = await axios.put(`${API_URL}/shops/${shopId}`, shop);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching shops:', error);
+        throw error;
+    }
+};
+
+
+const deleteShop = async (shopId) => {
+    try {
+        const response = await axios.delete(`${API_URL}/shops`, { data: { shopId } });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error delete shop:', error);
+        throw error;
+    }
+};
+
+
+
+export { getShops, createShop, updateShop, deleteShop };

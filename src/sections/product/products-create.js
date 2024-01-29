@@ -14,17 +14,19 @@ import {
 } from '@mui/material';
 import { getProducts, updateProduct } from 'src/services/productService';
 import { createProduct } from 'src/services/productService';
+import { getSuppliers } from 'src/services/supplierService';
 
 export const ProductsCreate = ({ product: initialProduct, isUpdate }) => {
   const [product, setProduct] = useState(initialProduct || {
     name: '',
     presentation: '',
     quantity: '',
-    supplier: '',
+    supplierId: '',
     displayName: '',
     internalProductNumber: '',
     position: ''
   });
+  const [suppliers, setSuppliers] = useState([]);
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
@@ -36,12 +38,10 @@ export const ProductsCreate = ({ product: initialProduct, isUpdate }) => {
   };
 
   const handleClose = (event, reason) => {
-    console.log('hola');
     if (reason === 'clickaway') {
       return;
     }
     setOpen(false);
-    
   };
 
   const [products, setProducts] = useState([]);
@@ -52,6 +52,16 @@ export const ProductsCreate = ({ product: initialProduct, isUpdate }) => {
       setProducts(response);
     } catch (error) {
       console.error('Error fetching products:', error);
+    }
+  };
+
+  const getSuppliersService = async () => {
+    try {
+      const response = await getSuppliers();
+      console.log(response);
+      setSuppliers(response);
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
     }
   };
 
@@ -90,6 +100,7 @@ export const ProductsCreate = ({ product: initialProduct, isUpdate }) => {
 
   useEffect(() => {
     getProductsService();
+    getSuppliersService();
     if (isUpdate) {
       setProduct(initialProduct);
     }
@@ -179,11 +190,23 @@ export const ProductsCreate = ({ product: initialProduct, isUpdate }) => {
                 <TextField
                   fullWidth
                   label="Proveedor"
-                  name="supplier"
+                  name="supplierId"
                   onChange={handleChange}
                   required
-                  value={product.supplier}
-                />
+                  select
+                  SelectProps={{ native: true }}
+                  value={product.supplierId}
+                >
+                  <option value="">Seleccionar</option>
+                  {suppliers?.map((supplier) => (
+                    <option
+                      key={supplier._id}
+                      value={supplier._id}
+                    >
+                      {supplier.name}
+                    </option>
+                  ))}
+                </TextField>
               </Grid>
               <Grid
                 xs={12}
@@ -198,8 +221,6 @@ export const ProductsCreate = ({ product: initialProduct, isUpdate }) => {
                   value={product.displayName}
                 />
               </Grid>
-
-
             </Grid>
           </Box>
         </CardContent>

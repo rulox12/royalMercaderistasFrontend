@@ -23,8 +23,18 @@ const Page = () => {
 
   const [shops, setShops] = useState([]);
   const [open, setOpen] = useState(false);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const [selectedShop, setSelectedShop] = useState(null);
+  const [isUpdate, setIsUpdate] = useState(false);
+
+  const handleShopUpdated = (updatedShop) => {
+    setSelectedShop(updatedShop);
+    setIsUpdate(true);
+    handleOpen();
+  };
 
   const getShopsService = async () => {
     try {
@@ -80,10 +90,11 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <ShopsSearch /> 
+            <ShopsSearch />
             <ShopsTable
               count={shops.length}
-              items={shops} 
+              items={shops}
+              onShopUpdated={handleShopUpdated}
             />
             <Modal
               open={open}
@@ -93,10 +104,10 @@ const Page = () => {
             >
               <Box sx={style}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
-                  Crear Tienda {/* Cambio a 'Tienda' */}
+                  {isUpdate ? 'Actualizar Local' : 'Crear Local'}
                 </Typography>
                 <div id="modal-modal-description" sx={{ mt: 2 }}>
-                  <ShopsCreate />
+                  <ShopsCreate shop={selectedShop} isUpdate={isUpdate} />
                 </div>
               </Box>
             </Modal>
