@@ -104,7 +104,7 @@ export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
         await updateShop(shop._id, shop);
         handleClick('success', 'Local actualizado correctamente');
       } else {
-        await createShop(userWithPassword);
+        await createShop(shop);
         handleClick('success', 'Local creado correctamente');
       }
       window.location.reload();
@@ -119,7 +119,10 @@ export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
     getUserService();
     getListsService();
     getCitiesService();
-  }, []);
+    if (isUpdate) {
+      setShop(initialShop);
+    }
+  }, [initialShop, isUpdate]);
 
   return (
     <form
