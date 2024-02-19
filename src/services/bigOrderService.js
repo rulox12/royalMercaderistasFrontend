@@ -22,9 +22,9 @@ const getBigOrder = async (id) => {
     }
 };
 
-const createBigOrder = async (date) => {
+const createBigOrder = async (params) => {
     try {
-        const response = await axios.post(`${API_URL}/big-orders`, date);
+        const response = await axios.post(`${API_URL}/big-orders`, params);
         return response.data;
     } catch (error) {
         console.error('Error creating cities:', error);
@@ -32,4 +32,14 @@ const createBigOrder = async (date) => {
     }
 };
 
-export { getBigOrders, createBigOrder, getBigOrder };
+const updateBigOrder = async (params) => {
+    try {
+        const response = await axios.put(`${API_URL}/big-orders`, params);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating cities:', error);
+        throw error;
+    }
+};
+
+export { getBigOrders, createBigOrder, getBigOrder, updateBigOrder };

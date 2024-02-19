@@ -60,9 +60,7 @@ const ListProductsPage = () => {
   useEffect(() => {
     getProductsService().then(() => {
       if (dataLoaded && id) {
-
         fetchProductsForListId(id).then((productList) => {
-          console.log('productos traidos', productList);
           setDefaultValues(productList);
         }).catch((error) => {
           console.error('Error fetching products for list:', error);

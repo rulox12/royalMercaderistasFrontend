@@ -44,7 +44,6 @@ const Page = () => {
   };
 
   const handleProductUpdated = (updatedProduct) => {
-    console.log(updatedProduct);
     setSelectedProduct(updatedProduct);
     setIsUpdate(true);
     handleOpen();

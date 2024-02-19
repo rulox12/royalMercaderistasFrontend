@@ -32,6 +32,9 @@ export const BigOrdersTable = (props) => {
                   Estado
                 </TableCell>
                 <TableCell>
+                  Ciudad
+                </TableCell>
+                <TableCell>
                   Acciones
                 </TableCell>
               </TableRow>
@@ -58,7 +61,10 @@ export const BigOrdersTable = (props) => {
                       {bigOrder.status}
                     </TableCell>
                     <TableCell>
-                      <Link href={`/big-order-details?id=${bigOrder._id}`} passHref>
+                      {bigOrder.cityId.name}
+                    </TableCell>
+                    <TableCell>
+                      <Link href={`/big-order-details?id=${bigOrder._id}&city=${bigOrder.cityId._id}`} passHref>
                         <Button variant="outlined">Ver detalle</Button>
                       </Link>
                     </TableCell>

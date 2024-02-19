@@ -13,15 +13,19 @@ import {
   Unstable_Grid2 as Grid
 } from '@mui/material';
 import { createBigOrder } from 'src/services/bigOrderService';
+import { getCities } from 'src/services/cityService';
 
 export const BigOrdersCreate = () => {
   const [bigOrder, setBigOrder] = useState({
     name: '',
     department: '',
+    cityId: '',
+    date: ''
   });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
+  const [cities, setCities] = useState([]);
 
   const handleClick = (type, message) => {
     setAlertType(type);
@@ -46,15 +50,25 @@ export const BigOrdersCreate = () => {
     []
   );
 
+  const getCitiesService = async () => {
+    try {
+      const response = await getCities();
+      setCities(response);
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    }
+  };
+
+
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
       try {
-        const response = await createBigOrder({date: formatDateString(bigOrder.date)});
+        const response = await createBigOrder({date: formatDateString(bigOrder.date), cityId: bigOrder.cityId });
         handleClick('success', 'Pedido creado correctamente');
+        window.location.reload();
       } catch (error) {
-        handleClick('error', 'Error creating order');
-        console.log('Error saving order:', error);
+        handleClick('error', error.response.data.error);
       }
     },
     [bigOrder]
@@ -65,6 +79,9 @@ export const BigOrdersCreate = () => {
     return `${day}/${month}/${year}`;
   };
 
+  useEffect(() => {
+    getCitiesService();
+  },[]);
 
   return (
     <form autoComplete="off" noValidate onSubmit={handleSubmit}>
@@ -88,6 +105,31 @@ export const BigOrdersCreate = () => {
                   required
                   value={bigOrder.date}
                 />
+              </Grid>
+              <Grid
+                xs={12}
+                md={6}
+              >
+                <TextField
+                  fullWidth
+                  label="Ciudad"
+                  name="cityId"
+                  onChange={handleChange}
+                  required
+                  select
+                  SelectProps={{ native: true }}
+                  value={bigOrder.cityId}
+                >
+                  <option value="">Seleccionar</option>
+                  {cities.map((city) => (
+                    <option
+                      key={city._id}
+                      value={city._id}
+                    >
+                      {city.name}
+                    </option>
+                  ))}
+                </TextField>
               </Grid>
             </Grid>
           </Box>
