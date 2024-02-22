@@ -13,15 +13,16 @@ const BigOrderDetailsPage = () => {
   const router = useRouter();
   const { id, city } = router.query;
   const [products, setProducts] = useState([]);
+  const [user, setUser] = useState({});
   const [shops, setShops] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [bigOrder, setBigOrder] = useState([]);
+  //const [bigOrder, setBigOrder] = useState([]);
   const [editedQuantities, setEditedQuantities] = useState({});
 
   const getBigOrdersService = async () => {
     try {
       const response = await getBigOrder(id);
-
+      console.log(response);
       return response
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -66,6 +67,13 @@ const BigOrderDetailsPage = () => {
         getOrdersService(response.date);
       }
     })
+    const storedUser = localStorage.getItem('user');
+
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      console.log(user);
+      setUser(user);
+    }
   }, []);
 
   const renderTable = () => {
@@ -75,7 +83,7 @@ const BigOrderDetailsPage = () => {
       const rowData = [product.displayName];
       let productTotal = 0;
       tableHeader2.slice(1).forEach(shop => {
-        const order = orders.find(order => order.order.shop === shop);
+        const order = orders.find(order => order.order.shop._id === shop);
         const detail = order ? order.details.find(detail => detail.product === product._id) : null;
         const editedQuantity = editedQuantities[`${product._id}_${shop}`];
         const displayedValue = editedQuantity !== undefined ? editedQuantity : (detail && detail.PEDI_REAL ? detail.PEDI_REAL : 0);
@@ -147,7 +155,8 @@ const BigOrderDetailsPage = () => {
   const handleSave = async () => {
     const query = {
       bigOrderId: id,
-      products: editedQuantities
+      products: editedQuantities,
+      userId: user._id
     }
     const response = await updateBigOrder(query);
 
