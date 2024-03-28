@@ -37,8 +37,6 @@ export const PlatformsCreate = () => {
     setOpen(false);
   };
 
-  
-
   const handleChange = useCallback(
     (event) => {
       setPlatform((prevState) => ({
@@ -67,9 +65,7 @@ export const PlatformsCreate = () => {
     }
   };
 
-  useEffect(() => {
-    
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <form

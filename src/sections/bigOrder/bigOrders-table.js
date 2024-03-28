@@ -12,12 +12,19 @@ import {
   Typography
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
+import { downloadOrderDetails } from '../../services/bigOrderService';
 
 export const BigOrdersTable = (props) => {
   const {
     items = [],
   } = props;
 
+  items.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const handleExportClick = (bigOrderId) => {
+    //downloadOrderDetails(bigOrderId);
+  };
+  
   return (
     <Card>
       <Scrollbar>
@@ -67,6 +74,7 @@ export const BigOrdersTable = (props) => {
                       <Link href={`/big-order-details?id=${bigOrder._id}&city=${bigOrder.cityId._id}`} passHref>
                         <Button variant="outlined">Ver detalle</Button>
                       </Link>
+                      <Button variant="outlined" onClick={handleExportClick(bigOrder._id)}>Exportar información</Button>
                     </TableCell>
                   </TableRow>
                 );
