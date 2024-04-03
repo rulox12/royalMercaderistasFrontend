@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { saveAs } from 'file-saver';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -60,15 +60,15 @@ const downloadOrderDetails = async (bigOrderId) => {
     }
 
     // Generar una URL de objeto blob para el archivo
+    const url = window.URL.createObjectURL(new Blob([response.data]));
     const blob = new Blob([response.data], { type: "application/octet-stream" });
-    const url = URL.createObjectURL(blob);
-
-    // Descargar el archivo utilizando Linking de React Native
-    await Linking.openURL(url);
-
-    console.log("El archivo se ha descargado exitosamente");
+    console.log(url);
+    
+    saveAs(blob, `${bigOrderId}.xlsx`);
+    
+    return true
   } catch (error) {
-    console.error("Error al descargar el archivo:", error);
+    return false
   }
 };
 

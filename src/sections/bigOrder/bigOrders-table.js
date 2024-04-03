@@ -9,22 +9,25 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Typography
-} from '@mui/material';
-import { Scrollbar } from 'src/components/scrollbar';
-import { downloadOrderDetails } from '../../services/bigOrderService';
+  Typography,
+} from "@mui/material";
+import { Scrollbar } from "src/components/scrollbar";
+import { downloadOrderDetails } from "../../services/bigOrderService";
 
 export const BigOrdersTable = (props) => {
-  const {
-    items = [],
-  } = props;
+  const { items = [] } = props;
 
   items.sort((a, b) => new Date(a.date) - new Date(b.date));
 
   const handleExportClick = (bigOrderId) => {
-    //downloadOrderDetails(bigOrderId);
+    const response = downloadOrderDetails(bigOrderId);
+    if (response) {
+      window.alert("Exporte realizado.");
+    } else {
+      window.alert("Error al generar exporte");
+    }
   };
-  
+
   return (
     <Card>
       <Scrollbar>
@@ -32,49 +35,33 @@ export const BigOrdersTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
-                  Fecha
-                </TableCell>
-                <TableCell>
-                  Estado
-                </TableCell>
-                <TableCell>
-                  Ciudad
-                </TableCell>
-                <TableCell>
-                  Acciones
-                </TableCell>
+                <TableCell>Fecha</TableCell>
+                <TableCell>Estado</TableCell>
+                <TableCell>Ciudad</TableCell>
+                <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((bigOrder) => {
                 return (
-                  <TableRow
-                    hover
-                    key={bigOrder._id}
-                  >
+                  <TableRow hover key={bigOrder._id}>
                     <TableCell>
-                      <Stack
-                        alignItems="center"
-                        direction="row"
-                        spacing={2}
-                      >
-                        <Typography variant="subtitle2">
-                          {bigOrder.date}
-                        </Typography>
+                      <Stack alignItems="center" direction="row" spacing={2}>
+                        <Typography variant="subtitle2">{bigOrder.date}</Typography>
                       </Stack>
                     </TableCell>
+                    <TableCell>{bigOrder.status}</TableCell>
+                    <TableCell>{bigOrder.cityId.name}</TableCell>
                     <TableCell>
-                      {bigOrder.status}
-                    </TableCell>
-                    <TableCell>
-                      {bigOrder.cityId.name}
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/big-order-details?id=${bigOrder._id}&city=${bigOrder.cityId._id}`} passHref>
+                      <Link
+                        href={`/big-order-details?id=${bigOrder._id}&city=${bigOrder.cityId._id}`}
+                        passHref
+                      >
                         <Button variant="outlined">Ver detalle</Button>
                       </Link>
-                      <Button variant="outlined" onClick={handleExportClick(bigOrder._id)}>Exportar información</Button>
+                      <Button variant="outlined" sx={{ m: 1 }} onClick={() => handleExportClick(bigOrder._id)}>
+                        Exportar información
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );
