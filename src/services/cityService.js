@@ -12,6 +12,16 @@ const getCities = async () => {
     }
 };
 
+const getCity = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/cities/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching city:', error);
+        throw error;
+    }
+};
+
 const createCity = async (city) => {
     try {
         const response = await axios.post(`${API_URL}/cities`, city);
@@ -34,4 +44,4 @@ const deleteCity = async (cityId) => {
     }
 };
 
-export { getCities, createCity, deleteCity };
+export { getCities, createCity, deleteCity, getCity };

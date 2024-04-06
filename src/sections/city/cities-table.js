@@ -43,6 +43,9 @@ export const CitiesTable = (props) => {
                 <TableCell>
                   Departamento
                 </TableCell>
+                <TableCell>
+                  Acciones
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

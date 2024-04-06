@@ -52,6 +52,9 @@ export const ProductsTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
+              <TableCell>
+                  Posición
+                </TableCell>
                 <TableCell>
                   Nombre del Producto
                 </TableCell>
@@ -76,6 +79,11 @@ export const ProductsTable = (props) => {
                     hover
                     key={product.internalProductNumber}
                   >
+                    <TableCell>
+                      <Typography variant="subtitle2">
+                        {product.position}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <Typography variant="subtitle2">
                         {product.name}

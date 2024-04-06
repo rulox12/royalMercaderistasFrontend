@@ -16,17 +16,27 @@ import { downloadOrderDetails } from "../../services/bigOrderService";
 
 export const BigOrdersTable = (props) => {
   const { items = [] } = props;
+  
+  const formatDate = (dateString) => {
+    var dateParts = dateString.split("/");
 
-  items.sort((a, b) => new Date(a.date) - new Date(b.date));
+    var dateObject = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]);
 
-  const handleExportClick = (bigOrderId) => {
-    const response = downloadOrderDetails(bigOrderId);
+    return dateObject;
+  }
+
+  items.sort((a, b) => formatDate(b.date).getTime() - formatDate(a.date).getTime());
+
+  const handleExportClick = async (bigOrderId, date, cityId) => {
+    const response = downloadOrderDetails(bigOrderId, date, cityId.name);
     if (response) {
       window.alert("Exporte realizado.");
     } else {
       window.alert("Error al generar exporte");
     }
   };
+
+  
 
   return (
     <Card>
@@ -54,12 +64,12 @@ export const BigOrdersTable = (props) => {
                     <TableCell>{bigOrder.cityId.name}</TableCell>
                     <TableCell>
                       <Link
-                        href={`/big-order-details?id=${bigOrder._id}&city=${bigOrder.cityId._id}`}
+                        href={`/big-order-details?id=${bigOrder._id}&cityId=${bigOrder.cityId._id}`}
                         passHref
                       >
                         <Button variant="outlined">Ver detalle</Button>
                       </Link>
-                      <Button variant="outlined" sx={{ m: 1 }} onClick={() => handleExportClick(bigOrder._id)}>
+                      <Button variant="outlined" sx={{ m: 1 }} onClick={() => handleExportClick(bigOrder._id, bigOrder.date, bigOrder.cityId)}>
                         Exportar información
                       </Button>
                     </TableCell>

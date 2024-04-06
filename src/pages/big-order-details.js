@@ -1,33 +1,53 @@
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-import { getProducts } from 'src/services/productService';
-import { useState, useEffect } from 'react';
-import { Box, Container, Stack, Card, CardContent, Table, TableHead, TableRow, TableCell, TableBody, TextField, Button, TableContainer } from '@mui/material';
-import { getOrdersByDate } from 'src/services/orderService';
-import { getBigOrder } from 'src/services/bigOrderService';
-import { getShops } from 'src/services/shopService';
-import { updateBigOrder } from '../services/bigOrderService';
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
+import { getProducts } from "src/services/productService";
+import { useState, useEffect } from "react";
+import {
+  Box,
+  Container,
+  Stack,
+  Card,
+  CardContent,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TextField,
+  Button,
+  TableContainer,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+import { getOrdersByDate } from "src/services/orderService";
+import { getBigOrder } from "src/services/bigOrderService";
+import { getShops } from "src/services/shopService";
+import { updateBigOrder } from "../services/bigOrderService";
+import { getCity } from "../services/cityService";
+import styles from "./styles.module.css";
 
 const BigOrderDetailsPage = () => {
   const router = useRouter();
-  const { id, city } = router.query;
+  const { id, cityId } = router.query;
   const [products, setProducts] = useState([]);
   const [user, setUser] = useState({});
+  const [city, setCity] = useState({});
   const [shops, setShops] = useState([]);
   const [orders, setOrders] = useState([]);
-  //const [bigOrder, setBigOrder] = useState([]);
+  const [bigOrder, setBigOrder] = useState([]);
   const [editedQuantities, setEditedQuantities] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   const getBigOrdersService = async () => {
     try {
       const response = await getBigOrder(id);
-      console.log(response);
-      return response
+      return response;
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
     }
   };
+
   const getProductsService = async () => {
     try {
       const response = await getProducts();
@@ -37,25 +57,34 @@ const BigOrderDetailsPage = () => {
 
       setProducts(response);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  const getCityService = async (id) => {
+    try {
+      const response = await getCity(id);
+      setCity(response);
+    } catch (error) {
+      console.error("Error fetching products:", error);
     }
   };
 
   const getOrdersService = async (date) => {
     try {
-      const response = await getOrdersByDate(date, city);
+      const response = await getOrdersByDate(date, cityId);
       setOrders(response);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
     }
   };
 
   const getShopsService = async () => {
     try {
-      const response = await getShops({ cityId: city });
+      const response = await getShops({ cityId });
       setShops(response);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
     }
   };
 
@@ -65,9 +94,13 @@ const BigOrderDetailsPage = () => {
     getBigOrdersService().then((response) => {
       if (response && response.date) {
         getOrdersService(response.date);
+        getCityService(response.cityId).then((response) => {
+          setIsLoading(false);
+        });
+        setBigOrder(response)
       }
-    })
-    const storedUser = localStorage.getItem('user');
+    });
+    const storedUser = localStorage.getItem("user");
 
     if (storedUser) {
       const user = JSON.parse(storedUser);
@@ -77,32 +110,44 @@ const BigOrderDetailsPage = () => {
   }, []);
 
   const renderTable = () => {
-    const tableHeader = ['PRODUCTO', ...shops.map(shop => shop.name)];
-    const tableHeader2 = ['PRODUCTO', ...shops.map(shop => shop._id)];
-    const tableData = products.map(product => {
+    const tableHeader = ["PRODUCTO", ...shops.map((shop) => shop.name)];
+    tableHeader.push('TOTAL')
+    const tableHeader2 = ["PRODUCTO", ...shops.map((shop) => shop._id)];
+    const tableData = products.map((product) => {
       const rowData = [product.displayName];
       let productTotal = 0;
-      tableHeader2.slice(1).forEach(shop => {
-        const order = orders.find(order => order.order.shop._id === shop);
-        const detail = order ? order.details.find(detail => detail.product === product._id) : null;
+      tableHeader2.slice(1).forEach((shop) => {
+        const order = orders.find((order) => order.order.shop._id === shop);
+        const detail = order
+          ? order.details.find((detail) => detail.product === product._id)
+          : null;
         const editedQuantity = editedQuantities[`${product._id}_${shop}`];
-        const displayedValue = editedQuantity !== undefined ? editedQuantity : (detail && detail.PEDI_REAL ? detail.PEDI_REAL : 0);
+        const displayedValue =
+          editedQuantity !== undefined
+            ? editedQuantity
+            : detail && detail.PEDI_REAL
+              ? detail.PEDI_REAL
+              : 0;
 
         productTotal += parseInt(displayedValue, 10);
-
+        const inputProps = {
+          class: 'custom-textfiels',
+        };
         rowData.push(
           <TextField
+            sx={{ p: "0px !important" }}
             type="number"
             value={displayedValue}
             onChange={(e) => handleQuantityChange(product._id, shop, e.target.value)}
             variant="outlined"
-            sx={{ p: 0 }}
+            className={styles["custom-textfield"]}
+            InputProps={inputProps}
           />
         );
       });
 
       rowData.push(
-        <TableCell key="total" sx={{ p: 0, fontWeight: 'bold' }}>
+        <TableCell key="total" sx={{ p: "0 !important", fontWeight: "bold !important" }}>
           {productTotal}
         </TableCell>
       );
@@ -110,31 +155,38 @@ const BigOrderDetailsPage = () => {
       return rowData;
     });
 
-    const totalRow = ['TOTAL'];
-    shops.forEach(shop => {
-      const shopTotal = tableData.reduce((acc, rowData) => acc + parseInt(rowData[shops.indexOf(shop) + 1], 10), 0);
+    const totalRow = ["TOTAL"];
+    shops.forEach((shop) => {
+      const shopTotal = tableData.reduce(
+        (acc, rowData) => acc + parseInt(rowData[shops.indexOf(shop) + 1], 10),
+        0
+      );
       totalRow.push(
-        <TableCell key={`${shop._id}_total`} sx={{ p: 0, fontWeight: 'bold' }}>
+        <TableCell key={`${shop._id}_total`} sx={{ p: 0, fontWeight: "bold" }}>
           {shopTotal}
         </TableCell>
       );
     });
 
     return (
-      <TableContainer sx={{ maxHeight: 440 }}>
-        <Table stickyHeader aria-label="sticky table">
+      <TableContainer sx={{ maxHeight: 5000 }}>
+        <Table stickyHeader aria-label="">
           <TableHead>
-            <TableRow>
+            <TableRow sx={{ p: 0 }}>
               {tableHeader.map((header, index) => (
-                <TableCell key={index}>{header}</TableCell>
+                <TableCell key={index} sx={{ p: 0 }}>
+                  {header}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody sx={{ p: 0 }}>
             {tableData.map((rowData, index) => (
-              <TableRow key={index} sx={{ pt: 0 }}>
+              <TableRow key={index} sx={{ p: 0 }}>
                 {rowData.map((data, dataIndex) => (
-                  <TableCell key={dataIndex} sx={{ p: 1 }}>{data}</TableCell>
+                  <TableCell key={dataIndex} sx={{ p: 0 }}>
+                    {data}
+                  </TableCell>
                 ))}
               </TableRow>
             ))}
@@ -145,50 +197,65 @@ const BigOrderDetailsPage = () => {
   };
 
   const handleQuantityChange = (productId, shopId, value) => {
-
-    setEditedQuantities(prevQuantities => ({
+    setEditedQuantities((prevQuantities) => ({
       ...prevQuantities,
       [`${productId}_${shopId}`]: parseInt(value, 10) || 0,
     }));
   };
 
   const handleSave = async () => {
-    const query = {
-      bigOrderId: id,
-      products: editedQuantities,
-      userId: user._id
+    try {
+      const query = {
+        bigOrderId: id,
+        products: editedQuantities,
+        userId: user._id,
+      };
+      const response = await updateBigOrder(query);
+      if (response?.status === 201) {
+        window.alert(response.message);
+      } else {
+        window.alert("Ocurrio un error" + response?.status);
+      }
+    } catch (error) {
+      window.alert("Ocurrio un error");
     }
-    const response = await updateBigOrder(query);
-
   };
 
   return (
     <>
-      <Head>
-        <title>Listas</title>
-      </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
-        <Container maxWidth="xl">
-          <Stack spacing={2}>
-            <Card>
-              <CardContent sx={{ pt: 0 }}>
-                {renderTable()}
-                <br></br>
-                <Button variant="contained" color="success" onClick={handleSave}>Guardar</Button>
-              </CardContent>
-            </Card>
-          </Stack>
-        </Container>
-      </Box>
+      {isLoading ? (
+        <Typography variant="h4" align="center">
+          <CircularProgress />
+        </Typography>
+      ) : (
+        <>
+          <Head>
+            <title>Pedidos</title>
+          </Head>
+          <Typography variant="h4" align="center">
+            {city.name + " - " + bigOrder.date}
+          </Typography>
+          <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
+            <Container maxWidth="xl">
+              <Stack spacing={0}>
+                <Card>
+                  <CardContent sx={{ pt: 0 }}>
+                    {renderTable()}
+                    <br></br>
+                    <Button variant="contained" color="success" onClick={handleSave}>
+                      Guardar
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Stack>
+            </Container>
+          </Box>
+        </>
+      )}
     </>
   );
 };
 
-
-BigOrderDetailsPage.getLayout = (page) => (
-  <DashboardLayout>
-    {page}
-  </DashboardLayout>
-);
+BigOrderDetailsPage.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 
 export default BigOrderDetailsPage;

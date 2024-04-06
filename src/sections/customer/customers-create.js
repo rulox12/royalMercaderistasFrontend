@@ -27,6 +27,7 @@ const documentTypes = [
 ];
 
 export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
+  initialUser.password = ''
   const [user, setUser] = useState(initialUser || {
     document: '',
     documentType: '',
@@ -34,7 +35,8 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
     surname: '',
     email: '',
     phone: '',
-    roleId: ''
+    roleId: '',
+    password: ''
   });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
@@ -85,14 +87,13 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
   const handleSaveUser = async () => {
     try {
       if (isUpdate) {
+        if(user.password === ''){
+          delete user['password']
+        }
         await updateUser(user._id, user);
         handleClick('success', 'Usuario actualizado correctamente');
       } else {
-        const userWithPassword = {
-          ...user,
-          password: '123456',
-        };
-        await createUser(userWithPassword);
+        await createUser(user);
         handleClick('success', 'Usuario creado correctamente');
       }
       window.location.reload();
@@ -246,6 +247,19 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
                     </option>
                   ))}
                 </TextField>
+              </Grid>
+              <Grid
+                xs={12}
+                md={6}
+              >
+                <TextField
+                  fullWidth
+                  label="Contraseña"
+                  name="password"
+                  type="password"
+                  onChange={handleChange}
+                  required
+                />
               </Grid>
             </Grid>
           </Box>

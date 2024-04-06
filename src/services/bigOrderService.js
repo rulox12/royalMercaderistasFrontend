@@ -1,5 +1,5 @@
 import axios from "axios";
-import { saveAs } from 'file-saver';
+import { saveAs } from "file-saver";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -36,14 +36,14 @@ const createBigOrder = async (params) => {
 const updateBigOrder = async (params) => {
   try {
     const response = await axios.put(`${API_URL}/big-orders`, params);
-    return response.data;
+    return { status: 201, message: response.data.message };
   } catch (error) {
     console.error("Error creating cities:", error);
     throw error;
   }
 };
 
-const downloadOrderDetails = async (bigOrderId) => {
+const downloadOrderDetails = async (bigOrderId, date, city) => {
   try {
     const response = await axios.post(
       `${API_URL}/big-orders/export`,
@@ -63,12 +63,12 @@ const downloadOrderDetails = async (bigOrderId) => {
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const blob = new Blob([response.data], { type: "application/octet-stream" });
     console.log(url);
-    
-    saveAs(blob, `${bigOrderId}.xlsx`);
-    
-    return true
+
+    saveAs(blob, `${date}-${city}-${bigOrderId}.xlsx`);
+
+    return true;
   } catch (error) {
-    return false
+    return false;
   }
 };
 
