@@ -4,3 +4,8 @@
   font-weight: bold !important;
   text-align: center !important;
 }
+
+.no-padding {
+  padding: 0px 0px 0px 5px !important;
+  max-width: 50px;
+}

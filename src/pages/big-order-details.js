@@ -130,9 +130,6 @@ const BigOrderDetailsPage = () => {
               : 0;
 
         productTotal += parseInt(displayedValue, 10);
-        const inputProps = {
-          class: 'custom-textfiels',
-        };
         rowData.push(
           <TextField
             sx={{ p: "0px !important" }}
@@ -140,8 +137,12 @@ const BigOrderDetailsPage = () => {
             value={displayedValue}
             onChange={(e) => handleQuantityChange(product._id, shop, e.target.value)}
             variant="outlined"
-            className={styles["custom-textfield"]}
-            InputProps={inputProps}
+            className={`${styles["custom-textfield"]}`}
+            InputProps={{
+              classes: {
+                input: styles["no-padding"],
+              },
+            }}
           />
         );
       });
@@ -174,7 +175,7 @@ const BigOrderDetailsPage = () => {
           <TableHead>
             <TableRow sx={{ p: 0 }}>
               {tableHeader.map((header, index) => (
-                <TableCell key={index} sx={{ p: 0 }}>
+                <TableCell key={index} sx={{ p: 0, fontSize: "8px !important"  }}>
                   {header}
                 </TableCell>
               ))}
