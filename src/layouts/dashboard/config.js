@@ -10,65 +10,11 @@ import { SvgIcon } from '@mui/material';
 
 export const items = [
   {
-    title: 'Home',
+    title: 'Inicio',
     path: '/',
     icon: (
       <SvgIcon fontSize="small">
         <ChartBarIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Usuarios',
-    path: '/customers',
-    icon: (
-      <SvgIcon fontSize="small">
-        <UsersIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Plataformas',
-    path: '/platforms',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingOfficeIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Locales',
-    path: '/shops',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingOfficeIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Productos',
-    path: '/products',
-    icon: (
-      <SvgIcon fontSize="small">
-        <ArchiveBoxIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Listas',
-    path: '/lists',
-    icon: (
-      <SvgIcon fontSize="small">
-        <QueueListIcon />
-      </SvgIcon>
-    )
-  },
-  {
-    title: 'Ciudades',
-    path: '/cities',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingLibraryIcon />
       </SvgIcon>
     )
   },
@@ -82,13 +28,51 @@ export const items = [
     )
   },
   {
-    title: 'Proveedores',
-    path: '/suppliers',
+    title: 'Configuración',
     icon: (
       <SvgIcon fontSize="small">
-        <UserGroupIcon />
+        <UsersIcon />
       </SvgIcon>
-    )
+    ),
+    subItems: [
+      {
+        title: 'Users',
+        path: '/customers'
+      },
+      {
+        title: 'Plataformas',
+        path: '/platforms'
+      },
+      {
+        title: 'Locales',
+        path: '/shops',
+      },
+      {
+        title: 'Ciudades',
+        path: '/cities'
+      },
+      {
+        title: 'Productos',
+        path: '/products',
+      },
+      {
+        title: 'Listas',
+        path: '/lists',
+      },
+      {
+        title: 'Ciudades',
+        path: '/cities',
+      },
+      {
+        title: 'Proveedores',
+        path: '/suppliers',
+      },
+
+      {
+        title: 'Exportar',
+        path: '/exports',
+      },
+    ]
   },
   // {
   //   title: 'Roles',

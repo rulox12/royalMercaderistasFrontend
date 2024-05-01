@@ -73,6 +73,7 @@ const BigOrderDetailsPage = () => {
   const getOrdersService = async (date) => {
     try {
       const response = await getOrdersByDate(date, cityId);
+      console.log('hola', response);
       setOrders(response);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -104,7 +105,6 @@ const BigOrderDetailsPage = () => {
 
     if (storedUser) {
       const user = JSON.parse(storedUser);
-      console.log(user);
       setUser(user);
     }
   }, []);
@@ -117,10 +117,15 @@ const BigOrderDetailsPage = () => {
       const rowData = [product.displayName];
       let productTotal = 0;
       tableHeader2.slice(1).forEach((shop) => {
-        const order = orders.find((order) => order.order.shop._id === shop);
+        const order = orders.find((order) => {
+          return order.order.shop._id === shop
+        });
+
         const detail = order
-          ? order.details.find((detail) => detail.product === product._id)
+          ? order.details.find((detail) => detail.product._id === product._id)
           : null;
+
+        console.log(detail);
         const editedQuantity = editedQuantities[`${product._id}_${shop}`];
         const displayedValue =
           editedQuantity !== undefined
@@ -175,7 +180,7 @@ const BigOrderDetailsPage = () => {
           <TableHead>
             <TableRow sx={{ p: 0 }}>
               {tableHeader.map((header, index) => (
-                <TableCell key={index} sx={{ p: 0, fontSize: "8px !important"  }}>
+                <TableCell key={index} sx={{ p: 0, fontSize: "8px !important" }}>
                   {header}
                 </TableCell>
               ))}

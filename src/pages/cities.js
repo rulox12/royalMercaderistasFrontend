@@ -26,10 +26,10 @@ const Page = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const getCitiesService = async () => { 
+  const getCitiesService = async () => {
     try {
       const response = await getCities();
-      setCities(response); 
+      setCities(response);
     } catch (error) {
       console.error('Error fetching cities:', error);
     }
@@ -81,9 +81,9 @@ const Page = () => {
             </Stack>
             <CitiesSearch />
             <CitiesTable
-              count={cities.length} 
+              count={cities.length}
               items={cities}
-              />
+            />
             <Modal
               open={open}
               onClose={handleClose}
