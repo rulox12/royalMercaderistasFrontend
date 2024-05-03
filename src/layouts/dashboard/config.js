@@ -69,7 +69,7 @@ export const items = [
       },
 
       {
-        title: 'Exportar',
+        title: 'Reportes',
         path: '/exports',
       },
     ]

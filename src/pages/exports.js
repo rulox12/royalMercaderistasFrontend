@@ -26,7 +26,8 @@ const Page = () => {
     const [cityId, setCityId] = useState('');
     useEffect(() => {
         const fetchCities = async () => {
-            const response = await getCities();
+            let response = await getCities();
+            response.push({'_id' : '123' , name : "Todos"})
             setCities(response);
         };
 
