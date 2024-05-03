@@ -24,9 +24,9 @@ const genericExport = async (startDate, endDate, orderDetailToExport, city) => {
 
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const blob = new Blob([response.data], { type: 'application/octet-stream' });
-        console.log(url);
+        const name = `${orderDetailToExport}_${startDate}_${endDate}_${city}`;
 
-        saveAs(blob, `exported_data.xlsx`);
+        saveAs(blob, `${name}.xlsx`);
 
         return true;
     } catch (error) {
