@@ -27,7 +27,7 @@ const documentTypes = [
 ];
 
 export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
-  initialUser.password = ''
+  //initialUser.password = ''
   const [user, setUser] = useState(initialUser || {
     document: '',
     documentType: '',

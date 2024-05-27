@@ -1,11 +1,8 @@
 import ChartBarIcon from '@heroicons/react/24/solid/ChartBarIcon';
 import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
-import BuildingOfficeIcon from '@heroicons/react/24/solid/BuildingOfficeIcon';
-import ArchiveBoxIcon from '@heroicons/react/24/solid/ArchiveBoxIcon';
-import QueueListIcon from '@heroicons/react/24/solid/QueueListIcon';
-import BuildingLibraryIcon from '@heroicons/react/24/solid/BuildingLibraryIcon';
 import ListBulletIcon from '@heroicons/react/24/solid/ListBulletIcon';
-import UserGroupIcon from '@heroicons/react/24/solid/UserGroupIcon';
+import BuildingLibraryIcon from '@heroicons/react/24/solid/ArrowsPointingInIcon';
+
 import { SvgIcon } from '@mui/material';
 
 export const items = [
@@ -28,6 +25,15 @@ export const items = [
     )
   },
   {
+    title: 'Reportes',
+    path: '/exports',
+    icon: (
+      <SvgIcon fontSize="small">
+        <BuildingLibraryIcon />
+      </SvgIcon>
+    )
+  },
+  {
     title: 'Configuración',
     icon: (
       <SvgIcon fontSize="small">
@@ -36,7 +42,7 @@ export const items = [
     ),
     subItems: [
       {
-        title: 'Users',
+        title: 'Usuarios',
         path: '/customers'
       },
       {
