@@ -75,8 +75,8 @@ export const BigOrdersCreate = () => {
   );
 
   const formatDateString = (inputDate) => {
-    const [year, month, day] = inputDate.split('-');
-    return `${day}/${month}/${year}`;
+    const [day, month, year] = inputDate.split('/');
+    return `${year}-${month}-${day}`;
   };
 
   useEffect(() => {
