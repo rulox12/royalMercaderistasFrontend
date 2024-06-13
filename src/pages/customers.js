@@ -94,7 +94,6 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <CustomersSearch />
             <CustomersTable
               count={customers.length}
               items={customers}

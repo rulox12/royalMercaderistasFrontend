@@ -82,7 +82,6 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <PlatformsSearch />
             <PlatformsTable
               count={platforms.length}
               items={platforms}

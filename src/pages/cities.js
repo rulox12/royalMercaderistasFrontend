@@ -79,7 +79,6 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <CitiesSearch />
             <CitiesTable
               count={cities.length}
               items={cities}

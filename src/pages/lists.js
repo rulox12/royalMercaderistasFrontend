@@ -79,7 +79,6 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <ListSearch />
             <ListTable
               count={lists.length}
               items={lists}

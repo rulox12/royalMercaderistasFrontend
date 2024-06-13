@@ -42,7 +42,7 @@ const Page = () => {
   const handleExport = async () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
-    console.log(divideByLocale);
+
     if(divideByLocale == 'SI') {
       const response = await genericExport(
         formattedStartDate,
@@ -133,7 +133,7 @@ const Page = () => {
             >
               {['SI', 'NO'].map((option) => (
                 <MenuItem key={option} value={option}>
-                  {option}
+                  {option === 'SI' ? 'Acomulado' : 'Divido por tienda' }
                 </MenuItem>
               ))}
             </TextField>

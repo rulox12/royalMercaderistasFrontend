@@ -79,7 +79,6 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <RolesSearch />
             <RolesTable
               count={roles.length} 
               items={roles}

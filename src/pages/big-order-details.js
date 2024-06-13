@@ -233,6 +233,13 @@
       }
     };
 
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+
     return (
       <>
         {isLoading ? (
@@ -245,7 +252,7 @@
               <title>Pedidos</title>
             </Head>
             <Typography variant="h4" align="center">
-              {city.name + " - " + bigOrder.date}
+              {city.name + " - " + new Date(bigOrder.date).toLocaleDateString("es-CO", options)}
             </Typography>
             <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
               <Container maxWidth="xl">

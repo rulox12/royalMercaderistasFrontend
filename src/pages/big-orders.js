@@ -79,7 +79,6 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <BigOrdersSearch />
             <BigOrdersTable
               count={bigOrders.length} 
               items={bigOrders}

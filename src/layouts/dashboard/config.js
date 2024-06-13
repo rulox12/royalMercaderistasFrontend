@@ -73,11 +73,6 @@ export const items = [
         title: 'Proveedores',
         path: '/suppliers',
       },
-
-      {
-        title: 'Reportes',
-        path: '/exports',
-      },
     ]
   },
   // {

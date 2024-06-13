@@ -36,7 +36,12 @@ export const BigOrdersTable = (props) => {
     }
   };
 
-  
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }
 
   return (
     <Card>
@@ -57,7 +62,7 @@ export const BigOrdersTable = (props) => {
                   <TableRow hover key={bigOrder._id}>
                     <TableCell>
                       <Stack alignItems="center" direction="row" spacing={2}>
-                        <Typography variant="subtitle2">{bigOrder.date}</Typography>
+                        <Typography variant="subtitle2">{new Date(bigOrder.date).toLocaleDateString("es-CO", options)}</Typography>
                       </Stack>
                     </TableCell>
                     <TableCell>{bigOrder.status}</TableCell>
