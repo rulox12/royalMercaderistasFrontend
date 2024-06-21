@@ -23,7 +23,7 @@ const documentTypes = [
   {
     value: 'TI',
     label: 'Tarjeta de identidada'
-  },
+  }
 ];
 
 export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
@@ -44,7 +44,7 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
 
   const handleClick = (type, message) => {
     setAlertType(type);
-    setAlertMessage(message)
+    setAlertMessage(message);
     setOpen(true);
   };
 
@@ -87,8 +87,8 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
   const handleSaveUser = async () => {
     try {
       if (isUpdate) {
-        if(user.password === ''){
-          delete user['password']
+        if (user.password === '') {
+          delete user['password'];
         }
         await updateUser(user._id, user);
         handleClick('success', 'Usuario actualizado correctamente');
@@ -106,7 +106,7 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
   useEffect(() => {
     getRolesService();
   }, []);
-  
+
   return (
     <form
       autoComplete="off"
@@ -114,11 +114,11 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
       onSubmit={handleSubmit}
     >
       <Snackbar open={open}
-        autoHideDuration={6000}
-        onClose={handleClose}>
+                autoHideDuration={6000}
+                onClose={handleClose}>
         <Alert onClose={handleClose}
-          severity={alertType}
-          sx={{ width: '100%' }}>
+               severity={alertType}
+               sx={{ width: '100%' }}>
           {alertMessage}
         </Alert>
       </Snackbar>
@@ -264,10 +264,10 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
             </Grid>
           </Box>
         </CardContent>
-        <Divider />
+        <Divider/>
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           <Button variant="contained"
-            onClick={handleSaveUser} >
+                  onClick={handleSaveUser}>
             Guardar Usuario
           </Button>
         </CardActions>

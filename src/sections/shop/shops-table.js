@@ -43,6 +43,9 @@ export const ShopsTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell>
+                  Nro
+                </TableCell>
+                <TableCell>
                   Nombre
                 </TableCell>
                 <TableCell>
@@ -66,6 +69,9 @@ export const ShopsTable = (props) => {
                     hover
                     key={shop._id}
                   >
+                    <TableCell>
+                      {shop.shopNumber}
+                    </TableCell>
                     <TableCell>
                       <Stack
                         alignItems="center"

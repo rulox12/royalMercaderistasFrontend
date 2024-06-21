@@ -43,14 +43,14 @@ const Page = () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
 
-    if(divideByLocale == 'SI') {
+    if (divideByLocale == 'SI') {
       const response = await genericExport(
         formattedStartDate,
         formattedEndDate,
         orderDetailToExport,
         cityId
       );
-    }else{
+    } else {
       const response = await allShopsExport(
         formattedStartDate,
         formattedEndDate,
@@ -78,65 +78,73 @@ const Page = () => {
             Exportar Datos
           </Typography>
           <Stack spacing={2}>
-            <TextField
-              label="Fecha de inicio"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              InputLabelProps={{
-                shrink: true
-              }}
-            />
-            <TextField
-              label="Fecha de fin"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              InputLabelProps={{
-                shrink: true
-              }}
-            />
-            <TextField
-              select
-              label="Detalle de la orden a exportar"
-              value={orderDetailToExport}
-              onChange={(e) => setOrderDetailToExport(e.target.value)}
-            >
-              {['INVE', 'AVER', 'LOTE', 'RECI', 'PEDI'].map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              label="Ciudad"
-              value={city}
-              onChange={(e) => {
-                const selectedCity = e.target.value;
-                setCity(selectedCity);
-                const selectedCityId = cities.find((c) => c.name === selectedCity)?._id;
-                setCityId(selectedCityId);
-              }}
-            >
-              {cities.map((city) => (
-                <MenuItem key={city._id} value={city.name}>
-                  {city.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              label="Quieres Acomulado o divido por tienda"
-              value={divideByLocale}
-              onChange={(e) => setDivideByLocale(e.target.value)}
-            >
-              {['SI', 'NO'].map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option === 'SI' ? 'Acomulado' : 'Divido por tienda' }
-                </MenuItem>
-              ))}
-            </TextField>
+            <Box display="flex" gap={2}>
+              <TextField
+                label="Fecha de inicio"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                InputLabelProps={{
+                  shrink: true
+                }}
+              />
+              <TextField
+                label="Fecha de fin"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                InputLabelProps={{
+                  shrink: true
+                }}
+              />
+              <TextField
+                select
+                label="Ciudad"
+                value={city}
+                onChange={(e) => {
+                  const selectedCity = e.target.value;
+                  setCity(selectedCity);
+                  const selectedCityId = cities.find((c) => c.name === selectedCity)?._id;
+                  setCityId(selectedCityId);
+                }}
+                sx={{ flex: 1 }}
+              >
+                {cities.map((city) => (
+                  <MenuItem key={city._id} value={city.name}>
+                    {city.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+            <Box display="flex" gap={2}>
+              <TextField
+                select
+                label="Detalle de la orden a exportar"
+                value={orderDetailToExport}
+                onChange={(e) => setOrderDetailToExport(e.target.value)}
+                sx={{ flex: 1 }}
+              >
+                {['INVE', 'AVER', 'LOTE', 'RECI', 'PEDI'].map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                select
+                label="¿Quieres acumulado o dividido por tienda?"
+                value={divideByLocale}
+                onChange={(e) => setDivideByLocale(e.target.value)}
+                sx={{ flex: 1 }}
+              >
+                {['SI', 'NO'].map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option === 'SI' ? 'acumulado' : 'dividido por tienda'}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
             <Button variant="contained" onClick={handleExport}>
               Exportar
             </Button>

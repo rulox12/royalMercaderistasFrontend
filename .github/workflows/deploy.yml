@@ -15,6 +15,20 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Run test
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ~/project/royalMercaderistasFrontend
+            git pull origin master
+            git status
+            nvm -v
+            npm run build
+    steps:
     - name: Deploy using ssh
       uses: appleboy/ssh-action@master
       with:

@@ -191,7 +191,6 @@ export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
                   label="Teléfono"
                   name="phone"
                   onChange={handleChange}
-                  required
                   value={shop.phone}
                 />
               </Grid>
@@ -309,7 +308,7 @@ export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
                       key={user._id}
                       value={user._id}
                     >
-                      {user.name}
+                      {user.name + ' ' + user.surname}
                     </option>
                   ))}
                 </TextField>

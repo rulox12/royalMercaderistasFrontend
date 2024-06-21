@@ -24,7 +24,7 @@ const genericExport = async (startDate, endDate, orderDetailToExport, city) => {
 
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const blob = new Blob([response.data], { type: 'application/octet-stream' });
-    const name = `${orderDetailToExport}_${startDate}_${endDate}_${city}`;
+    const name = `${orderDetailToExport}_${new Date(startDate).toLocaleDateString("es-CO")}_${new Date(endDate).toLocaleDateString("es-CO")}_${city}`;
 
     saveAs(blob, `${name}.xlsx`);
 
@@ -56,7 +56,7 @@ const allShopsExport = async (startDate, endDate, orderDetailToExport, city) => 
 
     //const url = window.URL.createObjectURL(new Blob([response.data]));
     const blob = new Blob([response.data], { type: 'application/octet-stream' });
-    const name = `${orderDetailToExport}_${startDate}_${endDate}_${city}`;
+    const name = `${orderDetailToExport}_${new Date(startDate).toLocaleDateString("es-CO")}}_${new Date(endDate).toLocaleDateString("es-CO")}}_${city}`;
 
     saveAs(blob, `${name}.xlsx`);
 

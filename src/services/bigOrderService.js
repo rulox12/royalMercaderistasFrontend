@@ -62,9 +62,8 @@ const downloadOrderDetails = async (bigOrderId, date, city) => {
     // Generar una URL de objeto blob para el archivo
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const blob = new Blob([response.data], { type: "application/octet-stream" });
-    console.log(url);
 
-    saveAs(blob, `${date}-${city}-${bigOrderId}.xlsx`);
+    saveAs(blob, `${new Date(date).toLocaleDateString("es-CO")}-${city}-${bigOrderId}.xlsx`);
 
     return true;
   } catch (error) {

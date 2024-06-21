@@ -66,10 +66,6 @@ export const items = [
         path: '/lists',
       },
       {
-        title: 'Ciudades',
-        path: '/cities',
-      },
-      {
         title: 'Proveedores',
         path: '/suppliers',
       },

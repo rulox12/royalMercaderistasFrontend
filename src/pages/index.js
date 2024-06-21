@@ -102,7 +102,7 @@ const Page = () => {
                 value={statistics.totalOrders}
               />
             </Grid>
-            <Grid
+            {/*<Grid
               xs={12}
               lg={8}
             >
@@ -119,8 +119,8 @@ const Page = () => {
                 ]}
                 sx={{ height: '100%' }}
               />
-            </Grid>
-            <Grid
+            </Grid>*/}
+            {/*<Grid
               xs={12}
               md={6}
               lg={4}
@@ -130,8 +130,8 @@ const Page = () => {
                 labels={['Desktop', 'Tablet', 'Phone']}
                 sx={{ height: '100%' }}
               />
-            </Grid>
-            <Grid
+            </Grid>*/}
+            {/*<Grid
               xs={12}
               md={6}
               lg={4}
@@ -171,8 +171,8 @@ const Page = () => {
                 ]}
                 sx={{ height: '100%' }}
               />
-            </Grid>
-            <Grid
+            </Grid>*/}
+            {/*<Grid
               xs={12}
               md={12}
               lg={8}
@@ -242,7 +242,7 @@ const Page = () => {
                 ]}
                 sx={{ height: '100%' }}
               />
-            </Grid>
+            </Grid>*/}
           </Grid>
         </Container>
       </Box>
