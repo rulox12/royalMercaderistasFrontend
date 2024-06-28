@@ -234,6 +234,7 @@
     };
 
     const options = {
+      timeZone: 'UTC',
       weekday: "long",
       year: "numeric",
       month: "long",

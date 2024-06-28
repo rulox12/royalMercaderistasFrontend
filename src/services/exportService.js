@@ -3,7 +3,7 @@ import { saveAs } from 'file-saver';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const genericExport = async (startDate, endDate, orderDetailToExport, city) => {
+const genericExport = async (startDate, endDate, orderDetailToExport, city, cityName,detail) => {
   try {
     const response = await axios.post(
       `${API_URL}/exports/export-generic`,
@@ -22,9 +22,8 @@ const genericExport = async (startDate, endDate, orderDetailToExport, city) => {
       throw new Error('No se pudo descargar el archivo');
     }
 
-    const url = window.URL.createObjectURL(new Blob([response.data]));
     const blob = new Blob([response.data], { type: 'application/octet-stream' });
-    const name = `${orderDetailToExport}_${new Date(startDate).toLocaleDateString("es-CO")}_${new Date(endDate).toLocaleDateString("es-CO")}_${city}`;
+    const name = `${orderDetailToExport}_${startDate}_${endDate}_${cityName}_${detail}`;
 
     saveAs(blob, `${name}.xlsx`);
 
@@ -35,7 +34,7 @@ const genericExport = async (startDate, endDate, orderDetailToExport, city) => {
   }
 };
 
-const allShopsExport = async (startDate, endDate, orderDetailToExport, city) => {
+const allShopsExport = async (startDate, endDate, orderDetailToExport, city,cityName, detail ) => {
   try {
     const response = await axios.post(
       `${API_URL}/exports/export-all-shops`,
@@ -54,9 +53,8 @@ const allShopsExport = async (startDate, endDate, orderDetailToExport, city) => 
       throw new Error('No se pudo descargar el archivo');
     }
 
-    //const url = window.URL.createObjectURL(new Blob([response.data]));
     const blob = new Blob([response.data], { type: 'application/octet-stream' });
-    const name = `${orderDetailToExport}_${new Date(startDate).toLocaleDateString("es-CO")}}_${new Date(endDate).toLocaleDateString("es-CO")}}_${city}`;
+    const name = `${orderDetailToExport}_${startDate}_${endDate}_${cityName}_${detail}`;
 
     saveAs(blob, `${name}.xlsx`);
 

@@ -59,7 +59,6 @@ const downloadOrderDetails = async (bigOrderId, date, city) => {
       throw new Error("No se pudo descargar el archivo");
     }
 
-    // Generar una URL de objeto blob para el archivo
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const blob = new Blob([response.data], { type: "application/octet-stream" });
 

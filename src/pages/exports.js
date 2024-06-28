@@ -3,7 +3,7 @@ import { Box, Button, Container, Stack, TextField, Typography, MenuItem } from '
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 
 import { allShopsExport, genericExport } from '../services/exportService';
-import { getCities } from '../services/cityService';
+import { getCities, getCity } from '../services/cityService';
 import Head from 'next/head';
 
 const Page = () => {
@@ -18,8 +18,8 @@ const Page = () => {
     boxShadow: 24,
     p: 4
   };
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [orderDetailToExport, setOrderDetailToExport] = useState('');
   const [city, setCity] = useState('');
   const [cities, setCities] = useState([]);
@@ -42,20 +42,24 @@ const Page = () => {
   const handleExport = async () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
-
+    const city = await getCity(cityId);
     if (divideByLocale == 'SI') {
       const response = await genericExport(
         formattedStartDate,
         formattedEndDate,
         orderDetailToExport,
-        cityId
+        cityId,
+        city.name,
+        'acumulado'
       );
     } else {
       const response = await allShopsExport(
         formattedStartDate,
         formattedEndDate,
         orderDetailToExport,
-        cityId
+        cityId,
+        city.name,
+        'divtienda'
       );
     }
   };

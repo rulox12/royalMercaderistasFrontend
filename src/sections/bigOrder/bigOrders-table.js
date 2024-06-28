@@ -16,13 +16,9 @@ import { downloadOrderDetails } from "../../services/bigOrderService";
 
 export const BigOrdersTable = (props) => {
   const { items = [] } = props;
-  
+
   const formatDate = (dateString) => {
-    let dateParts = dateString.split("/");
-
-    let dateObject = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]);
-
-    return dateObject;
+    return new Date(dateString);
   }
 
   items.sort((a, b) => formatDate(b.date).getTime() - formatDate(a.date).getTime());

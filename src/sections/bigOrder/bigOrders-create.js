@@ -20,7 +20,7 @@ export const BigOrdersCreate = () => {
     name: '',
     department: '',
     cityId: '',
-    date: ''
+    date: new Date().toISOString().split('T')[0]
   });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
@@ -59,12 +59,14 @@ export const BigOrdersCreate = () => {
     }
   };
 
-
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
       try {
-        const response = await createBigOrder({date: formatDateString(bigOrder.date), cityId: bigOrder.cityId });
+        const response = await createBigOrder({
+          date: formatDateString(bigOrder.date),
+          cityId: bigOrder.cityId
+        });
         handleClick('success', 'Pedido creado correctamente');
         window.location.reload();
       } catch (error) {
@@ -80,7 +82,7 @@ export const BigOrdersCreate = () => {
 
   useEffect(() => {
     getCitiesService();
-  },[]);
+  }, []);
 
   return (
     <form autoComplete="off" noValidate onSubmit={handleSubmit}>
@@ -90,13 +92,13 @@ export const BigOrdersCreate = () => {
         </Alert>
       </Snackbar>
       <Card>
-        <CardHeader subheader="" />
+        <CardHeader subheader=""/>
         <CardContent sx={{ pt: 0 }}>
           <Box sx={{ m: -1.5 }}>
             <Grid container spacing={3}>
               <Grid xs={12} md={6}>
                 <TextField
-                type='date'
+                  type="date"
                   fullWidth
                   label="Fecha"
                   name="date"
@@ -133,7 +135,7 @@ export const BigOrdersCreate = () => {
             </Grid>
           </Box>
         </CardContent>
-        <Divider />
+        <Divider/>
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           <Button variant="contained" onClick={handleSubmit}>
             Generar pedido
