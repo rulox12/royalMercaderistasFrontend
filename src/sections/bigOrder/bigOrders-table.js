@@ -37,6 +37,7 @@ export const BigOrdersTable = (props) => {
   };
 
   const options = {
+    timeZone: 'UTC',
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -62,7 +63,7 @@ export const BigOrdersTable = (props) => {
                   <TableRow hover key={bigOrder._id}>
                     <TableCell>
                       <Stack alignItems="center" direction="row" spacing={2}>
-                        <Typography variant="subtitle2">{new Date(bigOrder.date).toLocaleDateString("es-CO", options)}</Typography>
+                        <Typography variant="subtitle2">{new Date(bigOrder.date).toLocaleDateString('es-CO', options)}</Typography>
                       </Stack>
                     </TableCell>
                     <TableCell>{bigOrder.status}</TableCell>
