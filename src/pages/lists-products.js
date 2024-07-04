@@ -123,7 +123,14 @@ const ListProductsPage = () => {
         <title>Listas</title>
       </Head>
       <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
-        <Typography variant="h4" align="center">
+        <Typography variant="h4" align="center" sx={{
+          position: 'sticky',
+          top: 50,
+          backgroundColor: 'white',
+          zIndex: 1000,
+          width: '100%',
+          padding: '15px 0',
+        }}>
           {list.name}
         </Typography>
         <br></br>

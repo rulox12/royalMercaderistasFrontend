@@ -73,7 +73,7 @@ const Page = () => {
     <>
       <Head>
         <title>
-          Ciudades
+          Reportes
         </title>
       </Head>
       <Container maxWidth="sm">

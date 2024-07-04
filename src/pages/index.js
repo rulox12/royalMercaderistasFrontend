@@ -43,7 +43,7 @@ const Page = () => {
     <>
       <Head>
         <title>
-          Overview | Devias Kit
+          Royal fruit
         </title>
       </Head>
       <Box

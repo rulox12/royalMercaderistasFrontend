@@ -29,23 +29,6 @@ export const AccountPopover = (props) => {
       open={open}
       PaperProps={{ sx: { width: 200 } }}
     >
-      <Box
-        sx={{
-          py: 1.5,
-          px: 2
-        }}
-      >
-        <Typography variant="overline">
-          Account
-        </Typography>
-        <Typography
-          color="text.secondary"
-          variant="body2"
-        >
-          Anikas Visser
-        </Typography>
-      </Box>
-      <Divider />
       <MenuList
         disablePadding
         dense
@@ -57,7 +40,7 @@ export const AccountPopover = (props) => {
         }}
       >
         <MenuItem onClick={handleSignOut}>
-          Sign out
+          Cerrar sesión
         </MenuItem>
       </MenuList>
     </Popover>

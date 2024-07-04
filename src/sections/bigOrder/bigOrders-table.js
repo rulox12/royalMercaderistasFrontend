@@ -43,7 +43,10 @@ export const BigOrdersTable = (props) => {
   return (
     <Card>
       <Scrollbar>
-        <Box sx={{ minWidth: 800 }}>
+        <Box sx={{
+          flexGrow: 1,
+          py: 8
+        }}>
           <Table>
             <TableHead>
               <TableRow>
