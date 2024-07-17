@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
-  Container, Box, Typography, Stack, TextField, MenuItem, Button,
-  Table, TableHead, TableRow, TableCell, TableBody, Card,
+  Container, Box, Typography, Stack, TextField, MenuItem, Button
 } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 
-import { getCities, getCity } from '../services/cityService';
+import { getCities } from '../services/cityService';
 import Head from 'next/head';
 import { getShops } from '../services/shopService';
 import { getOrderByFilter } from '../services/orderService';
@@ -39,7 +38,6 @@ const Page = () => {
   }, []);
 
   const handleDetailOrder = async () => {
-    const formatD = formatDate(date);
     const response = await getOrderByFilter(date, city._id, shop._id);
     if (response.length > 0) {
       setOrderDetails(response[0].orderDetails);
@@ -48,36 +46,32 @@ const Page = () => {
     }
   };
 
-  const formatDate = (date) => {
-    const [year, month, day] = date.split('-');
-    return `${day}/${month}/${year}`;
-  };
   const tableStyles = {
     tableContainer: {
-      marginTop: '20px',
+      marginTop: '20px'
     },
     table: {
       width: '100%',
-      borderCollapse: 'collapse',
+      borderCollapse: 'collapse'
     },
     th: {
       backgroundColor: '#f4f4f4',
       fontWeight: 'bold',
       border: '1px solid #ddd',
       padding: '12px',
-      textAlign: 'left',
+      textAlign: 'left'
     },
     td: {
       border: '1px solid #ddd',
       padding: '12px',
-      textAlign: 'left',
+      textAlign: 'left'
     },
     evenRow: {
-      backgroundColor: '#f9f9f9',
+      backgroundColor: '#f9f9f9'
     },
     hoverRow: {
-      backgroundColor: '#f1f1f1',
-    },
+      backgroundColor: '#f1f1f1'
+    }
   };
   return (
     <>

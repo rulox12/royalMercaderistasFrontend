@@ -43,6 +43,15 @@ export const items = [
     )
   },
   {
+    title: 'Ordenes',
+    path: '/orders',
+    icon: (
+      <SvgIcon fontSize="small">
+        <BuildingLibraryIcon />
+      </SvgIcon>
+    )
+  },
+  {
     title: 'Configuración',
     icon: (
       <SvgIcon fontSize="small">

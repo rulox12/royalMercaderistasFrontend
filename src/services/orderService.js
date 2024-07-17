@@ -24,4 +24,16 @@ const getOrderByFilter = async (date, cityId, shopId) => {
   }
 };
 
-export { getOrdersByDate, getOrderByFilter };
+const getOrders = async () => {
+  try {
+    const url = `${API_URL}/orders`;
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    throw error;
+  }
+};
+
+
+export { getOrdersByDate, getOrderByFilter, getOrders };
