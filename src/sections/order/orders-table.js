@@ -122,6 +122,8 @@ export const OrdersTable = (props) => {
                       <TableCell>INVE</TableCell>
                       <TableCell>AVER</TableCell>
                       <TableCell>LOTE</TableCell>
+                      <TableCell>RECI</TableCell>
+                      <TableCell>PEDI</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -132,6 +134,8 @@ export const OrdersTable = (props) => {
                         <TableCell>{detail.INVE}</TableCell>
                         <TableCell>{detail.AVER}</TableCell>
                         <TableCell>{detail.LOTE}</TableCell>
+                        <TableCell>{detail.RECI}</TableCell>
+                        <TableCell>{detail.PEDI}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
