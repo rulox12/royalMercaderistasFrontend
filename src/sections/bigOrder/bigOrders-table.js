@@ -9,72 +9,76 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Typography,
-} from "@mui/material";
-import { Scrollbar } from "src/components/scrollbar";
-import { downloadOrderDetails } from "../../services/bigOrderService";
+  Typography
+} from '@mui/material';
+import { Scrollbar } from 'src/components/scrollbar';
+import { downloadOrderDetails } from '../../services/bigOrderService';
 
 export const BigOrdersTable = (props) => {
   const { items = [] } = props;
 
   const formatDate = (dateString) => {
     return new Date(dateString);
-  }
+  };
 
   items.sort((a, b) => formatDate(b.date).getTime() - formatDate(a.date).getTime());
 
   const handleExportClick = async (bigOrderId, date, cityId) => {
     const response = downloadOrderDetails(bigOrderId, date, cityId.name);
     if (response) {
-      window.alert("Exporte realizado.");
+      window.alert('Exporte realizado.');
     } else {
-      window.alert("Error al generar exporte");
+      window.alert('Error al generar exporte');
     }
   };
 
   const options = {
     timeZone: 'UTC',
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
 
   return (
     <Card>
       <Scrollbar>
         <Box sx={{
           flexGrow: 1,
-          py: 8
         }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Fecha</TableCell>
-                <TableCell>Estado</TableCell>
-                <TableCell>Ciudad</TableCell>
-                <TableCell>Acciones</TableCell>
+                <TableCell sx={{ padding: 2 }}>Fecha</TableCell>
+                <TableCell sx={{ padding: 0 }}>Estado</TableCell>
+                <TableCell sx={{ padding: 0 }}>Ciudad</TableCell>
+                <TableCell sx={{ padding: 0 }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((bigOrder) => {
                 return (
                   <TableRow hover key={bigOrder._id}>
-                    <TableCell>
+                    <TableCell sx={{ padding: 0 }}>
                       <Stack alignItems="center" direction="row" spacing={2}>
-                        <Typography variant="subtitle2">{new Date(bigOrder.date).toLocaleDateString('es-CO', options)}</Typography>
+                        <Typography variant="subtitle2">{new Date(bigOrder.date).toLocaleDateString(
+                          'es-CO',
+                          options)}</Typography>
                       </Stack>
                     </TableCell>
-                    <TableCell>{bigOrder.status}</TableCell>
-                    <TableCell>{bigOrder.cityId.name}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: 0 }}>{bigOrder.status}</TableCell>
+                    <TableCell sx={{ padding: 0 }}>{bigOrder.cityId.name}</TableCell>
+                    <TableCell sx={{ padding: 0 }}>
                       <Link
                         href={`/big-order-details?id=${bigOrder._id}&cityId=${bigOrder.cityId._id}`}
                         passHref
                       >
-                        <Button variant="outlined">Ver detalle</Button>
+                        <Button variant="outlined" sx={{ paddingY: 0 }}>Ver detalle</Button>
                       </Link>
-                      <Button variant="outlined" sx={{ m: 1 }} onClick={() => handleExportClick(bigOrder._id, bigOrder.date, bigOrder.cityId)}>
+                      <Button variant="outlined" sx={{ m: 1 }} onClick={() => handleExportClick(
+                        bigOrder._id,
+                        bigOrder.date,
+                        bigOrder.cityId)} sx={{ paddingY: 0 }}>
                         Exportar información
                       </Button>
                     </TableCell>
