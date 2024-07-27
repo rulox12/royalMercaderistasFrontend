@@ -20,10 +20,12 @@ import * as XLSX from 'xlsx';
 export const OrdersTable = (props) => {
   const { items = [] } = props;
   const [orderDetails, setOrderDetails] = useState([]);
+  const [order, setOrder] = useState('');
   const [openModal, setOpenModal] = useState(false);
 
   const handleViewClick = async (order) => {
     setOrderDetails(order.orderDetails);
+    setOrder(order);
     setOpenModal(true);
   };
 
@@ -44,7 +46,15 @@ export const OrdersTable = (props) => {
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Detalles de la Orden');
-    XLSX.writeFile(wb, 'OrderDetails.xlsx');
+
+    let orderDate = new Date(order.date);
+    let year = orderDate.getUTCFullYear();
+    let month = String(orderDate.getUTCMonth() + 1).padStart(2, '0'); // `getUTCMonth()` devuelve un valor basado en cero
+    let day = String(orderDate.getUTCDate()).padStart(2, '0');
+    let dateOnly = `${year}-${month}-${day}`;
+
+    const fileName = `OrderDetails-${order.shop.name}-${dateOnly}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   const options = {
@@ -58,8 +68,8 @@ export const OrdersTable = (props) => {
   return (
     <Card>
       <Scrollbar>
-        <Box sx={{ minWidth: 800 }}>
-          <Table>
+        <Box component={Paper} sx={{ maxHeight: 800 }}>
+          <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
                 <TableCell sx={{ padding: 2 }}>
@@ -98,7 +108,7 @@ export const OrdersTable = (props) => {
                     </TableCell>
                     <TableCell sx={{ padding: 0 }}>
                       <Button variant="outlined" color="success"
-                              onClick={() => handleViewClick(order)} sx={{  paddingY: 0   }}>
+                              onClick={() => handleViewClick(order)} sx={{ paddingY: 0 }}>
                         Ver Detalle
                       </Button>
                     </TableCell>
@@ -125,9 +135,16 @@ export const OrdersTable = (props) => {
                 p: 4
               }}
             >
-              <Typography variant="h5" gutterBottom>
-                Detalles de la Orden
-              </Typography>
+              {order ? (
+                <Typography variant="h6" gutterBottom>
+                  Detalles de la Orden
+                  - {order.shop.name} - {new Date(order.date).toLocaleDateString('es-CO', options)}
+                </Typography>
+              ) : (
+                <Typography variant="h6" gutterBottom>
+                  No se encontraron detalles de la orden
+                </Typography>
+              )}
               <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead>
