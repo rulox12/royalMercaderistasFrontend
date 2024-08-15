@@ -24,18 +24,27 @@ const Page = () => {
       setCities(response);
     };
 
-    const fetchShops = async () => {
-      let response = await getShops();
-      setShops(response);
-    };
-
-    fetchShops();
-    fetchCities();
-
-    return () => {
-
-    };
+    fetchCities().then(r => {});
   }, []);
+
+  useEffect(() => {
+    const fetchShops = async () => {
+      console.log(city);
+      if (city && city._id) {
+        if (city.name === 'Todos') {
+          let response = await getShops();
+          setShops(response);
+        } else {
+          let response = await getShops({ cityId: city._id });
+          setShops(response);
+        }
+      } else {
+        setShops([]);
+      }
+    };
+
+    fetchShops().then(r => {});
+  }, [city]);
 
   const handleDetailOrder = async () => {
     const response = await getOrderByFilter(date, city._id, shop._id);

@@ -7,17 +7,6 @@ import { getCities, getCity } from '../services/cityService';
 import Head from 'next/head';
 
 const Page = () => {
-  const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 600,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4
-  };
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [orderDetailToExport, setOrderDetailToExport] = useState('');

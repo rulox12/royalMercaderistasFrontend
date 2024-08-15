@@ -1,41 +1,30 @@
 import Head from 'next/head';
-import { Box, Container, Modal, Stack, SvgIcon, Typography } from '@mui/material';
+import { Box, Button, Container, Modal, Stack, SvgIcon, Typography } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { useState, useEffect } from 'react';
-import { CitiesCreate } from 'src/sections/city/cities-create';
 import { getOrders } from '../services/orderService';
 import { OrdersTable } from '../sections/order/orders-table';
 
 const Page = () => {
-  const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 600,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-  };
 
   const [orders, setOrders] = useState([]);
-  const [open, setOpen] = useState(false);
-  const handleClose = () => setOpen(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [totalPages, setTotalPages] = useState(0);
 
   const getOrdersService = async () => {
     try {
-      const response = await getOrders();
-      setOrders(response);
+      const response = await getOrders(page, limit );
+      setOrders(response.orders);
+      setTotalPages(response.totalPages);
     } catch (error) {
       console.error('Error fetching orders:', error);
     }
   };
 
   useEffect(() => {
-    console.log('useEffect ejecutado');
-    getOrdersService().then(r => {});
-  }, []);
+    getOrdersService(page, limit).then(r => {});
+  }, [page, limit]);
 
   return (
     <>
@@ -68,21 +57,23 @@ const Page = () => {
               count={orders.length}
               items={orders}
             />
-            <Modal
-              open={open}
-              onClose={handleClose}
-              aria-labelledby="modal-modal-title"
-              aria-describedby="modal-modal-description"
-            >
-              <Box sx={style}>
-                <Typography id="modal-modal-title" variant="h6" component="h2">
-                  Crear Ciudad
-                </Typography>
-                <div id="modal-modal-description" sx={{ mt: 2 }}>
-                  <CitiesCreate />
-                </div>
-              </Box>
-            </Modal>
+            <Stack direction="row" justifyContent="space-between" spacing={2}>
+              <Button
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Anterior
+              </Button>
+              <Typography variant="body2">
+                Página {page} de {totalPages}
+              </Typography>
+              <Button
+                disabled={page === totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Siguiente
+              </Button>
+            </Stack>
           </Stack>
         </Container>
       </Box>

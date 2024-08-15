@@ -14,18 +14,21 @@ import {
 } from '@mui/material';
 import { createBigOrder } from 'src/services/bigOrderService';
 import { getCities } from 'src/services/cityService';
+import { getPlatforms } from '../../services/platformService';
 
 export const BigOrdersCreate = () => {
   const [bigOrder, setBigOrder] = useState({
     name: '',
     department: '',
     cityId: '',
+    platformId: '',
     date: new Date().toISOString().split('T')[0]
   });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
   const [cities, setCities] = useState([]);
+  const [platforms, setPlatforms] = useState([]);
 
   const handleClick = (type, message) => {
     setAlertType(type);
@@ -59,13 +62,23 @@ export const BigOrdersCreate = () => {
     }
   };
 
+  const getPlatformsService = async () => {
+    try {
+      const response = await getPlatforms();
+      setPlatforms(response);
+    } catch (error) {
+      console.error('Error fetching platforms:', error);
+    }
+  };
+
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
       try {
         const response = await createBigOrder({
           date: formatDateString(bigOrder.date),
-          cityId: bigOrder.cityId
+          cityId: bigOrder.cityId,
+          platformId: bigOrder.platformId
         });
         handleClick('success', 'Pedido creado correctamente');
         window.location.reload();
@@ -82,6 +95,7 @@ export const BigOrdersCreate = () => {
 
   useEffect(() => {
     getCitiesService();
+    getPlatformsService();
   }, []);
 
   return (
@@ -128,6 +142,31 @@ export const BigOrdersCreate = () => {
                       value={city._id}
                     >
                       {city.name}
+                    </option>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid
+                xs={12}
+                md={6}
+              >
+                <TextField
+                  fullWidth
+                  label="Plataforma"
+                  name="platformId"
+                  onChange={handleChange}
+                  required
+                  select
+                  SelectProps={{ native: true }}
+                  value={bigOrder.platformId}
+                >
+                  <option value="">Seleccionar</option>
+                  {platforms.map((platform) => (
+                    <option
+                      key={platform._id}
+                      value={platform._id}
+                    >
+                      {platform.name}
                     </option>
                   ))}
                 </TextField>

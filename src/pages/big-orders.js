@@ -75,7 +75,7 @@ const Page = () => {
                   )}
                   variant="contained"
                 >
-                  Agregar nuevo pedido
+                  Agregar nuevo pedidos
                 </Button>
               </div>
             </Stack>
