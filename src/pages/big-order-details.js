@@ -43,7 +43,8 @@ const BigOrderDetailsPage = () => {
     const getBigOrdersService = async () => {
       try {
         const response = await getBigOrder(id);
-        return response;
+        setBigOrder(response);
+        return;
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -74,7 +75,6 @@ const BigOrderDetailsPage = () => {
     const getOrdersService = async (date) => {
       try {
         const response = await getOrdersByDate(date, cityId);
-        console.log('hola', response);
         setOrders(response);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -91,17 +91,23 @@ const BigOrderDetailsPage = () => {
     };
 
     useEffect(() => {
-      getProductsService();
-      getShopsService();
-      getBigOrdersService().then((response) => {
-        if (response && response.date) {
-          getOrdersService(formatDate(response.date));
-          getCityService(response.cityId).then((response) => {
+      if (bigOrder && bigOrder.date && bigOrder.cityId) {
+        getOrdersService(formatDate(bigOrder.date)).then(r => {
+          getCityService(bigOrder.cityId).then((response) => {
             setIsLoading(false);
           });
-          setBigOrder(response);
-        }
+        });
+      }
+    }, [bigOrder]);
+
+    useEffect(() => {
+      getBigOrdersService().then(r => {
+        getProductsService().then(r => {
+          getShopsService().then(r => {
+          });
+        });
       });
+
       const storedUser = localStorage.getItem('user');
 
       if (storedUser) {
@@ -111,6 +117,8 @@ const BigOrderDetailsPage = () => {
     }, []);
 
     const formatDate = (date) => {
+      console.log('esta es el pedido', bigOrder);
+      console.log('esta es el fecha', date);
       const newDate = new Date(date);
       const formatDate = newDate.toISOString().split('T')[0];
 
