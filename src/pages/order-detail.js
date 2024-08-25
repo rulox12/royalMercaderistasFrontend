@@ -48,8 +48,8 @@ const Page = () => {
 
   const handleDetailOrder = async () => {
     const response = await getOrderByFilter(date, city._id, shop._id);
-    if (response.length > 0) {
-      setOrderDetails(response[0].orderDetails);
+    if (response.orders.length > 0) {
+      setOrderDetails(response.orders[0].orderDetails);
     } else {
       setOrderDetails([]);
     }
