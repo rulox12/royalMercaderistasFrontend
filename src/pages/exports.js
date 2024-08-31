@@ -32,7 +32,7 @@ const Page = () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
     const city = await getCity(cityId);
-    if (divideByLocale == 'SI') {
+    if (divideByLocale === 'SI') {
       const response = await genericExport(
         formattedStartDate,
         formattedEndDate,

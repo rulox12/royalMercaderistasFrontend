@@ -52,6 +52,7 @@ export const BigOrdersTable = (props) => {
                 <TableCell sx={{ padding: 2 }}>Fecha</TableCell>
                 <TableCell sx={{ padding: 0 }}>Estado</TableCell>
                 <TableCell sx={{ padding: 0 }}>Ciudad</TableCell>
+                <TableCell sx={{ padding: 0 }}>Plataforma</TableCell>
                 <TableCell sx={{ padding: 0 }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -68,6 +69,7 @@ export const BigOrdersTable = (props) => {
                     </TableCell>
                     <TableCell sx={{ padding: 0 }}>{bigOrder.status}</TableCell>
                     <TableCell sx={{ padding: 0 }}>{bigOrder.cityId.name}</TableCell>
+                    <TableCell sx={{ padding: 0 }}>{bigOrder.platformId?.name}</TableCell>
                     <TableCell sx={{ padding: 0 }}>
                       <Link
                         href={`/big-order-details?id=${bigOrder._id}&cityId=${bigOrder.cityId._id}`}
