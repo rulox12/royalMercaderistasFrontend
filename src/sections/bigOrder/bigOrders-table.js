@@ -23,8 +23,8 @@ export const BigOrdersTable = (props) => {
 
   items.sort((a, b) => formatDate(b.date).getTime() - formatDate(a.date).getTime());
 
-  const handleExportClick = async (bigOrderId, date, cityId) => {
-    const response = downloadOrderDetails(bigOrderId, date, cityId.name);
+  const handleExportClick = async (bigOrderId, date, cityId, platformId) => {
+    const response = downloadOrderDetails(bigOrderId, date, cityId.name, platformId._id);
     if (response) {
       window.alert('Exporte realizado.');
     } else {
@@ -80,7 +80,9 @@ export const BigOrdersTable = (props) => {
                       <Button variant="outlined" sx={{ m: 1 }} onClick={() => handleExportClick(
                         bigOrder._id,
                         bigOrder.date,
-                        bigOrder.cityId)} sx={{ paddingY: 0 }}>
+                        bigOrder.cityId,
+                        bigOrder.platformId
+                      )} sx={{ paddingY: 0 }}>
                         Exportar información
                       </Button>
                     </TableCell>

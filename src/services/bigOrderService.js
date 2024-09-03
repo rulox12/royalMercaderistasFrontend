@@ -43,12 +43,13 @@ const updateBigOrder = async (params) => {
   }
 };
 
-const downloadOrderDetails = async (bigOrderId, date, city) => {
+const downloadOrderDetails = async (bigOrderId, date, city, platformId) => {
   try {
     const response = await axios.post(
       `${API_URL}/big-orders/export`,
       {
         bigOrderId,
+        platformId
       },
       {
         responseType: "blob",
