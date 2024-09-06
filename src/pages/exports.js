@@ -31,14 +31,18 @@ const Page = () => {
   const handleExport = async () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
-    const city = await getCity(cityId);
+    let city;
+    if (cityId !== '123') {
+      city = await getCity(cityId);
+    }
+
     if (divideByLocale === 'SI') {
       const response = await genericExport(
         formattedStartDate,
         formattedEndDate,
         orderDetailToExport,
         cityId,
-        city.name,
+        city?.name,
         'acumulado'
       );
     } else {
@@ -47,7 +51,7 @@ const Page = () => {
         formattedEndDate,
         orderDetailToExport,
         cityId,
-        city.name,
+        city?.name,
         'divtienda'
       );
     }
