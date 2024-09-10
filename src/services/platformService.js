@@ -12,6 +12,16 @@ const getPlatforms = async () => {
     }
 };
 
+const getPlatform = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}/platforms/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error);
+    throw error;
+  }
+};
+
 
 const createPlatform = async (platform) => {
     try {
@@ -23,4 +33,5 @@ const createPlatform = async (platform) => {
     }
 };
 
-export { getPlatforms, createPlatform };
+
+export { getPlatforms, createPlatform,getPlatform };

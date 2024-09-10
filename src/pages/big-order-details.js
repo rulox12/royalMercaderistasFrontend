@@ -27,6 +27,7 @@ import { updateBigOrder } from '../services/bigOrderService';
 import { getCity } from '../services/cityService';
 import styles from './styles.module.css';
 import * as XLSX from 'xlsx';
+import { getPlatform } from '../services/platformService';
 
 const BigOrderDetailsPage = () => {
     const router = useRouter();
@@ -34,16 +35,19 @@ const BigOrderDetailsPage = () => {
     const [products, setProducts] = useState([]);
     const [user, setUser] = useState({});
     const [city, setCity] = useState({});
+    const [platform, setPlatform] = useState({});
     const [shops, setShops] = useState([]);
     const [orders, setOrders] = useState([]);
     const [bigOrder, setBigOrder] = useState([]);
     const [editedQuantities, setEditedQuantities] = useState({});
     const [isLoading, setIsLoading] = useState(true);
 
-    const getBigOrdersService = async () => {
+    const getBigOrderService = async () => {
       try {
         const response = await getBigOrder(id);
-        return response;
+        await setBigOrder(response);
+        console.log(response);
+        return bigOrder;
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -73,35 +77,49 @@ const BigOrderDetailsPage = () => {
 
     const getOrdersService = async (date) => {
       try {
-        const response = await getOrdersByDate(date, cityId);
-        console.log('hola', response);
+        const response = await getOrdersByDate(date, cityId, bigOrder.platformId);
         setOrders(response);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
     };
 
-    const getShopsService = async () => {
+    const getShopsService = async (platformId) => {
       try {
-        const response = await getShops({ cityId });
+        const response = await getShops({ cityId, platformId});
         setShops(response);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
     };
 
+  const getPlatformService = async (platformId) => {
+    try {
+      const response = await getPlatform(bigOrder.platformId);
+      setPlatform(response);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
     useEffect(() => {
-      getProductsService();
-      getShopsService();
-      getBigOrdersService().then((response) => {
-        if (response && response.date) {
-          getOrdersService(formatDate(response.date));
-          getCityService(response.cityId).then((response) => {
+      if (bigOrder && bigOrder.date && bigOrder.cityId) {
+        getOrdersService(formatDate(bigOrder.date)).then(r => {
+          getCityService(bigOrder.cityId).then((response) => {
             setIsLoading(false);
           });
-          setBigOrder(response);
-        }
-      });
+        });
+        getProductsService().then(r => {
+          getShopsService(bigOrder.platformId).then(r => {
+          });
+        });
+        getPlatformService().then(r => {});
+      }
+    }, [bigOrder]);
+
+    useEffect(() => {
+      getBigOrderService().then((r) => {});
+
       const storedUser = localStorage.getItem('user');
 
       if (storedUser) {
@@ -309,7 +327,7 @@ const BigOrderDetailsPage = () => {
               <title>Pedidos</title>
             </Head>
             <Typography variant="h4" align="center">
-              {city.name + ' - ' + new Date(bigOrder.date).toLocaleDateString('es-CO', options)}
+              {city.name + ` - ${platform?.name} - ` + new Date(bigOrder.date).toLocaleDateString('es-CO', options)}
             </Typography>
             <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
               <Container maxWidth="xl">

@@ -2,18 +2,19 @@ import { useState, useEffect } from 'react';
 import { Box, Button, Container, Stack, TextField, Typography, MenuItem } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 
-import { allShopsExport, genericExport } from '../services/exportService';
+import { largeExport } from '../services/exportService';
 import { getCities, getCity } from '../services/cityService';
 import Head from 'next/head';
+import { getPlatforms } from '../services/platformService';
 
 const Page = () => {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
-  const [orderDetailToExport, setOrderDetailToExport] = useState('');
-  const [city, setCity] = useState('');
   const [cities, setCities] = useState([]);
+  const [platforms, setPlatforms] = useState([]);
   const [cityId, setCityId] = useState('');
-  const [divideByLocale, setDivideByLocale] = useState('');
+  const [platformId, setPlatformId] = useState('');
+
   useEffect(() => {
     const fetchCities = async () => {
       let response = await getCities();
@@ -21,7 +22,13 @@ const Page = () => {
       setCities(response);
     };
 
+    const fetchPlatforms = async () => {
+      let response = await getPlatforms();
+      setPlatforms(response);
+    };
+
     fetchCities();
+    fetchPlatforms();
 
     return () => {
 
@@ -31,30 +38,12 @@ const Page = () => {
   const handleExport = async () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
-    let city;
-    if (cityId !== '123') {
-      city = await getCity(cityId);
-    }
-
-    if (divideByLocale === 'SI') {
-      const response = await genericExport(
-        formattedStartDate,
-        formattedEndDate,
-        orderDetailToExport,
-        cityId,
-        city?.name,
-        'acumulado'
-      );
-    } else {
-      const response = await allShopsExport(
-        formattedStartDate,
-        formattedEndDate,
-        orderDetailToExport,
-        cityId,
-        city?.name,
-        'divtienda'
-      );
-    }
+    const response = await largeExport(
+      formattedStartDate,
+      formattedEndDate,
+      cityId,
+      platformId
+    );
   };
 
   const formatDate = (date) => {
@@ -84,6 +73,7 @@ const Page = () => {
                 InputLabelProps={{
                   shrink: true
                 }}
+                sx={{ flex: 1 }}
               />
               <TextField
                 label="Fecha de fin"
@@ -93,14 +83,15 @@ const Page = () => {
                 InputLabelProps={{
                   shrink: true
                 }}
+                sx={{ flex: 1 }}
               />
+            </Box>
+            <Box display="flex" gap={2}>
               <TextField
                 select
                 label="Ciudad"
-                value={city}
                 onChange={(e) => {
                   const selectedCity = e.target.value;
-                  setCity(selectedCity);
                   const selectedCityId = cities.find((c) => c.name === selectedCity)?._id;
                   setCityId(selectedCityId);
                 }}
@@ -112,32 +103,18 @@ const Page = () => {
                   </MenuItem>
                 ))}
               </TextField>
-            </Box>
-            <Box display="flex" gap={2}>
               <TextField
                 select
-                label="Detalle de la orden a exportar"
-                value={orderDetailToExport}
-                onChange={(e) => setOrderDetailToExport(e.target.value)}
+                label="Plataforma"
+                onChange={(e) => {
+                  const selectedPlatformId = e.target.value;
+                  setPlatformId(selectedPlatformId);
+                }}
                 sx={{ flex: 1 }}
               >
-                {['INVE', 'AVER', 'LOTE', 'RECI', 'PEDI'].map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                label="¿Quieres acumulado o dividido por tienda?"
-                value={divideByLocale}
-                onChange={(e) => setDivideByLocale(e.target.value)}
-                sx={{ flex: 1 }}
-              >
-                {['SI', 'NO'].map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option === 'SI' ? 'acumulado' : 'dividido por tienda'}
+                {platforms.map((platform) => (
+                  <MenuItem key={platform._id} value={platform._id}>
+                    {platform.name}
                   </MenuItem>
                 ))}
               </TextField>

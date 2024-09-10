@@ -4,7 +4,6 @@ import { Box, Button, Container, Modal, Stack, SvgIcon, Typography } from '@mui/
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { useState, useEffect } from 'react';
 import { getBigOrders } from 'src/services/bigOrderService';
-import { BigOrdersSearch } from 'src/sections/bigOrder/bigOrders-search';
 import { BigOrdersTable } from 'src/sections/bigOrder/bigOrders-table';
 import { BigOrdersCreate } from 'src/sections/bigOrder/bigOrders-create';
 
@@ -75,7 +74,7 @@ const Page = () => {
                   )}
                   variant="contained"
                 >
-                  Agregar nuevo pedido
+                  Agregar nuevo pedidos
                 </Button>
               </div>
             </Stack>

@@ -23,8 +23,8 @@ export const BigOrdersTable = (props) => {
 
   items.sort((a, b) => formatDate(b.date).getTime() - formatDate(a.date).getTime());
 
-  const handleExportClick = async (bigOrderId, date, cityId) => {
-    const response = downloadOrderDetails(bigOrderId, date, cityId.name);
+  const handleExportClick = async (bigOrderId, date, cityId, platformId) => {
+    const response = downloadOrderDetails(bigOrderId, date, cityId.name, platformId._id);
     if (response) {
       window.alert('Exporte realizado.');
     } else {
@@ -52,6 +52,7 @@ export const BigOrdersTable = (props) => {
                 <TableCell sx={{ padding: 2 }}>Fecha</TableCell>
                 <TableCell sx={{ padding: 0 }}>Estado</TableCell>
                 <TableCell sx={{ padding: 0 }}>Ciudad</TableCell>
+                <TableCell sx={{ padding: 0 }}>Plataforma</TableCell>
                 <TableCell sx={{ padding: 0 }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -68,6 +69,7 @@ export const BigOrdersTable = (props) => {
                     </TableCell>
                     <TableCell sx={{ padding: 0 }}>{bigOrder.status}</TableCell>
                     <TableCell sx={{ padding: 0 }}>{bigOrder.cityId.name}</TableCell>
+                    <TableCell sx={{ padding: 0 }}>{bigOrder.platformId?.name}</TableCell>
                     <TableCell sx={{ padding: 0 }}>
                       <Link
                         href={`/big-order-details?id=${bigOrder._id}&cityId=${bigOrder.cityId._id}`}
@@ -78,7 +80,9 @@ export const BigOrdersTable = (props) => {
                       <Button variant="outlined" sx={{ m: 1 }} onClick={() => handleExportClick(
                         bigOrder._id,
                         bigOrder.date,
-                        bigOrder.cityId)} sx={{ paddingY: 0 }}>
+                        bigOrder.cityId,
+                        bigOrder.platformId
+                      )} sx={{ paddingY: 0 }}>
                         Exportar información
                       </Button>
                     </TableCell>
