@@ -67,8 +67,8 @@ export const OrdersTable = (props) => {
 
   return (
     <Card>
-      <Scrollbar>
-        <Box component={Paper} sx={{ maxHeight: 800 }}>
+
+        <Box component={Paper} >
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
@@ -184,7 +184,7 @@ export const OrdersTable = (props) => {
             </Box>
           </Modal>
         </Box>
-      </Scrollbar>
+
     </Card>
   );
 };
