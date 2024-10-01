@@ -9,7 +9,7 @@ const Page = () => {
 
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(30);
   const [totalPages, setTotalPages] = useState(0);
 
   const getOrdersService = async () => {
