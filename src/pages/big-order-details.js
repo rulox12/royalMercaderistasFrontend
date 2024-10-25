@@ -278,7 +278,7 @@ const BigOrderDetailsPage = () => {
       let month = String(orderDate.getUTCMonth() + 1).padStart(2, '0'); // `getUTCMonth()` devuelve un valor basado en cero
       let day = String(orderDate.getUTCDate()).padStart(2, '0');
       let dateOnly = `${year}-${month}-${day}`;
-      const fileName = 'BigOrder' + '-' + city.name + '-' + dateOnly;
+      const fileName = 'BigOrder'+ '-' +  platform.name + '-' + city.name + '-' + dateOnly;
       XLSX.writeFile(wb, fileName + '.xlsx');
     };
 
