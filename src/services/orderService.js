@@ -24,9 +24,9 @@ const getOrderByFilter = async (date, cityId, shopId) => {
   }
 };
 
-const getOrders = async (page, limit) => {
+const getOrders = async (page, limit, selectedShopId = '') => {
   try {
-    const url = `${API_URL}/orders?page=${page}&limit=${limit}`;
+    const url = `${API_URL}/orders?page=${page}&limit=${limit}&shopId=${selectedShopId}`;
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
