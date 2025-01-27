@@ -3,7 +3,7 @@ import { saveAs } from 'file-saver';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const genericExport = async (startDate, endDate, orderDetailToExport, city, cityName,detail) => {
+const genericExport = async (startDate, endDate, orderDetailToExport, city, cityName, detail) => {
   try {
     const response = await axios.post(
       `${API_URL}/exports/export-generic`,
@@ -34,7 +34,7 @@ const genericExport = async (startDate, endDate, orderDetailToExport, city, city
   }
 };
 
-const allShopsExport = async (startDate, endDate, orderDetailToExport, city,cityName, detail ) => {
+const allShopsExport = async (startDate, endDate, orderDetailToExport, city, cityName, detail) => {
   try {
     const response = await axios.post(
       `${API_URL}/exports/export-all-shops`,
@@ -65,14 +65,11 @@ const allShopsExport = async (startDate, endDate, orderDetailToExport, city,city
   }
 };
 
-const largeExport = async (startDate, endDate, cityId, platformId ) => {
+const largeExport = async (request, fileName) => {
   try {
-    console.log(platformId);
     const response = await axios.post(
       `${API_URL}/exports/large-dataset`,
-      {
-        startDate, endDate, cityId, platformId
-      },
+      request,
       {
         responseType: 'blob'
       }
@@ -83,9 +80,8 @@ const largeExport = async (startDate, endDate, cityId, platformId ) => {
     }
 
     const blob = new Blob([response.data], { type: 'application/octet-stream' });
-    const name = `${startDate}_${endDate}`;
 
-    saveAs(blob, `${name}.xlsx`);
+    saveAs(blob, `${fileName}.xlsx`);
 
     return true;
   } catch (error) {
