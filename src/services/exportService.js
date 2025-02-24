@@ -23,7 +23,7 @@ const genericExport = async (startDate, endDate, orderDetailToExport, city, city
     }
 
     const blob = new Blob([response.data], { type: 'application/octet-stream' });
-    const name = `${orderDetailToExport}_${startDate}_${endDate}_${cityName}_${detail}`;
+    const name = `${orderDetailToExport}-${startDate}-${endDate}-${cityName}-${detail}`;
 
     saveAs(blob, `${name}.xlsx`);
 
@@ -54,7 +54,7 @@ const allShopsExport = async (startDate, endDate, orderDetailToExport, city, cit
     }
 
     const blob = new Blob([response.data], { type: 'application/octet-stream' });
-    const name = `${orderDetailToExport}_${startDate}_${endDate}_${cityName}_${detail}`;
+    const name = `${orderDetailToExport}-${startDate}-${endDate}-${cityName}_${detail}`;
 
     saveAs(blob, `${name}.xlsx`);
 
