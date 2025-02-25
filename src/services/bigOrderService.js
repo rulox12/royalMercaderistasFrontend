@@ -3,9 +3,9 @@ import { saveAs } from "file-saver";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const getBigOrders = async () => {
+const getBigOrders = async (page, limit) => {
   try {
-    const response = await axios.get(`${API_URL}/big-orders`);
+    const response = await axios.get(`${API_URL}/big-orders?page=${page}&limit=${limit}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching cities:", error);

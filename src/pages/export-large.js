@@ -5,7 +5,7 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { largeExport } from '../services/exportService';
 import { getCities, getCity } from '../services/cityService';
 import Head from 'next/head';
-import { getPlatforms } from '../services/platformService';
+import { getPlatform, getPlatforms } from '../services/platformService';
 
 const Page = () => {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
@@ -38,12 +38,25 @@ const Page = () => {
   const handleExport = async () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
-    const response = await largeExport(
-      formattedStartDate,
-      formattedEndDate,
-      cityId,
-      platformId
-    );
+    const platform = await getPlatform(platformId);
+    let fileName = '';
+    let request = {
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      platformId: platform._id
+    };
+    if (cityId !== '123') {
+      const city = await getCity(cityId);
+      fileName += city.name;
+      request['cityId'] = city._id;
+    } else {
+      request['cityId'] = cityId;
+      fileName += 'all';
+    }
+    fileName = `${fileName}-${formattedStartDate}-${formattedEndDate}-${platform.name}`;
+
+
+    const response = await largeExport(request, fileName);
   };
 
   const formatDate = (date) => {

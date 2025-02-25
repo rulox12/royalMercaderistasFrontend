@@ -52,10 +52,10 @@ export const ShopsTable = (props) => {
                   Dirección
                 </TableCell>
                 <TableCell>
-                  Gerente
+                  Ciudad
                 </TableCell>
                 <TableCell>
-                  Teléfono
+                  Mercaderista
                 </TableCell>
                 <TableCell>
                   Acciones
@@ -87,10 +87,10 @@ export const ShopsTable = (props) => {
                       {shop.address}
                     </TableCell>
                     <TableCell>
-                      {shop.manager}
+                      {shop.cityId.name}
                     </TableCell>
                     <TableCell>
-                      {shop.phone}
+                      {shop.userId ? shop.userId.name + ' ' +  shop.userId.surname  : ''}
                     </TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={2}>

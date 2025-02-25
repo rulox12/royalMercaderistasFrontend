@@ -81,13 +81,13 @@ const Page = () => {
             <OrdersTable count={orders.length} items={orders} />
             <Stack direction="row" justifyContent="space-between" spacing={2}>
               <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-                Anterior
+                Siguiente
               </Button>
               <Typography variant="body2">
                 Página {page} de {totalPages}
               </Typography>
               <Button disabled={page === totalPages} onClick={() => setPage(page + 1)}>
-                Siguiente
+                Anterior
               </Button>
             </Stack>
           </Stack>

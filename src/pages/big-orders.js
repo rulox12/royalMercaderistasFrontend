@@ -22,21 +22,25 @@ const Page = () => {
 
   const [bigOrders, setBigOrders] = useState([]);
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(30);
+  const [totalPages, setTotalPages] = useState(0);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const getBigOrdersService = async () => { 
     try {
-      const response = await getBigOrders();
-      setBigOrders(response); 
+      const response = await getBigOrders(page, limit);
+      setBigOrders(response.bigOrders);
+      setTotalPages(response.totalPages);
     } catch (error) {
       console.error('Error fetching cities:', error);
     }
   };
 
   useEffect(() => {
-    getBigOrdersService();
-  }, []);
+    getBigOrdersService(page, limit).then(r => {});
+  }, [page, limit]);
 
   return (
     <>
@@ -74,7 +78,7 @@ const Page = () => {
                   )}
                   variant="contained"
                 >
-                  Agregar nuevo pedidos
+                  Agregar nuevo pedido
                 </Button>
               </div>
             </Stack>
@@ -82,6 +86,17 @@ const Page = () => {
               count={bigOrders.length} 
               items={bigOrders}
               />
+            <Stack direction="row" justifyContent="space-between" spacing={2}>
+              <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                Siguiente
+              </Button>
+              <Typography variant="body2">
+                Página {page} de {totalPages}
+              </Typography>
+              <Button disabled={page === totalPages} onClick={() => setPage(page + 1)}>
+              Anterior
+              </Button>
+            </Stack>
             <Modal
               open={open}
               onClose={handleClose}

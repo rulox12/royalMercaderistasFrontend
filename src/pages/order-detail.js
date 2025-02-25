@@ -63,6 +63,15 @@ const Page = () => {
     setOpenModal(false);
   };
 
+
+  const options = {
+    timeZone: 'UTC',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+
   const handleExportToExcel = () => {
     // Implementa aquí la lógica para exportar a Excel
   };
@@ -153,7 +162,7 @@ const Page = () => {
         >
           {order ? (
             <Typography variant="h6" gutterBottom>
-              Detalles de la Orden - {order.shop.name} - {new Date(order.date).toLocaleDateString('es-CO')}
+              Detalles de la Orden - {order.shop.name} - {new Date(order.date).toLocaleDateString('es-CO', options)}
             </Typography>
           ) : (
             <Typography variant="h6" gutterBottom>

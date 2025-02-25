@@ -249,7 +249,7 @@ export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
                   required
                   select
                   SelectProps={{ native: true }}
-                  value={shop.cityId}
+                  value={shop.cityId._id}
                 >
                   <option value="">Seleccionar</option>
                   {cities.map((city) => (
@@ -275,7 +275,7 @@ export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
                   required
                   select
                   SelectProps={{ native: true }}
-                  value={shop.listId}
+                  value={shop.listId._id}
                 >
                   <option value="">Seleccionar</option>
                   {lists.map((list) => (
@@ -300,7 +300,7 @@ export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
                   required
                   select
                   SelectProps={{ native: true }}
-                  value={shop.userId}
+                  value={shop.userId._id}
                 >
                   <option value="">Seleccionar</option>
                   {users.map((user) => (
@@ -314,7 +314,6 @@ export const ShopsCreate = ({ shop: initialShop, isUpdate }) => {
                 </TextField>
               </Grid>
             </Grid>
-
           </Box>
         </CardContent>
         <Divider />
