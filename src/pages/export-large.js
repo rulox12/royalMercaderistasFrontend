@@ -39,12 +39,12 @@ const Page = () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
     const platform = await getPlatform(platformId);
+    let fileName = '';
     let request = {
       startDate: formattedStartDate,
       endDate: formattedEndDate,
       platformId: platform._id
     };
-    let fileName = `${formattedStartDate}_${formattedEndDate}_${platform.name}_`;
     if (cityId !== '123') {
       const city = await getCity(cityId);
       fileName += city.name;
@@ -53,6 +53,8 @@ const Page = () => {
       request['cityId'] = cityId;
       fileName += 'all';
     }
+    fileName = `${fileName}-${formattedStartDate}-${formattedEndDate}-${platform.name}`;
+
 
     const response = await largeExport(request, fileName);
   };

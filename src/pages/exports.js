@@ -31,7 +31,7 @@ const Page = () => {
   const handleExport = async () => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
-    let city;
+    let city = null;
     if (cityId !== '123') {
       city = await getCity(cityId);
     }
@@ -42,7 +42,7 @@ const Page = () => {
         formattedEndDate,
         orderDetailToExport,
         cityId,
-        city?.name,
+        city ? city?.name : 'todos',
         'acumulado'
       );
     } else {
@@ -51,7 +51,7 @@ const Page = () => {
         formattedEndDate,
         orderDetailToExport,
         cityId,
-        city?.name,
+        city ? city?.name : 'todos',
         'divtienda'
       );
     }
