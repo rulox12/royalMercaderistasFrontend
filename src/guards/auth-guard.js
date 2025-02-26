@@ -16,18 +16,17 @@ export const AuthGuard = (props) => {
 
   useEffect(
     () => {
-      if (!router.isReady) {
-        return;
-      }
+      if (!router.isReady) return;
 
-      // Prevent from calling twice in development mode with React.StrictMode enabled
-      if (ignore.current) {
-        return;
-      }
-
+      if (ignore.current) return;
       ignore.current = true;
 
-      if (!isAuthenticated) {
+      // Si `isAuthenticated` aún no ha sido inicializado, esperamos antes de redirigir
+      if (isAuthenticated === undefined) return;
+
+      const user = localStorage.getItem('user');
+      
+      if (!isAuthenticated && !user) {
         router
           .replace({
             pathname: '/auth/login',
@@ -38,7 +37,7 @@ export const AuthGuard = (props) => {
         setChecked(true);
       }
     },
-    [router.isReady]
+    [router.isReady, isAuthenticated]
   );
 
   if (!checked) {
