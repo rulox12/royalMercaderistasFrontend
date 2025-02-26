@@ -63,17 +63,12 @@ const Page = () => {
     setOpenModal(false);
   };
 
-
   const options = {
     timeZone: 'UTC',
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
-  };
-
-  const handleExportToExcel = () => {
-    // Implementa aquí la lógica para exportar a Excel
   };
 
   return (

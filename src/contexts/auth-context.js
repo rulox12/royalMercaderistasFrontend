@@ -76,7 +76,7 @@ export const AuthProvider = (props) => {
     let isAuthenticated = false;
 
     try {
-      isAuthenticated = window.sessionStorage.getItem('authenticated') === 'true';
+      isAuthenticated = window.localStorage.getItem('authenticated') === 'true';
     } catch (err) {
       console.error(err);
     }
@@ -110,7 +110,7 @@ export const AuthProvider = (props) => {
 
   const skip = () => {
     try {
-      window.sessionStorage.setItem('authenticated', 'true');
+      window.localStorage.setItem('authenticated', 'true');
     } catch (err) {
       console.error(err);
     }
@@ -159,6 +159,12 @@ export const AuthProvider = (props) => {
   };
 
   const signOut = () => {
+    try {
+      window.localStorage.removeItem('user'); // Asegurar que no quede persistencia
+    } catch (err) {
+      console.error('Error limpiando almacenamiento:', err);
+    }
+
     dispatch({
       type: HANDLERS.SIGN_OUT
     });
