@@ -3,12 +3,17 @@ import { saveAs } from "file-saver";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const getBigOrders = async (page, limit) => {
+const getBigOrders = async (page, limit,selectedCityId, selectedPlatformId) => {
   try {
-    const response = await axios.get(`${API_URL}/big-orders?page=${page}&limit=${limit}`);
+    const params = new URLSearchParams({ page, limit });
+    if (selectedCityId) params.append('cityId', selectedCityId);
+    if (selectedPlatformId) params.append('platformId', selectedPlatformId);
+
+    const response = await axios.get(`${API_URL}/big-orders?${params.toString()}`);
+
     return response.data;
   } catch (error) {
-    console.error("Error fetching cities:", error);
+    console.error("Error fetching big order:", error);
     throw error;
   }
 };
@@ -18,7 +23,7 @@ const getBigOrder = async (id) => {
     const response = await axios.get(`${API_URL}/big-orders/${id}`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching cities:", error);
+    console.error("Error fetching big order:", error);
     throw error;
   }
 };
@@ -28,7 +33,7 @@ const createBigOrder = async (params) => {
     const response = await axios.post(`${API_URL}/big-orders`, params);
     return response.data;
   } catch (error) {
-    console.error("Error creating cities:", error);
+    console.error("Error creating big order:", error);
     throw error;
   }
 };
@@ -38,7 +43,7 @@ const updateBigOrder = async (params) => {
     const response = await axios.put(`${API_URL}/big-orders`, params);
     return { status: 201, message: response.data.message };
   } catch (error) {
-    console.error("Error creating cities:", error);
+    console.error("Error creating big order:", error);
     throw error;
   }
 };

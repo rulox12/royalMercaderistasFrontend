@@ -24,9 +24,15 @@ const getOrderByFilter = async (date, cityId, shopId) => {
   }
 };
 
-const getOrders = async (page, limit, selectedShopId = '') => {
+const getOrders = async (page, limit, selectedShopId, selectedCityId, selectedPlatformId) => {
   try {
-    const url = `${API_URL}/orders?page=${page}&limit=${limit}&shopId=${selectedShopId}`;
+    const params = new URLSearchParams({ page, limit });
+
+    if (selectedShopId) params.append('shopId', selectedShopId);
+    if (selectedCityId) params.append('cityId', selectedCityId);
+    if (selectedPlatformId) params.append('platform', selectedPlatformId);
+
+    const url = `${API_URL}/orders?${params.toString()}`;
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
@@ -35,4 +41,15 @@ const getOrders = async (page, limit, selectedShopId = '') => {
   }
 };
 
-export { getOrdersByDate, getOrderByFilter, getOrders };
+const getUnregisteredOrders = async (date) => {
+  try {
+    const url = `${API_URL}/orders/not-received/${date}`;
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching unregistered orders:', error);
+    throw error;
+  }
+};
+
+export { getOrdersByDate, getOrderByFilter, getOrders, getUnregisteredOrders };

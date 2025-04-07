@@ -25,7 +25,7 @@ export const AuthGuard = (props) => {
       if (isAuthenticated === undefined) return;
 
       const user = localStorage.getItem('user');
-      
+
       if (!isAuthenticated && !user) {
         router
           .replace({
