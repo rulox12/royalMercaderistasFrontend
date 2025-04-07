@@ -51,10 +51,18 @@ export const items = [
       </SvgIcon>
     )
   },
-
   {
     title: 'Ordenes',
     path: '/orders',
+    icon: (
+      <SvgIcon fontSize="small">
+        <BuildingLibraryIcon />
+      </SvgIcon>
+    )
+  },
+  {
+    title: 'Órdenes No Registradas',
+    path: '/unregistered-orders',
     icon: (
       <SvgIcon fontSize="small">
         <BuildingLibraryIcon />

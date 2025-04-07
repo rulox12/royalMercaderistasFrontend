@@ -107,7 +107,7 @@ export const OrdersTable = (props) => {
                       {order.shop.name}
                     </TableCell>
                     <TableCell sx={{ padding: 0 }}>
-                      {order.user.surname}
+                      {order.user?.name + " " + order.user?.surname }
                     </TableCell>
                     <TableCell sx={{ padding: 0 }}>
                       {order.cityId.name}
