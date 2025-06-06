@@ -52,4 +52,15 @@ const getUnregisteredOrders = async (date) => {
   }
 };
 
-export { getOrdersByDate, getOrderByFilter, getOrders, getUnregisteredOrders };
+const getUnregisteredOrdersByShopAndRange = async (shopId, startDate, endDate) => {
+  try {
+    const url = `${API_URL}/orders/not-received/shop/${shopId}/from/${startDate}/to/${endDate}`;
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching unregistered orders by shop and range:', error);
+    throw error;
+  }
+};
+
+export { getOrdersByDate, getOrderByFilter, getOrders, getUnregisteredOrders, getUnregisteredOrdersByShopAndRange };

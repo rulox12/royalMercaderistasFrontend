@@ -61,8 +61,17 @@ export const items = [
     )
   },
   {
-    title: 'Órdenes No Registradas',
+    title: 'Órdenes faltantes',
     path: '/unregistered-orders',
+    icon: (
+      <SvgIcon fontSize="small">
+        <BuildingLibraryIcon />
+      </SvgIcon>
+    )
+  },
+  {
+    title: 'Órdenes faltantes por tienda',
+    path: '/unregistered-orders-by-shop',
     icon: (
       <SvgIcon fontSize="small">
         <BuildingLibraryIcon />
