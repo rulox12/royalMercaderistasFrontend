@@ -13,7 +13,9 @@ import {
   Paper,
   TableContainer
 } from '@mui/material';
-import { Scrollbar } from 'src/components/scrollbar';
+import Tooltip from '@mui/material/Tooltip';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
 
@@ -22,6 +24,8 @@ export const OrdersTable = (props) => {
   const [orderDetails, setOrderDetails] = useState([]);
   const [order, setOrder] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailMessage, setDetailMessage] = useState('');
 
   const handleViewClick = async (order) => {
     setOrderDetails(order.orderDetails);
@@ -31,6 +35,11 @@ export const OrdersTable = (props) => {
 
   const handleCloseModal = () => {
     setOpenModal(false);
+  };
+
+  const handleShowDetails = (details) => {
+    setDetailMessage(details);
+    setShowDetailModal(true);
   };
 
   const handleExportToExcel = () => {
@@ -67,7 +76,6 @@ export const OrdersTable = (props) => {
 
   return (
     <Card>
-
         <Box component={Paper} >
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
@@ -113,10 +121,25 @@ export const OrdersTable = (props) => {
                       {order.cityId.name}
                     </TableCell>
                     <TableCell sx={{ padding: 0 }}>
-                      <Button variant="outlined" color="success"
-                              onClick={() => handleViewClick(order)} sx={{ paddingY: 0 }}>
-                        Ver Detalle
-                      </Button>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Button
+                          variant="outlined"
+                          color="success"
+                          onClick={() => handleViewClick(order)}
+                          sx={{ paddingY: 0 }}
+                        >
+                          Ver Detalle
+                        </Button>
+                        {order.details && (
+                          <Tooltip title={order.details} placement="top" arrow>
+                            <VisibilityIcon
+                              color="action"
+                              sx={{ cursor: 'pointer' }}
+                              onClick={() => handleShowDetails(order.details)}
+                            />
+                          </Tooltip>
+                        )}
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 );
@@ -190,7 +213,41 @@ export const OrdersTable = (props) => {
             </Box>
           </Modal>
         </Box>
-
+      <Modal
+        open={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        aria-labelledby="small-detail-modal"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            maxHeight: 300,
+            overflowY: 'auto',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 3,
+            borderRadius: 2,
+            wordBreak: 'break-word'
+          }}
+        >
+          <Typography id="small-detail-modal" variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+            {detailMessage}
+          </Typography>
+          <Button
+            onClick={() => setShowDetailModal(false)}
+            fullWidth
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
+          >
+            Cerrar
+          </Button>
+        </Box>
+      </Modal>
     </Card>
   );
 };
