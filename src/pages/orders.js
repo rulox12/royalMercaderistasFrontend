@@ -160,7 +160,7 @@ const Page = () => {
                 </FormControl>
               </Stack>
             </Stack>
-            <OrdersTable count={orders.length} items={orders}/>
+            <OrdersTable count={orders.length} items={orders} onRefresh={getOrdersService} />
             <Stack direction="row" justifyContent="space-between" spacing={2}>
               <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
                 Siguiente

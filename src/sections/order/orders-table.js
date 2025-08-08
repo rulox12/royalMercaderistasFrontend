@@ -15,17 +15,24 @@ import {
 } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
+import { calculatingSaleService } from 'src/services/orderService';
 
 export const OrdersTable = (props) => {
-  const { items = [] } = props;
+  const { items = [], onRefresh } = props;
   const [orderDetails, setOrderDetails] = useState([]);
   const [order, setOrder] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailMessage, setDetailMessage] = useState('');
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  
 
   const handleViewClick = async (order) => {
     setOrderDetails(order.orderDetails);
@@ -66,6 +73,30 @@ export const OrdersTable = (props) => {
     XLSX.writeFile(wb, fileName);
   };
 
+  const handleCalculateSale = async (order) => {
+    
+    try {
+      const orderDate = new Date(order.date);
+      const formattedDate = orderDate.toISOString().split('T')[0];
+
+      const response = await calculatingSaleService(order.shop._id, formattedDate);
+
+      if (response) {
+        setSnackbarSeverity('success');
+        setSnackbarMessage('Venta calculada con éxito');
+        if (onRefresh) onRefresh();
+      } else {
+        setSnackbarSeverity('error');
+        setSnackbarMessage('Error al calcular venta');
+      }
+    } catch (error) {
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Error al calcular venta');
+    } finally {
+      setSnackbarOpen(true);
+    }
+  };
+
   const options = {
     timeZone: 'UTC',
     weekday: 'long',
@@ -76,143 +107,153 @@ export const OrdersTable = (props) => {
 
   return (
     <Card>
-        <Box component={Paper} >
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ padding: 2 }}>
-                  Fecha
-                </TableCell>
-                <TableCell sx={{ padding: 0 }}>
-                  Tienda
-                </TableCell>
-                <TableCell sx={{ padding: 0 }}>
-                  Usuario
-                </TableCell>
-                <TableCell sx={{ padding: 0 }}>
-                  Ciudad
-                </TableCell>
-                <TableCell sx={{ padding: 0 }}>
-                  Acciones
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {items.map((order) => {
-                return (
-                  <TableRow
-                    hover
-                    key={order._id}
-                  >
-                    <TableCell sx={{ padding: 1 }}>
-                      <Stack alignItems="center" direction="row" spacing={2}>
-                        <Typography variant="subtitle2">
-                          {new Date(order.date).toLocaleDateString('es-CO', options)}
-                        </Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell sx={{ padding: 0 }}>
-                      {order.shop.name}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0 }}>
-                      {order.user?.name + " " + order.user?.surname }
-                    </TableCell>
-                    <TableCell sx={{ padding: 0 }}>
-                      {order.cityId.name}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Button
-                          variant="outlined"
-                          color="success"
-                          onClick={() => handleViewClick(order)}
-                          sx={{ paddingY: 0 }}
-                        >
-                          Ver Detalle
-                        </Button>
-                        {order.details && (
-                          <Tooltip title={order.details} placement="top" arrow>
-                            <VisibilityIcon
-                              color="action"
-                              sx={{ cursor: 'pointer' }}
-                              onClick={() => handleShowDetails(order.details)}
-                            />
-                          </Tooltip>
-                        )}
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-          <Modal
-            open={openModal}
-            onClose={handleCloseModal}
-            aria-labelledby="order-details-modal"
-            aria-describedby="order-details-modal-description"
+      <Box component={Paper} >
+        <Table stickyHeader aria-label="sticky table">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ padding: 2 }}>
+                Fecha
+              </TableCell>
+              <TableCell sx={{ padding: 0 }}>
+                Tienda
+              </TableCell>
+              <TableCell sx={{ padding: 0 }}>
+                Usuario
+              </TableCell>
+              <TableCell sx={{ padding: 0 }}>
+                Ciudad
+              </TableCell>
+              <TableCell sx={{ padding: 0 }}>
+                Acciones
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {items.map((order) => {
+              return (
+                <TableRow
+                  hover
+                  key={order._id}
+                >
+                  <TableCell sx={{ padding: 1 }}>
+                    <Stack alignItems="center" direction="row" spacing={2}>
+                      <Typography variant="subtitle2">
+                        {new Date(order.date).toLocaleDateString('es-CO', options)}
+                      </Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell sx={{ padding: 0 }}>
+                    {order.shop.name}
+                  </TableCell>
+                  <TableCell sx={{ padding: 0 }}>
+                    {order.user?.name + " " + order.user?.surname}
+                  </TableCell>
+                  <TableCell sx={{ padding: 0 }}>
+                    {order.cityId.name}
+                  </TableCell>
+                  <TableCell sx={{ padding: 0 }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Button
+                        variant="outlined"
+                        color="success"
+                        onClick={() => handleViewClick(order)}
+                        sx={{ paddingY: 0 }}
+                      >
+                        Ver Detalle
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => handleCalculateSale(order)}
+                        sx={{ paddingY: 0 }}
+                      >
+                        Calcular Venta
+                      </Button>
+                      {order.details && (
+                        <Tooltip title={order.details} placement="top" arrow>
+                          <VisibilityIcon
+                            color="action"
+                            sx={{ cursor: 'pointer' }}
+                            onClick={() => handleShowDetails(order.details)}
+                          />
+                        </Tooltip>
+                      )}
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+        <Modal
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="order-details-modal"
+          aria-describedby="order-details-modal-description"
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 800,
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              p: 4
+            }}
           >
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: 800,
-                bgcolor: 'background.paper',
-                boxShadow: 24,
-                p: 4
-              }}
-            >
-              {order ? (
-                <Typography variant="h6" gutterBottom>
-                  Detalles de la Orden
-                  - {order.shop.name} - {new Date(order.date).toLocaleDateString('es-CO', options)}
-                </Typography>
-              ) : (
-                <Typography variant="h6" gutterBottom>
-                  No se encontraron detalles de la orden
-                </Typography>
-              )}
-              <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
-                <Table stickyHeader aria-label="sticky table">
-                  <TableHead>
-                    <TableRow sticky="top">
-                      <TableCell sx={{ padding: 2 }}>Producto</TableCell>
-                      <TableCell sx={{ padding: 0 }}>Presentación</TableCell>
-                      <TableCell sx={{ padding: 0 }}>INVE</TableCell>
-                      <TableCell sx={{ padding: 0 }}>AVER</TableCell>
-                      <TableCell sx={{ padding: 0 }}>LOTE</TableCell>
-                      <TableCell sx={{ padding: 0 }}>RECI</TableCell>
-                      <TableCell sx={{ padding: 0 }}>PEDI</TableCell>
+            {order ? (
+              <Typography variant="h6" gutterBottom>
+                Detalles de la Orden
+                - {order.shop.name} - {new Date(order.date).toLocaleDateString('es-CO', options)}
+              </Typography>
+            ) : (
+              <Typography variant="h6" gutterBottom>
+                No se encontraron detalles de la orden
+              </Typography>
+            )}
+            <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
+              <Table stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow sticky="top">
+                    <TableCell sx={{ padding: 2 }}>Producto</TableCell>
+                    <TableCell sx={{ padding: 0 }}>Presentación</TableCell>
+                    <TableCell sx={{ padding: 0 }}>INVE</TableCell>
+                    <TableCell sx={{ padding: 0 }}>AVER</TableCell>
+                    <TableCell sx={{ padding: 0 }}>LOTE</TableCell>
+                    <TableCell sx={{ padding: 0 }}>RECI</TableCell>
+                    <TableCell sx={{ padding: 0 }}>PEDI</TableCell>
+                    <TableCell sx={{ padding: 0 }}>VENTA</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orderDetails.map((detail) => (
+                    <TableRow key={detail._id}>
+                      <TableCell sx={{ padding: 0 }}>{detail.product.name}</TableCell>
+                      <TableCell sx={{ padding: 0 }}>{detail.product.presentation}</TableCell>
+                      <TableCell sx={{ padding: 0 }}>{detail.INVE}</TableCell>
+                      <TableCell sx={{ padding: 0 }}>{detail.AVER}</TableCell>
+                      <TableCell sx={{ padding: 0 }}>{detail.LOTE}</TableCell>
+                      <TableCell sx={{ padding: 0 }}>{detail.RECI}</TableCell>
+                      <TableCell sx={{ padding: 0 }}>{detail.PEDI}</TableCell>
+                      <TableCell sx={{ padding: 0 }}>{detail.VENT}</TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {orderDetails.map((detail) => (
-                      <TableRow key={detail._id}>
-                        <TableCell sx={{ padding: 0 }}>{detail.product.name}</TableCell>
-                        <TableCell sx={{ padding: 0 }}>{detail.product.presentation}</TableCell>
-                        <TableCell sx={{ padding: 0 }}>{detail.INVE}</TableCell>
-                        <TableCell sx={{ padding: 0 }}>{detail.AVER}</TableCell>
-                        <TableCell sx={{ padding: 0 }}>{detail.LOTE}</TableCell>
-                        <TableCell sx={{ padding: 0 }}>{detail.RECI}</TableCell>
-                        <TableCell sx={{ padding: 0 }}>{detail.PEDI}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleExportToExcel}
-                sx={{ mt: 2 }}
-              >
-                Exportar a Excel
-              </Button>
-            </Box>
-          </Modal>
-        </Box>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleExportToExcel}
+              sx={{ mt: 2 }}
+            >
+              Exportar a Excel
+            </Button>
+          </Box>
+        </Modal>
+      </Box>
       <Modal
         open={showDetailModal}
         onClose={() => setShowDetailModal(false)}
@@ -248,6 +289,16 @@ export const OrdersTable = (props) => {
           </Button>
         </Box>
       </Modal>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 };
