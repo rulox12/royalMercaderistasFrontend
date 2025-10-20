@@ -63,4 +63,15 @@ const getUnregisteredOrdersByShopAndRange = async (shopId, startDate, endDate) =
   }
 };
 
-export { getOrdersByDate, getOrderByFilter, getOrders, getUnregisteredOrders, getUnregisteredOrdersByShopAndRange };
+const calculatingSaleService = async (shopId, date) => {
+  try {
+    const url = `${API_URL}/orders/sales?shopId=${shopId}&date=${date}`;
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching unregistered orders:', error);
+    throw error;
+  }
+};
+
+export { getOrdersByDate, getOrderByFilter, getOrders, getUnregisteredOrders, getUnregisteredOrdersByShopAndRange, calculatingSaleService };
