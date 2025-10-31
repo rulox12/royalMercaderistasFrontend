@@ -11,14 +11,18 @@ import {
   TableContainer
 } from '@mui/material';
 
-const formatDateWithDay = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', {
+
+const formatDateWithDay = (isoDateString) => {
+  const [year, month, day] = isoDateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+
+  return new Intl.DateTimeFormat('es-CO', {
+    timeZone: 'America/Bogota',
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
-  });
+  }).format(date);
 };
 
 export const UnregisteredOrdersByShopTable = ({ items = [] }) => {
