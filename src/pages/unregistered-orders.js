@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Box, Container, Stack, Typography, TextField, FormControl, MenuItem, Select, InputLabel } from '@mui/material';
 import { getUnregisteredOrders } from '../services/orderService';
 import { UnregisteredOrdersTable } from '../sections/order/unregistered-orders-table';
@@ -15,7 +15,7 @@ const UnregisteredOrdersPage = () => {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchUnregisteredShops = async () => {
+  const fetchUnregisteredShops = useCallback(async () => {
     setLoading(true);
     try {
       const response = await getUnregisteredOrders(selectedDate);
@@ -34,11 +34,11 @@ const UnregisteredOrdersPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
 
   useEffect(() => {
     fetchUnregisteredShops();
-  }, [selectedDate]);
+  }, [fetchUnregisteredShops]);
 
   // Filtrar por plataforma y ciudad
   useEffect(() => {
@@ -59,53 +59,84 @@ const UnregisteredOrdersPage = () => {
       <Head>
         <title>Órdenes No Registradas</title>
       </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Box
+        component="main"
+        sx={{ flexGrow: 1, py: 8 }}
+      >
         <Container maxWidth="xl">
           <Stack spacing={3}>
-            <Typography variant="h4">Órdenes No Registradas</Typography>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              gap={2}
+              flexWrap="nowrap"
+            >
+              <Typography
+                variant="h4"
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                Órdenes No Registradas
+              </Typography>
 
-            {/* Filtros */}
-            <Stack direction="row" justifyContent="flex-end" flexWrap="wrap" gap={2}>
-              {/* Filtro de Fecha */}
-              <FormControl sx={{ width: 200 }}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  label="Fecha"
-                  name="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                />
-              </FormControl>
+              {/* Filtros */}
+              <Stack
+                direction="row"
+                justifyContent="flex-end"
+                gap={2}
+                flexWrap="nowrap"
+              >
+                {/* Filtro de Fecha */}
+                <FormControl sx={{ width: 200 }}>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    label="Fecha"
+                    name="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                  />
+                </FormControl>
 
-              {/* Filtro de Plataforma */}
-              <FormControl sx={{ width: 200 }}>
-                <InputLabel id="platform-select-label">Plataforma</InputLabel>
-                <Select
-                  labelId="platform-select-label"
-                  value={selectedPlatform}
-                  onChange={(e) => setSelectedPlatform(e.target.value)}
-                >
-                  <MenuItem value="">Todas</MenuItem>
-                  {platforms.map((platform) => (
-                    <MenuItem key={platform} value={platform}>{platform}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                {/* Filtro de Plataforma */}
+                <FormControl sx={{ width: 200 }}>
+                  <InputLabel id="platform-select-label">Plataforma</InputLabel>
+                  <Select
+                    labelId="platform-select-label"
+                    value={selectedPlatform}
+                    onChange={(e) => setSelectedPlatform(e.target.value)}
+                  >
+                    <MenuItem value="">Todas</MenuItem>
+                    {platforms.map((platform) => (
+                      <MenuItem
+                        key={platform}
+                        value={platform}
+                      >
+                        {platform}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-              {/* Filtro de Ciudad */}
-              <FormControl sx={{ width: 200 }}>
-                <InputLabel>Ciudad</InputLabel>
-                <Select
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                >
-                  <MenuItem value="">Todas</MenuItem>
-                  {cities.map((city) => (
-                    <MenuItem key={city} value={city}>{city}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                {/* Filtro de Ciudad */}
+                <FormControl sx={{ width: 200 }}>
+                  <InputLabel>Ciudad</InputLabel>
+                  <Select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                  >
+                    <MenuItem value="">Todas</MenuItem>
+                    {cities.map((city) => (
+                      <MenuItem
+                        key={city}
+                        value={city}
+                      >
+                        {city}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
             </Stack>
 
             {/* Tabla de órdenes filtradas */}

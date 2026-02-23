@@ -101,7 +101,8 @@ const Page = () => {
             <Stack
               direction="row"
               justifyContent="space-between"
-              spacing={4}
+              alignItems="center"
+              spacing={2}
               sx={{
                 position: 'sticky',
                 top: 0,
@@ -116,7 +117,51 @@ const Page = () => {
                 </Typography>
               </Stack>
 
-              <div>
+              <Stack direction="row" justifyContent="flex-end" flexWrap="nowrap" gap={2}>
+                {/* Filtro de Ciudades */}
+                <FormControl sx={{ width: 200 }}>
+                  <InputLabel id="city-select-label">Ciudad</InputLabel>
+                  <Select
+                    labelId="city-select-label"
+                    value={selectedCity}
+                    onChange={(e) => {
+                      setSelectedCity(e.target.value);
+                      setPage(1);
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>Todos</em>
+                    </MenuItem>
+                    {cities.map((city) => (
+                      <MenuItem key={city._id} value={city._id}>
+                        {city.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* Filtro de Plataformas */}
+                <FormControl sx={{ width: 200 }}>
+                  <InputLabel id="platform-select-label">Plataforma</InputLabel>
+                  <Select
+                    labelId="platform-select-label"
+                    value={selectedPlatform}
+                    onChange={(e) => {
+                      setSelectedPlatform(e.target.value);
+                      setPage(1);
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>Todos</em>
+                    </MenuItem>
+                    {platforms.map((platform) => (
+                      <MenuItem key={platform._id} value={platform._id}>
+                        {platform.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
                 <Button
                   onClick={handleOpen}
                   startIcon={(
@@ -128,53 +173,7 @@ const Page = () => {
                 >
                   Agregar nuevo pedido
                 </Button>
-              </div>
-            </Stack>
-            <Stack direction="row" justifyContent="flex-end" flexWrap="wrap" gap={2}>
-
-              {/* Filtro de Ciudades */}
-              <FormControl sx={{ width: 200 }}>
-                <InputLabel id="city-select-label">Ciudad</InputLabel>
-                <Select
-                  labelId="city-select-label"
-                  value={selectedCity}
-                  onChange={(e) => {
-                    setSelectedCity(e.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Todos</em>
-                  </MenuItem>
-                  {cities.map((city) => (
-                    <MenuItem key={city._id} value={city._id}>
-                      {city.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* Filtro de Plataformas */}
-              <FormControl sx={{ width: 200 }}>
-                <InputLabel id="platform-select-label">Plataforma</InputLabel>
-                <Select
-                  labelId="platform-select-label"
-                  value={selectedPlatform}
-                  onChange={(e) => {
-                    setSelectedPlatform(e.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Todos</em>
-                  </MenuItem>
-                  {platforms.map((platform) => (
-                    <MenuItem key={platform._id} value={platform._id}>
-                      {platform.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              </Stack>
             </Stack>
             <BigOrdersTable
               count={bigOrders.length}

@@ -1,90 +1,75 @@
-import ChartBarIcon from '@heroicons/react/24/solid/ChartBarIcon';
-import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
-import ListBulletIcon from '@heroicons/react/24/solid/ListBulletIcon';
-import BuildingLibraryIcon from '@heroicons/react/24/solid/ArrowsPointingInIcon';
-
-import { SvgIcon } from '@mui/material';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
+import CompareArrowsOutlinedIcon from '@mui/icons-material/CompareArrowsOutlined';
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
 export const items = [
   {
     title: 'Inicio',
     path: '/',
-    icon: (
-      <SvgIcon fontSize="small">
-        <ChartBarIcon />
-      </SvgIcon>
-    )
+    icon: <HomeOutlinedIcon fontSize="small" />
   },
   {
     title: 'Pedidos',
     path: '/big-orders',
-    icon: (
-      <SvgIcon fontSize="small">
-        <ListBulletIcon />
-      </SvgIcon>
-    )
+    icon: <AssignmentOutlinedIcon fontSize="small" />
   },
   {
     title: 'Reportes',
     path: '/exports',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingLibraryIcon />
-      </SvgIcon>
-    )
+    icon: <SummarizeOutlinedIcon fontSize="small" />
   },
   {
     title: 'Exporte general',
     path: '/export-large',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingLibraryIcon />
-      </SvgIcon>
-    )
+    icon: <FileDownloadOutlinedIcon fontSize="small" />
   },
   {
     title: 'Ver detalle de orden',
     path: '/order-detail',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingLibraryIcon />
-      </SvgIcon>
-    )
+    icon: <ReceiptLongOutlinedIcon fontSize="small" />
   },
   {
     title: 'Ordenes',
     path: '/orders',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingLibraryIcon />
-      </SvgIcon>
-    )
+    icon: <Inventory2OutlinedIcon fontSize="small" />
   },
   {
     title: 'Órdenes faltantes',
     path: '/unregistered-orders',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingLibraryIcon />
-      </SvgIcon>
-    )
+    icon: <ErrorOutlineOutlinedIcon fontSize="small" />
   },
   {
     title: 'Órdenes faltantes por tienda',
     path: '/unregistered-orders-by-shop',
-    icon: (
-      <SvgIcon fontSize="small">
-        <BuildingLibraryIcon />
-      </SvgIcon>
-    )
+    icon: <StorefrontOutlinedIcon fontSize="small" />
+  },
+  {
+    title: 'Grafica Comparación de meses',
+    path: '/reports',
+    icon: <InsightsOutlinedIcon fontSize="small" />
+  },
+  {
+    title: 'Comparar Órdenes',
+    path: '/orders-comparison',
+    icon: <CompareArrowsOutlinedIcon fontSize="small" />
+  },
+  {
+    title: 'Dashboard Local',
+    path: '/local-dashboard',
+    icon: <DashboardOutlinedIcon fontSize="small" />
   },
   {
     title: 'Configuración',
-    icon: (
-      <SvgIcon fontSize="small">
-        <UsersIcon />
-      </SvgIcon>
-    ),
+    icon: <SettingsOutlinedIcon fontSize="small" />,
     subItems: [
       {
         title: 'Usuarios',

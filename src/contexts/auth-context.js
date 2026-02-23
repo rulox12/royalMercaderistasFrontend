@@ -65,6 +65,15 @@ export const AuthProvider = (props) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const initialized = useRef(false);
 
+  const getStoredUser = () => {
+    try {
+      const rawUser = window.localStorage.getItem('user');
+      return rawUser ? JSON.parse(rawUser) : null;
+    } catch (err) {
+      return null;
+    }
+  };
+
   const initialize = async () => {
     // Prevent from calling twice in development mode with React.StrictMode enabled
     if (initialized.current) {
@@ -74,20 +83,18 @@ export const AuthProvider = (props) => {
     initialized.current = true;
 
     let isAuthenticated = false;
+    let user = null;
 
     try {
-      isAuthenticated = window.localStorage.getItem('authenticated') === 'true';
+      const localAuth = window.localStorage.getItem('authenticated') === 'true';
+      const sessionAuth = window.sessionStorage.getItem('authenticated') === 'true';
+      user = getStoredUser();
+      isAuthenticated = localAuth || sessionAuth || !!user;
     } catch (err) {
       console.error(err);
     }
 
-    if (isAuthenticated) {
-      const user = {
-        id: '5e86809283e28b96d2d38537',
-        avatar: '/assets/avatars/avatar-anika-visser.png',
-        name: 'Anika Visser',
-        email: 'anika.visser@devias.io'
-      };
+    if (isAuthenticated && user) {
 
       dispatch({
         type: HANDLERS.INITIALIZE,
@@ -111,6 +118,7 @@ export const AuthProvider = (props) => {
   const skip = () => {
     try {
       window.localStorage.setItem('authenticated', 'true');
+      window.sessionStorage.setItem('authenticated', 'true');
     } catch (err) {
       console.error(err);
     }
@@ -136,16 +144,17 @@ export const AuthProvider = (props) => {
     }
 
     try {
+      window.localStorage.setItem('authenticated', 'true');
       window.sessionStorage.setItem('authenticated', 'true');
     } catch (err) {
       console.error(err);
     }
 
-    const user = {
+    const user = response.response?.user || getStoredUser() || {
       id: '',
       avatar: '/assets/avatars/avatar-anika-visser.png',
-      name: 'Anika Visser',
-      email: 'anika.visser@devias.io'
+      name: 'Usuario',
+      email
     };
 
     dispatch({
@@ -160,7 +169,9 @@ export const AuthProvider = (props) => {
 
   const signOut = () => {
     try {
-      window.localStorage.removeItem('user'); // Asegurar que no quede persistencia
+      window.localStorage.removeItem('user');
+      window.localStorage.removeItem('authenticated');
+      window.sessionStorage.removeItem('authenticated');
     } catch (err) {
       console.error('Error limpiando almacenamiento:', err);
     }
