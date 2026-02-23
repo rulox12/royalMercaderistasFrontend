@@ -1,8 +1,8 @@
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
 import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
 import ArrowTopRightOnSquareIcon from '@heroicons/react/24/solid/ArrowTopRightOnSquareIcon';
-import ChevronUpDownIcon from '@heroicons/react/24/solid/ChevronUpDownIcon';
 import {
   Box,
   Button,
@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
+import { useAuthContext } from 'src/contexts/auth-context';
 import { items } from './config';
 import { SideNavItem } from './side-nav-item';
 
@@ -22,6 +23,42 @@ export const SideNav = (props) => {
   const { open, onClose } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
+  const { user, signOut } = useAuthContext();
+  const [currentEmail, setCurrentEmail] = useState('');
+
+  const handleSignOut = () => {
+    signOut();
+
+    if (!lgUp && onClose) {
+      onClose();
+    }
+
+    window.location.href = '/auth/login';
+  };
+
+  useEffect(() => {
+    let emailFromStorage = '';
+
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        emailFromStorage = parsedUser?.email || '';
+      }
+    } catch (error) {
+      emailFromStorage = '';
+    }
+
+    const email = (user?.email || emailFromStorage || '').toLowerCase();
+    setCurrentEmail(email);
+  }, [user]);
+
+  const allowedEmails = ['julio@gmail.com', 'danielpcpx@hotmail.com'];
+  const startRestrictedIndex = items.findIndex((item) => item.title === 'Grafica Comparación de meses');
+  const canSeeRestrictedItems = allowedEmails.includes(currentEmail);
+  const visibleItems = startRestrictedIndex === -1 || canSeeRestrictedItems
+    ? items
+    : items.slice(0, startRestrictedIndex);
 
   const content = (
     <Scrollbar
@@ -94,7 +131,7 @@ export const SideNav = (props) => {
               m: 0
             }}
           >
-            {items.map((item) => {
+            {visibleItems.map((item) => {
               const active = item.path ? (pathname === item.path) : false;
 
               return (
@@ -111,6 +148,23 @@ export const SideNav = (props) => {
               );
             })}
           </Stack>
+        </Box>
+        <Divider sx={{ borderColor: 'neutral.700' }} />
+        <Box sx={{ p: 2 }}>
+          <Button
+            fullWidth
+            color="inherit"
+            variant="outlined"
+            onClick={handleSignOut}
+            startIcon={(
+              <SvgIcon fontSize="small">
+                <ArrowTopRightOnSquareIcon />
+              </SvgIcon>
+            )}
+            sx={{ borderColor: 'neutral.600' }}
+          >
+            Cerrar sesión
+          </Button>
         </Box>
         <Divider sx={{ borderColor: 'neutral.700' }} />
       </Box>

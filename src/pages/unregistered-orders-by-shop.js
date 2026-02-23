@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -26,7 +26,7 @@ const UnregisteredOrdersByShopPage = () => {
   const [selectedShop, setSelectedShop] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const fetchUnregisteredShops = async () => {
+  const fetchUnregisteredShops = useCallback(async () => {
     if (!selectedShop) {
       return;
     }
@@ -42,11 +42,11 @@ const UnregisteredOrdersByShopPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedShop, selectedStartDate, selectedEndDate]);
 
   useEffect(() => {
     fetchUnregisteredShops().then(r => {});
-  }, [selectedStartDate, selectedEndDate, selectedShop]);
+  }, [fetchUnregisteredShops]);
 
   // Filtrar por plataforma y ciudad
   useEffect(() => {
@@ -63,48 +63,70 @@ const UnregisteredOrdersByShopPage = () => {
       <Head>
         <title>Órdenes No Registradas</title>
       </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Box
+        component="main"
+        sx={{ flexGrow: 1, py: 8 }}
+      >
         <Container maxWidth="xl">
           <Stack spacing={3}>
-            <Typography variant="h4">Órdenes No Registradas</Typography>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              gap={2}
+            >
+              <Typography
+                variant="h4"
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                Órdenes No Registradas
+              </Typography>
 
-            {/* Filtros */}
-            <Stack direction="row" justifyContent="flex-end" flexWrap="wrap" gap={2}>
-              <FormControl sx={{ width: 200 }}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  label="Fecha"
-                  name="date"
-                  value={selectedStartDate}
-                  onChange={(e) => setSelectedStartDate(e.target.value)}
-                />
-              </FormControl>
-              <FormControl sx={{ width: 200 }}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  label="Fecha"
-                  name="date"
-                  value={selectedEndDate}
-                  onChange={(e) => setSelectedEndDate(e.target.value)}
-                />
-              </FormControl>
-              {/* Filtro de Tienda */}
-              <FormControl sx={{ width: 200 }}>
-                <InputLabel id="platform-select-label">Tienda</InputLabel>
-                <Select
-                  labelId="platform-select-label"
-                  value={selectedShop}
-                  onChange={(e) => setSelectedShop(e.target.value)}
-                >
-                  {shops.map((shop) => (
-                    <MenuItem key={shop._id} value={shop}>
-                      {shop.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              {/* Filtros */}
+              <Stack
+                direction="row"
+                justifyContent="flex-end"
+                flexWrap="nowrap"
+                gap={2}
+              >
+                <FormControl sx={{ width: 200 }}>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    label="Fecha"
+                    name="date"
+                    value={selectedStartDate}
+                    onChange={(e) => setSelectedStartDate(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl sx={{ width: 200 }}>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    label="Fecha"
+                    name="date"
+                    value={selectedEndDate}
+                    onChange={(e) => setSelectedEndDate(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl sx={{ width: 200 }}>
+                  <InputLabel id="platform-select-label">Tienda</InputLabel>
+                  <Select
+                    labelId="platform-select-label"
+                    value={selectedShop}
+                    onChange={(e) => setSelectedShop(e.target.value)}
+                  >
+                    {shops.map((shop) => (
+                      <MenuItem
+                        key={shop._id}
+                        value={shop}
+                      >
+                        {shop.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
             </Stack>
 
             {/* Tabla de órdenes filtradas */}

@@ -1,0 +1,15 @@
+feat: enhanced dashboard with visualizations, auth improvements, and UX refinements
+
+- Enhanced pie chart visualization with real-value centering and intelligent percentage handling
+- Created local shop dashboard with dual-table comparison and API integration
+- Built platform comparison page with multi-city analysis
+- Updated sidebar icons with semantic MUI replacements for visual hierarchy
+- Unified header layout across Orders, Unregistered Orders, and Big Orders pages
+- Implemented email-based access control (julio@gmail.com, danielpcpx@hotmail.com)
+- Added logout button with complete session cleanup
+- Fixed authentication state persistence (menu updates immediately post-login without refresh)
+- Fixed React hook dependency warnings across components
+- Improved auth context to use real persisted user instead of hardcoded mock
+- Created localDashboardService for shop dashboard API integration
+
+No breaking changes. All existing functionality preserved.
