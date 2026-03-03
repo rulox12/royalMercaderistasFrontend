@@ -8,26 +8,37 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button
+  Button,
+  TextField
 } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { useState, useEffect } from 'react';
 import { getShops } from 'src/services/shopService';
-import { getMonthlyComparison } from 'src/services/reportService';
-import { ComparisonPie } from 'src/sections/report/ComparisonPie';
-
-const monthNames = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-];
+import { getDateRangeComparison } from 'src/services/reportService';
+import { ComparisonPieAlt } from 'src/sections/report/ComparisonPie';
 
 const Page = () => {
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Calcular fechas por defecto
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  
+  // Periodo A: mes anterior completo
+  const prevMonthStart = new Date(currentYear, currentMonth - 1, 1).toISOString().split('T')[0];
+  const prevMonthEnd = new Date(currentYear, currentMonth, 0).toISOString().split('T')[0];
+  
+  // Periodo B: del 1 del mes actual hasta hoy
+  const currentMonthStart = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+  const currentMonthEnd = today;
+  
   const [shops, setShops] = useState([]);
   const [selectedShop, setSelectedShop] = useState('');
-  const [monthA, setMonthA] = useState('');
-  const [yearA, setYearA] = useState('');
-  const [monthB, setMonthB] = useState('');
-  const [yearB, setYearB] = useState('');
+  const [startDateA, setStartDateA] = useState(prevMonthStart);
+  const [endDateA, setEndDateA] = useState(prevMonthEnd);
+  const [startDateB, setStartDateB] = useState(currentMonthStart);
+  const [endDateB, setEndDateB] = useState(currentMonthEnd);
   const [reportData, setReportData] = useState(null);
 
   const fetchShops = async () => {
@@ -40,11 +51,23 @@ const Page = () => {
   };
 
   const fetchReport = async () => {
-    if (!selectedShop || !monthA || !yearA || !monthB || !yearB) {
+    if (!selectedShop || !startDateA || !endDateA || !startDateB || !endDateB) {
       return;
     }
+
+    if (startDateA > endDateA || startDateB > endDateB) {
+      console.error('Rango de fechas inválido: la fecha desde no puede ser mayor que la fecha hasta');
+      return;
+    }
+
     try {
-      const response = await getMonthlyComparison(selectedShop, monthA, yearA, monthB, yearB);
+      const response = await getDateRangeComparison(
+        selectedShop,
+        startDateA,
+        endDateA,
+        startDateB,
+        endDateB
+      );
       setReportData(response);
     } catch (error) {
       console.error('Error fetching report:', error);
@@ -54,13 +77,37 @@ const Page = () => {
   const normalizeData = (data = []) =>
     data.map(item => ({
       _id: {
-        year: item._id?.year ? Number(item._id.year) : 0,
-        month: item._id?.month ? Number(item._id.month) : 0
+        startDate: item._id?.startDate || '',
+        endDate: item._id?.endDate || ''
       },
       ventas: Number(item.ventas) || 0,
       averias: Number(item.averias) || 0,
       rentabilidad: Number(item.rentabilidad) || 0
     }));
+
+  const formatLabelDate = (date) => {
+    if (!date) return '';
+    return new Intl.DateTimeFormat('es-CO', {
+      timeZone: 'America/Bogota',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(new Date(`${date}T00:00:00`));
+  };
+
+  const getRangeLabel = (startDate, endDate) => {
+    if (!startDate || !endDate) {
+      return 'Periodo';
+    }
+    if (startDate === endDate) {
+      return formatLabelDate(startDate);
+    }
+    return `${formatLabelDate(startDate)} - ${formatLabelDate(endDate)}`;
+  };
+
+  const periodLabels = ['Periodo A', 'Periodo B'];
+  const periodATitle = `PERIODO A: ${getRangeLabel(startDateA, endDateA)}`;
+  const periodBTitle = `PERIODO B: ${getRangeLabel(startDateB, endDateB)}`;
 
   useEffect(() => {
     fetchShops();
@@ -71,7 +118,10 @@ const Page = () => {
       <Head>
         <title>Reporte de Comparación</title>
       </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Box
+        component="main"
+        sx={{ flexGrow: 1, py: 8 }}
+      >
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Typography variant="h4">Comparar Ventas, Averías y Rentabilidad</Typography>
@@ -88,79 +138,150 @@ const Page = () => {
                   <em>Seleccione una tienda</em>
                 </MenuItem>
                 {shops.map((shop) => (
-                  <MenuItem key={shop._id} value={shop._id}>
+                  <MenuItem
+                    key={shop._id}
+                    value={shop._id}
+                  >
                     {shop.name}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
 
-            {/* Select Mes/Año A */}
-            <Stack direction="row" spacing={2}>
-              <FormControl sx={{ width: 150 }}>
-                <InputLabel id="monthA-label">Mes A</InputLabel>
-                <Select
-                  labelId="monthA-label"
-                  value={monthA}
-                  onChange={(e) => setMonthA(e.target.value)}
-                >
-                  {monthNames.map((m, i) => (
-                    <MenuItem key={i} value={i + 1}>{m}</MenuItem>
-                  ))}
-                </Select>
+            {/* Rango A */}
+            <Stack
+              direction="row"
+              spacing={2}
+            >
+              <FormControl sx={{ width: 220 }}>
+                <TextField
+                  label="Desde A"
+                  type="date"
+                  value={startDateA}
+                  onChange={(e) => setStartDateA(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
               </FormControl>
-              <FormControl sx={{ width: 150 }}>
-                <InputLabel id="yearA-label">Año A</InputLabel>
-                <Select
-                  labelId="yearA-label"
-                  value={yearA}
-                  onChange={(e) => setYearA(e.target.value)}
-                >
-                  <MenuItem value={2023}>2023</MenuItem>
-                  <MenuItem value={2024}>2024</MenuItem>
-                  <MenuItem value={2025}>2025</MenuItem>
-                </Select>
+              <FormControl sx={{ width: 220 }}>
+                <TextField
+                  label="Hasta A"
+                  type="date"
+                  value={endDateA}
+                  onChange={(e) => setEndDateA(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
               </FormControl>
             </Stack>
 
-            {/* Select Mes/Año B */}
-            <Stack direction="row" spacing={2}>
-              <FormControl sx={{ width: 150 }}>
-                <InputLabel id="monthB-label">Mes B</InputLabel>
-                <Select
-                  labelId="monthB-label"
-                  value={monthB}
-                  onChange={(e) => setMonthB(e.target.value)}
-                >
-                  {monthNames.map((m, i) => (
-                    <MenuItem key={i} value={i + 1}>{m}</MenuItem>
-                  ))}
-                </Select>
+            {/* Rango B */}
+            <Stack
+              direction="row"
+              spacing={2}
+            >
+              <FormControl sx={{ width: 220 }}>
+                <TextField
+                  label="Desde B"
+                  type="date"
+                  value={startDateB}
+                  onChange={(e) => setStartDateB(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
               </FormControl>
-              <FormControl sx={{ width: 150 }}>
-                <InputLabel id="yearB-label">Año B</InputLabel>
-                <Select
-                  labelId="yearB-label"
-                  value={yearB}
-                  onChange={(e) => setYearB(e.target.value)}
-                >
-                  <MenuItem value={2023}>2023</MenuItem>
-                  <MenuItem value={2024}>2024</MenuItem>
-                  <MenuItem value={2025}>2025</MenuItem>
-                </Select>
+              <FormControl sx={{ width: 220 }}>
+                <TextField
+                  label="Hasta B"
+                  type="date"
+                  value={endDateB}
+                  onChange={(e) => setEndDateB(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
               </FormControl>
             </Stack>
 
-            <Button variant="contained" onClick={fetchReport}>
+            <Button
+              variant="contained"
+              onClick={fetchReport}
+            >
               Comparar
             </Button>
 
+            {/* Títulos de períodos */}
+            {reportData && (
+              <Box sx={{
+                mt: 4,
+                mb: 4,
+                display: 'flex',
+                gap: 3,
+                flexWrap: 'wrap'
+              }}>
+                <Box sx={{
+                  flex: 1,
+                  minWidth: 250,
+                  p: 2,
+                  bgcolor: '#e3f2fd',
+                  borderLeft: '4px solid #1976d2',
+                  borderRadius: 1
+                }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#1976d2', fontWeight: 600, textTransform: 'uppercase' }}
+                  >
+                    Período A
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+                  >
+                    {getRangeLabel(startDateA, endDateA)}
+                  </Typography>
+                </Box>
+                <Box sx={{
+                  flex: 1,
+                  minWidth: 250,
+                  p: 2,
+                  bgcolor: '#f3e5f5',
+                  borderLeft: '4px solid #7b1fa2',
+                  borderRadius: 1
+                }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#7b1fa2', fontWeight: 600, textTransform: 'uppercase' }}
+                  >
+                    Período B
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+                  >
+                    {getRangeLabel(startDateB, endDateB)}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
             {/* Gráficos */}
             {reportData && (
-              <Stack direction="row" spacing={4} justifyContent="center" flexWrap="wrap">
-                <ComparisonPie data={normalizeData(reportData)} metric="ventas"/>
-                <ComparisonPie data={normalizeData(reportData)} metric="averias"/>
-                <ComparisonPie data={normalizeData(reportData)} metric="rentabilidad"/>
+              <Stack
+                direction="row"
+                spacing={4}
+                justifyContent="center"
+                flexWrap="wrap"
+              >
+                <ComparisonPieAlt
+                  data={normalizeData(reportData)}
+                  metric="ventas"
+                  periodLabels={periodLabels}
+                />
+                <ComparisonPieAlt
+                  data={normalizeData(reportData)}
+                  metric="averias"
+                  periodLabels={periodLabels}
+                />
+                <ComparisonPieAlt
+                  data={normalizeData(reportData)}
+                  metric="rentabilidad"
+                  periodLabels={periodLabels}
+                />
               </Stack>
             )}
           </Stack>

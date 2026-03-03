@@ -11,6 +11,7 @@ import {
   Button,
   Modal,
   Fab,
+  TextField,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { getPlatformCitiesComparison } from "src/services/reportService";
@@ -18,27 +19,27 @@ import { getPlatforms } from "src/services/platformService";
 import { ComparisonPieAlt } from "src/sections/report/ComparisonPie";
 import AddIcon from "@mui/icons-material/Add";
 
-const monthNames = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
-
 export const PlatformCitiesComparison = () => {
+  const today = new Date().toISOString().split("T")[0];
+  
+  // Calcular fechas por defecto
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  
+  // Periodo A: mes anterior completo
+  const prevMonthStart = new Date(currentYear, currentMonth - 1, 1).toISOString().split("T")[0];
+  const prevMonthEnd = new Date(currentYear, currentMonth, 0).toISOString().split("T")[0];
+  
+  // Periodo B: del 1 del mes actual hasta hoy
+  const currentMonthStart = new Date(currentYear, currentMonth, 1).toISOString().split("T")[0];
+  const currentMonthEnd = today;
+  
   const [platformId, setPlatformId] = useState("");
-  const [monthA, setMonthA] = useState(1);
-  const [yearA, setYearA] = useState(2026);
-  const [monthB, setMonthB] = useState(2);
-  const [yearB, setYearB] = useState(2026);
+  const [startDateA, setStartDateA] = useState(prevMonthStart);
+  const [endDateA, setEndDateA] = useState(prevMonthEnd);
+  const [startDateB, setStartDateB] = useState(currentMonthStart);
+  const [endDateB, setEndDateB] = useState(currentMonthEnd);
   const [reportData, setReportData] = useState(null);
   const [platforms, setPlatforms] = useState([]);
 
@@ -67,31 +68,39 @@ export const PlatformCitiesComparison = () => {
   }, [platforms]);
 
   useEffect(() => {
+    if (!platformId || !startDateA || !endDateA || !startDateB || !endDateB) return;
+    if (startDateA > endDateA || startDateB > endDateB) return;
+
+    const fetchReport = async () => {
+      try {
+        const response = await getPlatformCitiesComparison(
+          platformId,
+          startDateA,
+          endDateA,
+          startDateB,
+          endDateB
+        );
+        setReportData(response);
+      } catch (error) {
+        console.error("Error fetching report:", error);
+      }
+    };
+
     if (platformId) {
       fetchReport();
     }
-  }, [platformId, monthA, yearA, monthB, yearB]);
-
-  const fetchReport = async () => {
-    if (!platformId || !monthA || !yearA || !monthB || !yearB) return;
-    try {
-      const response = await getPlatformCitiesComparison(platformId, monthA, yearA, monthB, yearB);
-      setReportData(response);
-    } catch (error) {
-      console.error("Error fetching report:", error);
-    }
-  };
+  }, [platformId, startDateA, endDateA, startDateB, endDateB]);
 
   const buildComparisonData = (monthAData = {}, monthBData = {}) => [
     {
-      _id: { month: monthA, year: yearA },
+      _id: { startDate: startDateA, endDate: endDateA },
       ventas: Number(monthAData.ventasValor) || 0,
       ventasCantidad: Number(monthAData.ventasCantidad) || 0,
       averias: Number(monthAData.averias) || 0,
       rentabilidad: Number(monthAData.rentabilidad) || 0,
     },
     {
-      _id: { month: monthB, year: yearB },
+      _id: { startDate: startDateB, endDate: endDateB },
       ventas: Number(monthBData.ventasValor) || 0,
       ventasCantidad: Number(monthBData.ventasCantidad) || 0,
       averias: Number(monthBData.averias) || 0,
@@ -99,10 +108,87 @@ export const PlatformCitiesComparison = () => {
     },
   ];
 
-  const monthTitle = `${monthNames[Number(monthA) - 1] || ""} vs ${monthNames[Number(monthB) - 1] || ""}`;
+  const formatLabelDate = (date) => {
+    if (!date) return "";
+    return new Intl.DateTimeFormat("es-CO", {
+      timeZone: "America/Bogota",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(new Date(`${date}T00:00:00`));
+  };
+
+  const getRangeLabel = (startDate, endDate) => {
+    if (!startDate || !endDate) {
+      return "Periodo";
+    }
+    if (startDate === endDate) {
+      return formatLabelDate(startDate);
+    }
+    return `${formatLabelDate(startDate)} - ${formatLabelDate(endDate)}`;
+  };
+
+  const periodATitle = `PERIODO A: ${getRangeLabel(startDateA, endDateA)}`;
+  const periodBTitle = `PERIODO B: ${getRangeLabel(startDateB, endDateB)}`;
+  const periodALabel = "Periodo A";
+  const periodBLabel = "Periodo B";
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ mt: 4 }}
+      >
+      {/* Títulos de períodos */}
+      <Box sx={{
+        mb: 4,
+        display: 'flex',
+        gap: 3,
+        flexWrap: 'wrap'
+      }}>
+        <Box sx={{
+          flex: 1,
+          minWidth: 250,
+          p: 2,
+          bgcolor: '#e3f2fd',
+          borderLeft: '4px solid #1976d2',
+          borderRadius: 1
+        }}>
+          <Typography
+            variant="caption"
+            sx={{ color: '#1976d2', fontWeight: 600, textTransform: 'uppercase' }}
+          >
+            Período A
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+          >
+            {getRangeLabel(startDateA, endDateA)}
+          </Typography>
+        </Box>
+        <Box sx={{
+          flex: 1,
+          minWidth: 250,
+          p: 2,
+          bgcolor: '#f3e5f5',
+          borderLeft: '4px solid #7b1fa2',
+          borderRadius: 1
+        }}>
+          <Typography
+            variant="caption"
+            sx={{ color: '#7b1fa2', fontWeight: 600, textTransform: 'uppercase' }}
+          >
+            Período B
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+          >
+            {getRangeLabel(startDateB, endDateB)}
+          </Typography>
+        </Box>
+      </Box>
+
       {/* Botón flotante */}
       <Fab
         color="primary"
@@ -114,7 +200,10 @@ export const PlatformCitiesComparison = () => {
       </Fab>
 
       {/* Modal con formulario */}
-      <Modal open={open} onClose={handleClose}>
+      <Modal
+        open={open}
+        onClose={handleClose}
+      >
         <Box
           sx={{
             position: "absolute",
@@ -129,7 +218,11 @@ export const PlatformCitiesComparison = () => {
           }}
         >
           <Stack spacing={3}>
-            <Typography variant="h6" textAlign="center" gutterBottom>
+            <Typography
+              variant="h6"
+              textAlign="center"
+              gutterBottom
+            >
               Generar Reporte Comparativo
             </Typography>
 
@@ -145,7 +238,10 @@ export const PlatformCitiesComparison = () => {
                   <em>Seleccione una plataforma</em>
                 </MenuItem>
                 {platforms.map((platform) => (
-                  <MenuItem key={platform._id} value={platform._id}>
+                  <MenuItem
+                    key={platform._id}
+                    value={platform._id}
+                  >
                     {platform.name}
                   </MenuItem>
                 ))}
@@ -153,67 +249,58 @@ export const PlatformCitiesComparison = () => {
             </FormControl>
 
             {/* Periodo A */}
-            <Stack direction="row" spacing={2}>
-              <FormControl fullWidth>
-                <InputLabel id="monthA-label">Mes A</InputLabel>
-                <Select
-                  labelId="monthA-label"
-                  value={monthA}
-                  onChange={(e) => setMonthA(e.target.value)}
-                >
-                  {monthNames.map((m, i) => (
-                    <MenuItem key={i} value={i + 1}>
-                      {m}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel id="yearA-label">Año A</InputLabel>
-                <Select
-                  labelId="yearA-label"
-                  value={yearA}
-                  onChange={(e) => setYearA(e.target.value)}
-                >
-                  <MenuItem value={2024}>2024</MenuItem>
-                  <MenuItem value={2025}>2025</MenuItem>
-                  <MenuItem value={2026}>2026</MenuItem>
-                </Select>
-              </FormControl>
+            <Stack
+              direction="row"
+              spacing={2}
+            >
+              <TextField
+                fullWidth
+                label="Desde A"
+                type="date"
+                value={startDateA}
+                onChange={(e) => setStartDateA(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                label="Hasta A"
+                type="date"
+                value={endDateA}
+                onChange={(e) => setEndDateA(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
             </Stack>
 
             {/* Periodo B */}
-            <Stack direction="row" spacing={2}>
-              <FormControl fullWidth>
-                <InputLabel id="monthB-label">Mes B</InputLabel>
-                <Select
-                  labelId="monthB-label"
-                  value={monthB}
-                  onChange={(e) => setMonthB(e.target.value)}
-                >
-                  {monthNames.map((m, i) => (
-                    <MenuItem key={i} value={i + 1}>
-                      {m}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel id="yearB-label">Año B</InputLabel>
-                <Select
-                  labelId="yearB-label"
-                  value={yearB}
-                  onChange={(e) => setYearB(e.target.value)}
-                >
-                  <MenuItem value={2024}>2024</MenuItem>
-                  <MenuItem value={2025}>2025</MenuItem>
-                  <MenuItem value={2026}>2026</MenuItem>
-                </Select>
-              </FormControl>
+            <Stack
+              direction="row"
+              spacing={2}
+            >
+              <TextField
+                fullWidth
+                label="Desde B"
+                type="date"
+                value={startDateB}
+                onChange={(e) => setStartDateB(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                label="Hasta B"
+                type="date"
+                value={endDateB}
+                onChange={(e) => setEndDateB(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
             </Stack>
 
             {/* Botón */}
-            <Button variant="contained" color="primary" onClick={fetchReport} fullWidth>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleClose}
+              fullWidth
+            >
               Generar Reporte
             </Button>
           </Stack>
@@ -237,23 +324,29 @@ export const PlatformCitiesComparison = () => {
                   flexShrink: 0,
                 }}
               >
-                <Typography variant="h5" align="center">
+                <Typography
+                  variant="h5"
+                  align="center"
+                >
                   {cityReport.city}
                 </Typography>
                 <ComparisonPieAlt
                   data={buildComparisonData(cityReport.monthA, cityReport.monthB)}
                   metric="ventas"
-                  title={monthTitle}
+                  title="Ventas"
+                  periodLabels={[periodALabel, periodBLabel]}
                 />
                 <ComparisonPieAlt
                   data={buildComparisonData(cityReport.monthA, cityReport.monthB)}
                   metric="averias"
-                  title={monthTitle}
+                  title="Averías"
+                  periodLabels={[periodALabel, periodBLabel]}
                 />
                 <ComparisonPieAlt
                   data={buildComparisonData(cityReport.monthA, cityReport.monthB)}
                   metric="rentabilidad"
-                  title={monthTitle}
+                  title="Rentabilidad"
+                  periodLabels={[periodALabel, periodBLabel]}
                 />
               </Box>
             );

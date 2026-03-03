@@ -1,34 +1,60 @@
 import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
+import { createPortal } from "react-dom";
+import { useState, useEffect } from "react";
 
 const COLORS = ["#6EC6FF", "#4DD0E1", "#FFB74D", "#81C784"];
 
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, value }) => {
-  const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+const CustomTooltip = ({ active, payload, METRIC_COLORS, metric, position }) => {
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
-  return (
-    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
-      {value}
-    </text>
-  );
+  useEffect(() => {
+    if (active && position) {
+      // Posicionar tooltip cerca del mouse, pero más arriba para no tapar el puntero
+      setTooltipPos({
+        x: position.x - 15,
+        y: position.y - 40
+      });
+    }
+  }, [active, position]);
+
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const real = data.real;
+    const perc = data.percentage;
+    const displayValue = typeof perc === "number" 
+      ? `${real.toLocaleString("es-CO")} (${perc.toFixed(0)}%)`
+      : real.toLocaleString("es-CO");
+
+    const tooltipElement = (
+      <div
+        style={{
+          position: 'fixed',
+          left: `${tooltipPos.x}px`,
+          top: `${tooltipPos.y}px`,
+          backgroundColor: '#fff',
+          border: `2px solid ${METRIC_COLORS[metric.toLowerCase()].main}`,
+          borderRadius: '8px',
+          padding: '10px 14px',
+          fontSize: '12px',
+          fontWeight: 600,
+          color: '#333',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+          zIndex: 9999
+        }}
+      >
+        {displayValue}
+      </div>
+    );
+
+    return createPortal(tooltipElement, document.body);
+  }
+  return null;
 };
 
-const renderPercentageLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-  const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
-
-export const ComparisonPieAlt = ({ data, metric, title }) => {
+export const ComparisonPieAlt = ({ data, metric, title, periodLabels = ["Periodo A", "Periodo B"] }) => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
       // Solo para ventas: mostrar info de ambos meses y diferencia
       let ventasA = null, ventasB = null, cantidadA = null, cantidadB = null, diferencia = null, diferenciaCantidad = null;
       if (metric === "ventas" && data[0] && data[1]) {
@@ -65,8 +91,11 @@ export const ComparisonPieAlt = ({ data, metric, title }) => {
   // Para la visualización, limitamos a 100% pero mostramos el real en la etiqueta
   const visualPercentage = Math.max(Math.min(percentageB, 100), 0);
 
+  const labelA = periodLabels[0] || "Periodo A";
+  const labelB = periodLabels[1] || "Periodo B";
+
   const chartData = [
-    { name: "Progreso Mes", value: visualPercentage, real: valueB, percentage: percentageReal },
+    { name: `Progreso ${labelB}`, value: visualPercentage, real: valueB, percentage: percentageReal },
     { name: "Restante", value: 100 - visualPercentage, real: valueA - valueB },
   ];
 
@@ -90,16 +119,24 @@ const METRIC_COLORS = {
         padding: "12px",
         borderRadius: "12px",
         background: "#fff",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
       }}
     >
       {title && (
-        <div style={{ textAlign: "center", marginBottom: 6, fontSize: 14, fontWeight: 600 }}>
+        <div style={{ textAlign: "center", marginBottom: 12, fontSize: 16, fontWeight: 700 }}>
           {title}
         </div>
       )}
-      <h4 style={{ textAlign: "center", marginTop: 0 }}>{metric.charAt(0).toUpperCase() + metric.slice(1)}</h4>
-      <div style={{ position: 'relative', width: 250, height: 250, margin: '0 auto' }}>
+      <div 
+        style={{ position: 'relative', width: 250, height: 250, margin: '0 auto' }}
+        onMouseMove={(e) => {
+          setMousePos({
+            x: e.clientX,
+            y: e.clientY
+          });
+        }}
+        onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
+      >
         {/* Valor central encima de la torta, fondo blanco, bien formateado */}
         <div
           style={{
@@ -110,7 +147,7 @@ const METRIC_COLORS = {
             background: '#fff',
             borderRadius: 16,
             padding: '4px 12px',
-            fontSize: 18,
+            fontSize: 13,
             fontWeight: 'bold',
             color: METRIC_COLORS[metric.toLowerCase()].main,
             zIndex: 2,
@@ -163,16 +200,11 @@ const METRIC_COLORS = {
         </Pie>
         {/* Valor real en el centro, con fondo blanco y formato */}
         {/* ...existing code... */}
-        <Tooltip
-          formatter={(value, name, props) => {
-            // Show real value and real percentage
-            const real = props.payload.real;
-            const perc = props.payload.percentage;
-            if (typeof perc === "number") {
-              return [`${real.toLocaleString("es-CO")} (${perc.toFixed(0)}%)`, name];
-            }
-            return [`${real.toLocaleString("es-CO")}`, name];
-          }}
+        <Tooltip 
+          content={<CustomTooltip METRIC_COLORS={METRIC_COLORS} metric={metric} position={mousePos} />}
+          wrapperStyle={{ outline: 'none', pointerEvents: 'none' }}
+          cursor={false}
+          isAnimationActive={false}
         />
         <Legend />
         </PieChart>
@@ -181,18 +213,18 @@ const METRIC_COLORS = {
       {metric === "ventas" && ventasA && ventasB && cantidadA && cantidadB && (
         <div style={{ textAlign: "left", marginTop: 8, fontSize: 13, color: '#333', padding: '0 8px' }}>
           <div style={{ color: METRIC_COLORS[metric.toLowerCase()].main, fontWeight: 600 }}>
-            Ventas hechas en el mes de enero: <span style={{ fontWeight: 700 }}>{ventasA}</span> ({cantidadA} unidades)
+            Ventas en {labelA}: <span style={{ fontWeight: 700 }}>{ventasA}</span> ({cantidadA} unidades)
           </div>
           <div style={{ color: METRIC_COLORS[metric.toLowerCase()].main, fontWeight: 600 }}>
-            Ventas hechas en el mes de febrero: <span style={{ fontWeight: 700 }}>{ventasB}</span> ({cantidadB} unidades)
+            Ventas en {labelB}: <span style={{ fontWeight: 700 }}>{ventasB}</span> ({cantidadB} unidades)
           </div>
           {Number(data[1].ventas) < Number(data[0].ventas) ? (
             <div style={{ color: '#D32F2F', fontWeight: 600 }}>
-              Falta a febrero para llegar a enero: <span style={{ fontWeight: 700 }}>{Math.abs(diferencia).toLocaleString("es-CO")}</span> ({Math.abs(diferenciaCantidad).toLocaleString("es-CO")} unidades)
+              Falta a {labelB} para llegar a {labelA}: <span style={{ fontWeight: 700 }}>{Math.abs(diferencia).toLocaleString("es-CO")}</span> ({Math.abs(diferenciaCantidad).toLocaleString("es-CO")} unidades)
             </div>
           ) : (
             <div style={{ color: '#388E3C', fontWeight: 600 }}>
-              Febrero superó a enero por: <span style={{ fontWeight: 700 }}>{Math.abs(diferencia).toLocaleString("es-CO")}</span> ({Math.abs(diferenciaCantidad).toLocaleString("es-CO")} unidades)
+              {labelB} superó a {labelA} por: <span style={{ fontWeight: 700 }}>{Math.abs(diferencia).toLocaleString("es-CO")}</span> ({Math.abs(diferenciaCantidad).toLocaleString("es-CO")} unidades)
             </div>
           )}
         </div>
