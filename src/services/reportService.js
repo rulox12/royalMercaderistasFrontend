@@ -4,23 +4,23 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Obtiene la comparación de ventas, averías y rentabilidad
- * entre dos meses/años para una tienda específica.
+ * entre dos rangos de fechas para una tienda específica.
  *
  * @param {string} shopId - ID de la tienda
- * @param {number} monthA - Mes A (1-12)
- * @param {number} yearA - Año A (ej: 2024)
- * @param {number} monthB - Mes B (1-12)
- * @param {number} yearB - Año B (ej: 2025)
+ * @param {string} startDateA - Fecha inicial del periodo A (YYYY-MM-DD)
+ * @param {string} endDateA - Fecha final del periodo A (YYYY-MM-DD)
+ * @param {string} startDateB - Fecha inicial del periodo B (YYYY-MM-DD)
+ * @param {string} endDateB - Fecha final del periodo B (YYYY-MM-DD)
  * @returns {Promise<Array>} Datos con ventas, averías y rentabilidad
  */
-const getMonthlyComparison = async (shopId, monthA, yearA, monthB, yearB) => {
+const getDateRangeComparison = async (shopId, startDateA, endDateA, startDateB, endDateB) => {
   try {
-    const response = await axios.get(`${API_URL}/orders/compare-month-year`, {
-      params: { shopId, monthA, yearA, monthB, yearB }
+    const response = await axios.get(`${API_URL}/orders/compare-date-range`, {
+      params: { shopId, startDateA, endDateA, startDateB, endDateB }
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching monthly comparison:', error);
+    console.error('Error fetching date range comparison:', error);
     throw error;
   }
 };
@@ -38,10 +38,10 @@ const getPlatformComparison = async (startDate, endDate) => {
 };
 
 
-const getPlatformCitiesComparison = async (platformId, monthA, yearA, monthB, yearB) => {
+const getPlatformCitiesComparison = async (platformId, startDateA, endDateA, startDateB, endDateB) => {
   try {
     const response = await axios.get(`${API_URL}/orders/compare-platform-cities`, {
-      params: { platformId, monthA, yearA, monthB, yearB }
+      params: { platformId, startDateA, endDateA, startDateB, endDateB }
     });
     return response.data;
   } catch (error) {
@@ -50,4 +50,4 @@ const getPlatformCitiesComparison = async (platformId, monthA, yearA, monthB, ye
   }
 };
 
-export { getMonthlyComparison, getPlatformComparison, getPlatformCitiesComparison };
+export { getDateRangeComparison, getPlatformComparison, getPlatformCitiesComparison };
