@@ -7,6 +7,7 @@
   "private": false,
   "scripts": {
     "dev": "next",
+    "dev:public": "NEXT_PUBLIC_API_URL=/api next",
     "build": "next build",
     "start": "next start",
     "export": "next export",

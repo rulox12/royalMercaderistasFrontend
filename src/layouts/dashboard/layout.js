@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { styled } from '@mui/material/styles';
 import { withAuthGuard } from 'src/hocs/with-auth-guard';
 import { SideNav } from './side-nav';
@@ -25,7 +25,8 @@ const LayoutContainer = styled('div')({
 
 export const Layout = withAuthGuard((props) => {
   const { children } = props;
-  const pathname = usePathname();
+  const router = useRouter();
+  const pathname = router.asPath;
   const [openNav, setOpenNav] = useState(false);
 
   const handlePathnameChange = useCallback(

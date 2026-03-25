@@ -1,4 +1,4 @@
-import { Box, Card, Container, Grid, Stack, Typography, FormControl, InputLabel, Select, MenuItem, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Box, Card, Container, Grid, Stack, Typography, FormControl, InputLabel, Select, MenuItem, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { getLocalDashboardData } from 'src/services/localDashboardService';
 import { getPlatforms } from 'src/services/platformService';
@@ -50,6 +50,7 @@ export const LocalDashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [productSortDirection, setProductSortDirection] = useState('asc');
 
   const formatLabelDate = (date) => {
     if (!date) return '';
@@ -71,10 +72,17 @@ export const LocalDashboard = () => {
     return `${formatLabelDate(startDate)} - ${formatLabelDate(endDate)}`;
   };
 
-  const periodALabel = 'Periodo A';
-  const periodBLabel = 'Periodo B';
-  const periodATitle = `PERIODO A: ${getRangeLabel(startDateA, endDateA)}`;
-  const periodBTitle = `PERIODO B: ${getRangeLabel(startDateB, endDateB)}`;
+  const handleProductSort = () => {
+    setProductSortDirection((prevDirection) => (prevDirection === 'asc' ? 'desc' : 'asc'));
+  };
+
+  const sortedProducts = [...products].sort((productA, productB) => {
+    const nameA = productA.name || '';
+    const nameB = productB.name || '';
+    const comparison = nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+
+    return productSortDirection === 'asc' ? comparison : -comparison;
+  });
 
   const handleFilter = async () => {
     if (!local || !startDateA || !endDateA || !startDateB || !endDateB) return;
@@ -102,6 +110,9 @@ export const LocalDashboard = () => {
       setLoading(false);
     }
   };
+
+  const actualColumnSx = { bgcolor: '#e3f2fd' };
+  const comparativoColumnSx = { bgcolor: '#f3e5f5' };
 
   return (
     <Container maxWidth="xl">
@@ -168,23 +179,7 @@ export const LocalDashboard = () => {
           </FormControl>
           <TextField
             sx={{ minWidth: 180 }}
-            label="Desde A"
-            type="date"
-            value={startDateA}
-            onChange={e => setStartDateA(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            sx={{ minWidth: 180 }}
-            label="Hasta A"
-            type="date"
-            value={endDateA}
-            onChange={e => setEndDateA(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            sx={{ minWidth: 180 }}
-            label="Desde B"
+            label="Desde Actual (A)"
             type="date"
             value={startDateB}
             onChange={e => setStartDateB(e.target.value)}
@@ -192,10 +187,26 @@ export const LocalDashboard = () => {
           />
           <TextField
             sx={{ minWidth: 180 }}
-            label="Hasta B"
+            label="Hasta Actual (A)"
             type="date"
             value={endDateB}
             onChange={e => setEndDateB(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            sx={{ minWidth: 180 }}
+            label="Desde Comparativo (C)"
+            type="date"
+            value={startDateA}
+            onChange={e => setStartDateA(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            sx={{ minWidth: 180 }}
+            label="Hasta Comparativo (C)"
+            type="date"
+            value={endDateA}
+            onChange={e => setEndDateA(e.target.value)}
             InputLabelProps={{ shrink: true }}
           />
           <Button
@@ -226,16 +237,35 @@ export const LocalDashboard = () => {
             borderRadius: 1
           }}>
             <Typography
-              variant="caption"
-              sx={{ color: '#1976d2', fontWeight: 600, textTransform: 'uppercase' }}
-            >
-              Período A
-            </Typography>
-            <Typography
               variant="body2"
-              sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+              sx={{
+                fontWeight: 600,
+                color: '#424242',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
             >
-              {getRangeLabel(startDateA, endDateA)}
+              <Box
+                component="span"
+                sx={{
+                  color: '#1976d2',
+                  textTransform: 'uppercase',
+                  fontSize: '0.75rem',
+                  flexShrink: 0
+                }}
+              >
+                Actual (A)
+              </Box>
+              <Box
+                component="span"
+                sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+              >
+                {getRangeLabel(startDateB, endDateB)}
+              </Box>
             </Typography>
           </Box>
           <Box sx={{
@@ -247,16 +277,35 @@ export const LocalDashboard = () => {
             borderRadius: 1
           }}>
             <Typography
-              variant="caption"
-              sx={{ color: '#7b1fa2', fontWeight: 600, textTransform: 'uppercase' }}
-            >
-              Período B
-            </Typography>
-            <Typography
               variant="body2"
-              sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+              sx={{
+                fontWeight: 600,
+                color: '#424242',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
             >
-              {getRangeLabel(startDateB, endDateB)}
+              <Box
+                component="span"
+                sx={{
+                  color: '#7b1fa2',
+                  textTransform: 'uppercase',
+                  fontSize: '0.75rem',
+                  flexShrink: 0
+                }}
+              >
+                Comparativo (C)
+              </Box>
+              <Box
+                component="span"
+                sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+              >
+                {getRangeLabel(startDateA, endDateA)}
+              </Box>
             </Typography>
           </Box>
         </Box>
@@ -278,7 +327,7 @@ export const LocalDashboard = () => {
             variant="subtitle1"
             sx={{ mb: 2, fontWeight: 600 }}
           >
-            Indicadores mostrados: Periodo A
+            Indicadores mostrados: Actual (A)
           </Typography>
           <Grid
             container
@@ -286,7 +335,7 @@ export const LocalDashboard = () => {
             sx={{ mb: 4 }}
           >
             {['pedidos','recibidos','averias','ventas','rentabilidad'].map((key, idx) => {
-              const indA = indicators[key]?.monthA || { valor: 0, unidades: 0 };
+              const indA = indicators[key]?.monthB || { valor: 0, unidades: 0 };
               return (
                 <Grid
                   item
@@ -323,7 +372,7 @@ export const LocalDashboard = () => {
         </>
       )}
 
-      {/* Tabla de productos - Solo Periodo A */}
+      {/* Tabla de productos - Solo Actual (A) */}
       {products.length > 0 && (
         <>
           <Card sx={{ p: 2, mb: 3 }}>
@@ -331,7 +380,7 @@ export const LocalDashboard = () => {
               variant="h6"
               sx={{ mb: 2 }}
             >
-              Detalle de productos - Periodo A
+              Detalle de productos - Actual (A)
             </Typography>
             <TableContainer
               component={Paper}
@@ -342,27 +391,42 @@ export const LocalDashboard = () => {
                 size="small"
               >
                 <TableHead>
-                  <TableRow>
-                    <TableCell>Producto</TableCell>
+                  <TableRow
+                    sx={{
+                      '& .MuiTableCell-root': { fontSize: '0.72rem', py: 1 },
+                      '& .MuiTableSortLabel-root': { fontSize: '0.72rem' }
+                    }}
+                  >
+                    <TableCell sortDirection={productSortDirection}>
+                      <TableSortLabel
+                        active
+                        direction={productSortDirection}
+                        onClick={handleProductSort}
+                      >
+                        Producto
+                      </TableSortLabel>
+                    </TableCell>
                     <TableCell align="right">Pedidos</TableCell>
                     <TableCell align="right">Recibidos</TableCell>
                     <TableCell align="right">Averías</TableCell>
                     <TableCell align="right">Ventas</TableCell>
+                    <TableCell align="right">Ventas $</TableCell>
                     <TableCell align="right">Rentabilidad</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {products.map((prod, idx) => (
+                  {sortedProducts.map((prod, idx) => (
                     <TableRow
                       key={idx}
                       hover
                     >
                       <TableCell>{prod.name}</TableCell>
-                      <TableCell align="right">{prod.pedidosA}</TableCell>
-                      <TableCell align="right">{prod.recibidosA}</TableCell>
-                      <TableCell align="right">{prod.averiasA}</TableCell>
-                      <TableCell align="right">${prod.ventasA.toLocaleString()}</TableCell>
-                      <TableCell align="right">${prod.rentabilidadA.toLocaleString()}</TableCell>
+                      <TableCell align="right">{prod.pedidosB}</TableCell>
+                      <TableCell align="right">{prod.recibidosB}</TableCell>
+                      <TableCell align="right">{prod.averiasB}</TableCell>
+                      <TableCell align="right">{(prod.ventasBUnidades || 0).toLocaleString()}</TableCell>
+                      <TableCell align="right">${prod.ventasB.toLocaleString()}</TableCell>
+                      <TableCell align="right">${prod.rentabilidadB.toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -370,13 +434,13 @@ export const LocalDashboard = () => {
             </TableContainer>
           </Card>
 
-          {/* Tabla de comparación - Periodo A vs Periodo B */}
+          {/* Tabla de comparación - Comparativo (C) vs Actual (A) */}
           <Card sx={{ p: 2 }}>
             <Typography
               variant="h6"
               sx={{ mb: 2 }}
             >
-              Comparación Periodo A vs Periodo B
+              Comparación Actual (A) vs Comparativo (C)
             </Typography>
             <TableContainer
               component={Paper}
@@ -388,36 +452,48 @@ export const LocalDashboard = () => {
               >
                 <TableHead>
                   <TableRow>
-                    <TableCell>Producto</TableCell>
-                    <TableCell align="right">Pedidos A</TableCell>
-                    <TableCell align="right">Pedidos B</TableCell>
-                    <TableCell align="right">Recibidos A</TableCell>
-                    <TableCell align="right">Recibidos B</TableCell>
-                    <TableCell align="right">Averías A</TableCell>
-                    <TableCell align="right">Averías B</TableCell>
-                    <TableCell align="right">Ventas A</TableCell>
-                    <TableCell align="right">Ventas B</TableCell>
-                    <TableCell align="right">Rentabilidad A</TableCell>
-                    <TableCell align="right">Rentabilidad B</TableCell>
+                    <TableCell sortDirection={productSortDirection}>
+                      <TableSortLabel
+                        active
+                        direction={productSortDirection}
+                        onClick={handleProductSort}
+                      >
+                        Producto
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>Pedidos (A)</TableCell>
+                    <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>Pedidos (C)</TableCell>
+                    <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>Recibidos (A)</TableCell>
+                    <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>Recibidos (C)</TableCell>
+                    <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>Averías (A)</TableCell>
+                    <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>Averías (C)</TableCell>
+                    <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>Ventas (A)</TableCell>
+                    <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>Ventas $ (A)</TableCell>
+                    <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>Ventas (C)</TableCell>
+                    <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>Ventas $ (C)</TableCell>
+                    <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>Rentabilidad (A)</TableCell>
+                    <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>Rentabilidad (C)</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {products.map((prod, idx) => (
+                  {sortedProducts.map((prod, idx) => (
                     <TableRow
                       key={idx}
                       hover
                     >
                       <TableCell>{prod.name}</TableCell>
-                      <TableCell align="right">{prod.pedidosA}</TableCell>
-                      <TableCell align="right">{prod.pedidosB}</TableCell>
-                      <TableCell align="right">{prod.recibidosA}</TableCell>
-                      <TableCell align="right">{prod.recibidosB}</TableCell>
-                      <TableCell align="right">{prod.averiasA}</TableCell>
-                      <TableCell align="right">{prod.averiasB}</TableCell>
-                      <TableCell align="right">${prod.ventasA.toLocaleString()}</TableCell>
-                      <TableCell align="right">${prod.ventasB.toLocaleString()}</TableCell>
-                      <TableCell align="right">${prod.rentabilidadA.toLocaleString()}</TableCell>
-                      <TableCell align="right">${prod.rentabilidadB.toLocaleString()}</TableCell>
+                      <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>{prod.pedidosB}</TableCell>
+                      <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>{prod.pedidosA}</TableCell>
+                      <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>{prod.recibidosB}</TableCell>
+                      <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>{prod.recibidosA}</TableCell>
+                      <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>{prod.averiasB}</TableCell>
+                      <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>{prod.averiasA}</TableCell>
+                      <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>{(prod.ventasBUnidades || 0).toLocaleString()}</TableCell>
+                      <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>${prod.ventasB.toLocaleString()}</TableCell>
+                      <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>{(prod.ventasAUnidades || 0).toLocaleString()}</TableCell>
+                      <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>${prod.ventasA.toLocaleString()}</TableCell>
+                      <TableCell sx={{ ...actualColumnSx, textAlign: 'right' }}>${prod.rentabilidadB.toLocaleString()}</TableCell>
+                      <TableCell sx={{ ...comparativoColumnSx, textAlign: 'right' }}>${prod.rentabilidadA.toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
