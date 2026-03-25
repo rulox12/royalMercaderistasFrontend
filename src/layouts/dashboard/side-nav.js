@@ -54,12 +54,24 @@ export const SideNav = (props) => {
     setCurrentEmail(email);
   }, [user]);
 
-  const allowedEmails = ['julio@gmail.com', 'danielpcpx@hotmail.com'];
-  const startRestrictedIndex = items.findIndex((item) => item.title === 'Grafica Comparación de meses');
+  const defaultAllowedEmails = ['julio@gmail.com', 'danielpcpx@hotmail.com'];
+  const allowedEmailsEnv = process.env.NEXT_PUBLIC_REPORT_ALLOWED_EMAILS || '';
+  const allowedEmails = (allowedEmailsEnv
+    ? allowedEmailsEnv.split(/[\n,]/)
+    : defaultAllowedEmails)
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+
+  const restrictedMenuTitles = new Set([
+    'Dashboard Local',
+    'Grafica Comparación de meses',
+    'Comparar Órdenes'
+  ]);
+
   const canSeeRestrictedItems = allowedEmails.includes(currentEmail);
-  const visibleItems = startRestrictedIndex === -1 || canSeeRestrictedItems
+  const visibleItems = canSeeRestrictedItems
     ? items
-    : items.slice(0, startRestrictedIndex);
+    : items.filter((item) => !restrictedMenuTitles.has(item.title));
 
   const content = (
     <Scrollbar
