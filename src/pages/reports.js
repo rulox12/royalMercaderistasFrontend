@@ -9,7 +9,8 @@ import {
   Select,
   MenuItem,
   Button,
-  TextField
+  TextField,
+  Paper
 } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { useState, useEffect } from 'react';
@@ -105,9 +106,7 @@ const Page = () => {
     return `${formatLabelDate(startDate)} - ${formatLabelDate(endDate)}`;
   };
 
-  const periodLabels = ['Periodo A', 'Periodo B'];
-  const periodATitle = `PERIODO A: ${getRangeLabel(startDateA, endDateA)}`;
-  const periodBTitle = `PERIODO B: ${getRangeLabel(startDateB, endDateB)}`;
+  const periodLabels = ['Comparativo', 'Actual'];
 
   useEffect(() => {
     fetchShops();
@@ -126,84 +125,109 @@ const Page = () => {
           <Stack spacing={3}>
             <Typography variant="h4">Comparar Ventas, Averías y Rentabilidad</Typography>
 
-            {/* Select de Tienda */}
-            <FormControl sx={{ width: 250 }}>
-              <InputLabel id="shop-select-label">Tienda</InputLabel>
-              <Select
-                labelId="shop-select-label"
-                value={selectedShop}
-                onChange={(e) => setSelectedShop(e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>Seleccione una tienda</em>
-                </MenuItem>
-                {shops.map((shop) => (
-                  <MenuItem
-                    key={shop._id}
-                    value={shop._id}
+            <Paper sx={{ p: 3 }}>
+              <Stack spacing={3}>
+                <FormControl sx={{ maxWidth: 320 }}>
+                  <InputLabel id="shop-select-label">Tienda</InputLabel>
+                  <Select
+                    labelId="shop-select-label"
+                    value={selectedShop}
+                    onChange={(e) => setSelectedShop(e.target.value)}
                   >
-                    {shop.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                    <MenuItem value="">
+                      <em>Seleccione una tienda</em>
+                    </MenuItem>
+                    {shops.map((shop) => (
+                      <MenuItem
+                        key={shop._id}
+                        value={shop._id}
+                      >
+                        {shop.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-            {/* Rango A */}
-            <Stack
-              direction="row"
-              spacing={2}
-            >
-              <FormControl sx={{ width: 220 }}>
-                <TextField
-                  label="Desde A"
-                  type="date"
-                  value={startDateA}
-                  onChange={(e) => setStartDateA(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </FormControl>
-              <FormControl sx={{ width: 220 }}>
-                <TextField
-                  label="Hasta A"
-                  type="date"
-                  value={endDateA}
-                  onChange={(e) => setEndDateA(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </FormControl>
-            </Stack>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      md: '1fr 1fr'
+                    },
+                    gap: 2
+                  }}
+                >
+                  <Stack spacing={1.5}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: 'text.secondary' }}
+                    >
+                      Periodo Actual
+                    </Typography>
+                    <Stack
+                      direction={{ xs: 'column', sm: 'row' }}
+                      spacing={2}
+                    >
+                      <TextField
+                        fullWidth
+                        label="Desde"
+                        type="date"
+                        value={startDateB}
+                        onChange={(e) => setStartDateB(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Hasta"
+                        type="date"
+                        value={endDateB}
+                        onChange={(e) => setEndDateB(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    </Stack>
+                  </Stack>
 
-            {/* Rango B */}
-            <Stack
-              direction="row"
-              spacing={2}
-            >
-              <FormControl sx={{ width: 220 }}>
-                <TextField
-                  label="Desde B"
-                  type="date"
-                  value={startDateB}
-                  onChange={(e) => setStartDateB(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </FormControl>
-              <FormControl sx={{ width: 220 }}>
-                <TextField
-                  label="Hasta B"
-                  type="date"
-                  value={endDateB}
-                  onChange={(e) => setEndDateB(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </FormControl>
-            </Stack>
+                  <Stack spacing={1.5}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: 'text.secondary' }}
+                    >
+                      Periodo Comparativo
+                    </Typography>
+                    <Stack
+                      direction={{ xs: 'column', sm: 'row' }}
+                      spacing={2}
+                    >
+                      <TextField
+                        fullWidth
+                        label="Desde"
+                        type="date"
+                        value={startDateA}
+                        onChange={(e) => setStartDateA(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Hasta"
+                        type="date"
+                        value={endDateA}
+                        onChange={(e) => setEndDateA(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    </Stack>
+                  </Stack>
+                </Box>
 
-            <Button
-              variant="contained"
-              onClick={fetchReport}
-            >
-              Comparar
-            </Button>
+                <Button
+                  variant="contained"
+                  onClick={fetchReport}
+                  fullWidth
+                >
+                  Comparar
+                </Button>
+              </Stack>
+            </Paper>
 
             {/* Títulos de períodos */}
             {reportData && (
@@ -218,27 +242,6 @@ const Page = () => {
                   flex: 1,
                   minWidth: 250,
                   p: 2,
-                  bgcolor: '#e3f2fd',
-                  borderLeft: '4px solid #1976d2',
-                  borderRadius: 1
-                }}>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: '#1976d2', fontWeight: 600, textTransform: 'uppercase' }}
-                  >
-                    Período A
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
-                  >
-                    {getRangeLabel(startDateA, endDateA)}
-                  </Typography>
-                </Box>
-                <Box sx={{
-                  flex: 1,
-                  minWidth: 250,
-                  p: 2,
                   bgcolor: '#f3e5f5',
                   borderLeft: '4px solid #7b1fa2',
                   borderRadius: 1
@@ -247,13 +250,34 @@ const Page = () => {
                     variant="caption"
                     sx={{ color: '#7b1fa2', fontWeight: 600, textTransform: 'uppercase' }}
                   >
-                    Período B
+                    Período Actual
                   </Typography>
                   <Typography
                     variant="body2"
                     sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
                   >
                     {getRangeLabel(startDateB, endDateB)}
+                  </Typography>
+                </Box>
+                <Box sx={{
+                  flex: 1,
+                  minWidth: 250,
+                  p: 2,
+                  bgcolor: '#e3f2fd',
+                  borderLeft: '4px solid #1976d2',
+                  borderRadius: 1
+                }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#1976d2', fontWeight: 600, textTransform: 'uppercase' }}
+                  >
+                    Período Comparativo
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+                  >
+                    {getRangeLabel(startDateA, endDateA)}
                   </Typography>
                 </Box>
               </Box>

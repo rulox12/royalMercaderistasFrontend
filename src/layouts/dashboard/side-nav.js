@@ -1,5 +1,5 @@
 import NextLink from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import ArrowTopRightOnSquareIcon from '@heroicons/react/24/solid/ArrowTopRightOnSquareIcon';
@@ -21,7 +21,8 @@ import { SideNavItem } from './side-nav-item';
 
 export const SideNav = (props) => {
   const { open, onClose } = props;
-  const pathname = usePathname();
+  const router = useRouter();
+  const pathname = router.pathname;
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   const { user, signOut } = useAuthContext();
   const [currentEmail, setCurrentEmail] = useState('');

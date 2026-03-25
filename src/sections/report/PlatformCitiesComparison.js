@@ -16,30 +16,50 @@ import {
 import { useState, useEffect } from "react";
 import { getPlatformCitiesComparison } from "src/services/reportService";
 import { getPlatforms } from "src/services/platformService";
-import { ComparisonPieAlt } from "src/sections/report/ComparisonPie";
+import { ComparisonPieAlt, ComparisonBarAlt, ComparisonProgressAlt } from "src/sections/report/ComparisonPie";
 import AddIcon from "@mui/icons-material/Add";
 
 export const PlatformCitiesComparison = () => {
-  const today = new Date().toISOString().split("T")[0];
-  
-  // Calcular fechas por defecto
+  const toISODate = (date) => date.toISOString().split("T")[0];
+
+  // Calcular fechas por defecto con corte 26-25
   const now = new Date();
+  const currentDay = now.getDate();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  
-  // Periodo A: mes anterior completo
-  const prevMonthStart = new Date(currentYear, currentMonth - 1, 1).toISOString().split("T")[0];
-  const prevMonthEnd = new Date(currentYear, currentMonth, 0).toISOString().split("T")[0];
-  
-  // Periodo B: del 1 del mes actual hasta hoy
-  const currentMonthStart = new Date(currentYear, currentMonth, 1).toISOString().split("T")[0];
-  const currentMonthEnd = today;
+
+  let actualStartDate;
+  let actualEndDate;
+  let comparativeStartDate;
+  let comparativeEndDate;
+
+  if (currentDay <= 25) {
+    // Actual: 26 del mes pasado al 25 del mes actual
+    // Comparativo: 26 de hace dos meses al 25 del mes pasado
+    actualStartDate = new Date(currentYear, currentMonth - 1, 26);
+    actualEndDate = new Date(currentYear, currentMonth, 25);
+    comparativeStartDate = new Date(currentYear, currentMonth - 2, 26);
+    comparativeEndDate = new Date(currentYear, currentMonth - 1, 25);
+  } else {
+    // Actual: 26 del mes actual al 25 del siguiente o día actual
+    // Comparativo: 26 del mes pasado al 25 del mes actual
+    actualStartDate = new Date(currentYear, currentMonth, 26);
+    const nextCutoffDate = new Date(currentYear, currentMonth + 1, 25);
+    actualEndDate = now < nextCutoffDate ? now : nextCutoffDate;
+    comparativeStartDate = new Date(currentYear, currentMonth - 1, 26);
+    comparativeEndDate = new Date(currentYear, currentMonth, 25);
+  }
+
+  const currentMonthStart = toISODate(actualStartDate);
+  const currentMonthEnd = toISODate(actualEndDate);
+  const prevMonthStart = toISODate(comparativeStartDate);
+  const prevMonthEnd = toISODate(comparativeEndDate);
   
   const [platformId, setPlatformId] = useState("");
-  const [startDateA, setStartDateA] = useState(prevMonthStart);
-  const [endDateA, setEndDateA] = useState(prevMonthEnd);
-  const [startDateB, setStartDateB] = useState(currentMonthStart);
-  const [endDateB, setEndDateB] = useState(currentMonthEnd);
+  const [startDateA, setStartDateA] = useState(currentMonthStart);
+  const [endDateA, setEndDateA] = useState(currentMonthEnd);
+  const [startDateB, setStartDateB] = useState(prevMonthStart);
+  const [endDateB, setEndDateB] = useState(prevMonthEnd);
   const [reportData, setReportData] = useState(null);
   const [platforms, setPlatforms] = useState([]);
 
@@ -97,6 +117,8 @@ export const PlatformCitiesComparison = () => {
       ventas: Number(monthAData.ventasValor) || 0,
       ventasCantidad: Number(monthAData.ventasCantidad) || 0,
       averias: Number(monthAData.averias) || 0,
+      averiasCantidad: Number(monthAData.averias) || 0,
+      averiasValor: Number(monthAData.averiasValor) || 0,
       rentabilidad: Number(monthAData.rentabilidad) || 0,
     },
     {
@@ -104,6 +126,8 @@ export const PlatformCitiesComparison = () => {
       ventas: Number(monthBData.ventasValor) || 0,
       ventasCantidad: Number(monthBData.ventasCantidad) || 0,
       averias: Number(monthBData.averias) || 0,
+      averiasCantidad: Number(monthBData.averias) || 0,
+      averiasValor: Number(monthBData.averiasValor) || 0,
       rentabilidad: Number(monthBData.rentabilidad) || 0,
     },
   ];
@@ -128,66 +152,245 @@ export const PlatformCitiesComparison = () => {
     return `${formatLabelDate(startDate)} - ${formatLabelDate(endDate)}`;
   };
 
-  const periodATitle = `PERIODO A: ${getRangeLabel(startDateA, endDateA)}`;
-  const periodBTitle = `PERIODO B: ${getRangeLabel(startDateB, endDateB)}`;
-  const periodALabel = "Periodo A";
-  const periodBLabel = "Periodo B";
+  const periodALabel = "Comparativo";
+  const periodBLabel = "Actual";
+
+  const formatCurrency = (value) => {
+    const roundedValue = Math.round(Number(value) || 0);
+    return `$${roundedValue.toLocaleString("es-CO")}`;
+  };
+
+  const reportTotals = (reportData || []).reduce(
+    (accumulator, cityReport) => {
+      accumulator.ventasActual += Number(cityReport?.monthB?.ventasValor) || 0;
+      accumulator.ventasComparativo += Number(cityReport?.monthA?.ventasValor) || 0;
+      accumulator.averiasActual += Number(cityReport?.monthB?.averias) || 0;
+      accumulator.averiasComparativo += Number(cityReport?.monthA?.averias) || 0;
+      accumulator.averiasValorActual += Number(cityReport?.monthB?.averiasValor) || 0;
+      accumulator.averiasValorComparativo += Number(cityReport?.monthA?.averiasValor) || 0;
+      accumulator.rentabilidadActual += Number(cityReport?.monthB?.rentabilidad) || 0;
+      accumulator.rentabilidadComparativo += Number(cityReport?.monthA?.rentabilidad) || 0;
+      accumulator.ventasUnidadesActual += Number(cityReport?.monthB?.ventasCantidad) || 0;
+      accumulator.ventasUnidadesComparativo += Number(cityReport?.monthA?.ventasCantidad) || 0;
+      return accumulator;
+    },
+    {
+      ventasActual: 0,
+      ventasComparativo: 0,
+      averiasActual: 0,
+      averiasComparativo: 0,
+      averiasValorActual: 0,
+      averiasValorComparativo: 0,
+      rentabilidadActual: 0,
+      rentabilidadComparativo: 0,
+      ventasUnidadesActual: 0,
+      ventasUnidadesComparativo: 0,
+    }
+  );
+
+  const totalPctAveriasVentasActual =
+    reportTotals.ventasUnidadesActual > 0
+      ? (reportTotals.averiasActual / reportTotals.ventasUnidadesActual) * 100
+      : 0;
+  const totalPctAveriasVentasComparativo =
+    reportTotals.ventasUnidadesComparativo > 0
+      ? (reportTotals.averiasComparativo / reportTotals.ventasUnidadesComparativo) * 100
+      : 0;
 
   return (
-      <Container
-        maxWidth="xl"
-        sx={{ mt: 4 }}
-      >
+    <Container maxWidth="xl" sx={{ mt: 4 }}>
       {/* Títulos de períodos */}
-      <Box sx={{
-        mb: 4,
-        display: 'flex',
-        gap: 3,
-        flexWrap: 'wrap'
-      }}>
-        <Box sx={{
-          flex: 1,
-          minWidth: 250,
-          p: 2,
-          bgcolor: '#e3f2fd',
-          borderLeft: '4px solid #1976d2',
-          borderRadius: 1
-        }}>
-          <Typography
-            variant="caption"
-            sx={{ color: '#1976d2', fontWeight: 600, textTransform: 'uppercase' }}
-          >
-            Período A
-          </Typography>
+      <Box
+        sx={{
+          mb: 4,
+          display: "flex",
+          gap: 3,
+          flexWrap: "wrap",
+        }}
+      >
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 250,
+            p: 2,
+            bgcolor: "#e3f2fd",
+            borderLeft: "4px solid #1976d2",
+            borderRadius: 1,
+          }}
+        >
           <Typography
             variant="body2"
-            sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+            sx={{
+              fontWeight: 600,
+              color: "#424242",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
           >
-            {getRangeLabel(startDateA, endDateA)}
+            <Box
+              component="span"
+              sx={{
+                color: "#1976d2",
+                textTransform: "uppercase",
+                fontSize: "0.75rem",
+                flexShrink: 0,
+              }}
+            >
+              Actual
+            </Box>
+            <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+              {getRangeLabel(startDateA, endDateA)}
+            </Box>
           </Typography>
         </Box>
-        <Box sx={{
-          flex: 1,
-          minWidth: 250,
-          p: 2,
-          bgcolor: '#f3e5f5',
-          borderLeft: '4px solid #7b1fa2',
-          borderRadius: 1
-        }}>
-          <Typography
-            variant="caption"
-            sx={{ color: '#7b1fa2', fontWeight: 600, textTransform: 'uppercase' }}
-          >
-            Período B
-          </Typography>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 250,
+            p: 2,
+            bgcolor: "#f3e5f5",
+            borderLeft: "4px solid #7b1fa2",
+            borderRadius: 1,
+          }}
+        >
           <Typography
             variant="body2"
-            sx={{ fontWeight: 600, color: '#424242', mt: 0.5 }}
+            sx={{
+              fontWeight: 600,
+              color: "#424242",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
           >
-            {getRangeLabel(startDateB, endDateB)}
+            <Box
+              component="span"
+              sx={{
+                color: "#7b1fa2",
+                textTransform: "uppercase",
+                fontSize: "0.75rem",
+                flexShrink: 0,
+              }}
+            >
+              Comparativo
+            </Box>
+            <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+              {getRangeLabel(startDateB, endDateB)}
+            </Box>
           </Typography>
         </Box>
       </Box>
+
+      {/* Resumen superior total */}
+      {reportData && (
+        <Box sx={{ mb: 3 }}>
+          
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                p: 2,
+                borderRadius: 2,
+                bgcolor: "#f9f9f9",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#374151", fontWeight: 700 }}
+              >
+                Ventas Totales
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
+                {formatCurrency(reportTotals.ventasActual)}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
+                Comp: {formatCurrency(reportTotals.ventasComparativo)}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                p: 2,
+                borderRadius: 2,
+                bgcolor: "#f9f9f9",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#374151", fontWeight: 700 }}
+              >
+                Averías Totales
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
+                {formatCurrency(reportTotals.averiasValorActual)}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
+                Comp: {formatCurrency(reportTotals.averiasValorComparativo)}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                p: 2,
+                borderRadius: 2,
+                bgcolor: "#f9f9f9",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#374151", fontWeight: 700 }}
+              >
+                % (Averías / Ventas) Totales
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
+                {totalPctAveriasVentasActual.toFixed(1)}%
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
+                Comp: {totalPctAveriasVentasComparativo.toFixed(1)}%
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                p: 2,
+                borderRadius: 2,
+                bgcolor: "#f9f9f9",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#374151", fontWeight: 700 }}
+              >
+                Rentabilidad Totales
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
+                {formatCurrency(reportTotals.rentabilidadActual)}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
+                Comp: {formatCurrency(reportTotals.rentabilidadComparativo)}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      )}
 
       {/* Botón flotante */}
       <Fab
@@ -200,10 +403,7 @@ export const PlatformCitiesComparison = () => {
       </Fab>
 
       {/* Modal con formulario */}
-      <Modal
-        open={open}
-        onClose={handleClose}
-      >
+      <Modal open={open} onClose={handleClose}>
         <Box
           sx={{
             position: "absolute",
@@ -218,11 +418,7 @@ export const PlatformCitiesComparison = () => {
           }}
         >
           <Stack spacing={3}>
-            <Typography
-              variant="h6"
-              textAlign="center"
-              gutterBottom
-            >
+            <Typography variant="h6" textAlign="center" gutterBottom>
               Generar Reporte Comparativo
             </Typography>
 
@@ -238,24 +434,18 @@ export const PlatformCitiesComparison = () => {
                   <em>Seleccione una plataforma</em>
                 </MenuItem>
                 {platforms.map((platform) => (
-                  <MenuItem
-                    key={platform._id}
-                    value={platform._id}
-                  >
+                  <MenuItem key={platform._id} value={platform._id}>
                     {platform.name}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
 
-            {/* Periodo A */}
-            <Stack
-              direction="row"
-              spacing={2}
-            >
+            {/* Actual */}
+            <Stack direction="row" spacing={2}>
               <TextField
                 fullWidth
-                label="Desde A"
+                label="Desde Actual"
                 type="date"
                 value={startDateA}
                 onChange={(e) => setStartDateA(e.target.value)}
@@ -263,7 +453,7 @@ export const PlatformCitiesComparison = () => {
               />
               <TextField
                 fullWidth
-                label="Hasta A"
+                label="Hasta Actual"
                 type="date"
                 value={endDateA}
                 onChange={(e) => setEndDateA(e.target.value)}
@@ -271,14 +461,11 @@ export const PlatformCitiesComparison = () => {
               />
             </Stack>
 
-            {/* Periodo B */}
-            <Stack
-              direction="row"
-              spacing={2}
-            >
+            {/* Comparativo */}
+            <Stack direction="row" spacing={2}>
               <TextField
                 fullWidth
-                label="Desde B"
+                label="Desde Comparativo"
                 type="date"
                 value={startDateB}
                 onChange={(e) => setStartDateB(e.target.value)}
@@ -286,7 +473,7 @@ export const PlatformCitiesComparison = () => {
               />
               <TextField
                 fullWidth
-                label="Hasta B"
+                label="Hasta Comparativo"
                 type="date"
                 value={endDateB}
                 onChange={(e) => setEndDateB(e.target.value)}
@@ -295,12 +482,7 @@ export const PlatformCitiesComparison = () => {
             </Stack>
 
             {/* Botón */}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleClose}
-              fullWidth
-            >
+            <Button variant="contained" color="primary" onClick={handleClose} fullWidth>
               Generar Reporte
             </Button>
           </Stack>
@@ -308,7 +490,7 @@ export const PlatformCitiesComparison = () => {
       </Modal>
 
       {/* Gráficos */}
-      <Box sx={{ display: "flex", flexDirection: "row", gap: 4, overflowX: "auto", p: 2 }}>
+      <Box sx={{ display: "flex", flexDirection: "row", gap: 0, overflowX: "auto", px: 0, py: 1 }}>
         {reportData &&
           reportData.map((cityReport) => {
             if (!cityReport.monthA || !cityReport.monthB) return null;
@@ -320,14 +502,11 @@ export const PlatformCitiesComparison = () => {
                   flexDirection: "column",
                   alignItems: "center",
                   gap: 3,
-                  minWidth: 300,
+                  minWidth: 270,
                   flexShrink: 0,
                 }}
               >
-                <Typography
-                  variant="h5"
-                  align="center"
-                >
+                <Typography variant="h5" align="center">
                   {cityReport.city}
                 </Typography>
                 <ComparisonPieAlt
@@ -336,13 +515,13 @@ export const PlatformCitiesComparison = () => {
                   title="Ventas"
                   periodLabels={[periodALabel, periodBLabel]}
                 />
-                <ComparisonPieAlt
+                <ComparisonBarAlt
                   data={buildComparisonData(cityReport.monthA, cityReport.monthB)}
                   metric="averias"
                   title="Averías"
                   periodLabels={[periodALabel, periodBLabel]}
                 />
-                <ComparisonPieAlt
+                <ComparisonProgressAlt
                   data={buildComparisonData(cityReport.monthA, cityReport.monthB)}
                   metric="rentabilidad"
                   title="Rentabilidad"
