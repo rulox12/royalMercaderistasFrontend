@@ -1,12 +1,16 @@
 import Head from 'next/head';
-import { Box, Container, Unstable_Grid2 as Grid } from '@mui/material';
+import { Box, Card, CardContent, Container, Typography, Unstable_Grid2 as Grid } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { useEffect, useState } from 'react';
 import { getStatisticsHome } from '../services/statisticsService';
+import { useAuthContext } from 'src/contexts/auth-context';
 import { PlatformCitiesComparison } from "src/sections/report/PlatformCitiesComparison";
 
 const Page = () => {
   const [statistics, setStatistics] = useState([]);
+  const { user } = useAuthContext();
+
+  const canViewLocalDashboard = user?.canViewLocalDashboard === true;
 
   const getStatisticsHomeService = async () => {
     try {
@@ -49,7 +53,26 @@ const Page = () => {
             spacing={3}
           >
             <Grid xs={12}>
-              <PlatformCitiesComparison />
+              {canViewLocalDashboard ? (
+                <PlatformCitiesComparison />
+              ) : (
+                <Card>
+                  <CardContent sx={{ py: 6 }}>
+                    <Typography
+                      variant="h4"
+                      sx={{ mb: 1 }}
+                    >
+                      Pagina principal
+                    </Typography>
+                    <Typography
+                      color="text.secondary"
+                      variant="body1"
+                    >
+                      Bienvenido. Este es tu panel principal.
+                    </Typography>
+                  </CardContent>
+                </Card>
+              )}
             </Grid>
 
             {/*<Grid
