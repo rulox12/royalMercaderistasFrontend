@@ -1,7 +1,6 @@
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
 import ArrowTopRightOnSquareIcon from '@heroicons/react/24/solid/ArrowTopRightOnSquareIcon';
 import {
   Box,
@@ -25,7 +24,6 @@ export const SideNav = (props) => {
   const pathname = router.pathname;
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   const { user, signOut } = useAuthContext();
-  const [currentEmail, setCurrentEmail] = useState('');
 
   const handleSignOut = () => {
     signOut();
@@ -37,38 +35,13 @@ export const SideNav = (props) => {
     window.location.href = '/auth/login';
   };
 
-  useEffect(() => {
-    let emailFromStorage = '';
-
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        emailFromStorage = parsedUser?.email || '';
-      }
-    } catch (error) {
-      emailFromStorage = '';
-    }
-
-    const email = (user?.email || emailFromStorage || '').toLowerCase();
-    setCurrentEmail(email);
-  }, [user]);
-
-  const defaultAllowedEmails = ['julio@gmail.com', 'danielpcpx@hotmail.com'];
-  const allowedEmailsEnv = process.env.NEXT_PUBLIC_REPORT_ALLOWED_EMAILS || '';
-  const allowedEmails = (allowedEmailsEnv
-    ? allowedEmailsEnv.split(/[\n,]/)
-    : defaultAllowedEmails)
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
-
   const restrictedMenuTitles = new Set([
     'Dashboard Local',
     'Grafica Comparación de meses',
     'Comparar Órdenes'
   ]);
 
-  const canSeeRestrictedItems = allowedEmails.includes(currentEmail);
+  const canSeeRestrictedItems = user?.canViewLocalDashboard === true;
   const visibleItems = canSeeRestrictedItems
     ? items
     : items.filter((item) => !restrictedMenuTitles.has(item.title));
