@@ -10,7 +10,9 @@ import {
   TextField,
   Snackbar,
   Alert,
-  Unstable_Grid2 as Grid
+  Unstable_Grid2 as Grid,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import { getRoles } from 'src/services/roleService';
 import { createUser, updateUser } from 'src/services/userService';
@@ -27,16 +29,25 @@ const documentTypes = [
 ];
 
 export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
-  //initialUser.password = ''
-  const [user, setUser] = useState(initialUser || {
-    document: '',
-    documentType: '',
-    name: '',
-    surname: '',
-    email: '',
-    phone: '',
-    roleId: '',
-    password: ''
+  // En edición, siempre inicializar password a vacío para no sobrescribir
+  const [user, setUser] = useState(() => {
+    if (isUpdate && initialUser) {
+      return {
+        ...initialUser,
+        password: '' // Nunca enviar contraseña en edición
+      };
+    }
+    return initialUser || {
+      document: '',
+      documentType: '',
+      name: '',
+      surname: '',
+      email: '',
+      phone: '',
+      roleId: '',
+      password: '',
+      canViewLocalDashboard: false
+    };
   });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
@@ -72,6 +83,16 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
       setUser((prevState) => ({
         ...prevState,
         [event.target.name]: event.target.value
+      }));
+    },
+    []
+  );
+
+  const handleCheckboxChange = useCallback(
+    (event) => {
+      setUser((prevState) => ({
+        ...prevState,
+        [event.target.name]: event.target.checked
       }));
     },
     []
@@ -252,13 +273,49 @@ export const CustomersCreate = ({ user: initialUser, isUpdate }) => {
                 xs={12}
                 md={6}
               >
+                <Box
+                  sx={{
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 1,
+                    p: 1.5,
+                    bgcolor: 'background.paper',
+                    display: 'flex',
+                    alignItems: 'center',
+                    minHeight: 56
+                  }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="canViewLocalDashboard"
+                        checked={user.canViewLocalDashboard || false}
+                        onChange={handleCheckboxChange}
+                        size="small"
+                      />
+                    }
+                    label="Acceso especial"
+                    sx={{
+                      m: 0,
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: '0.88rem',
+                        fontWeight: 500
+                      }
+                    }}
+                  />
+                </Box>
+              </Grid>
+              <Grid
+                xs={12}
+                md={6}
+              >
                 <TextField
                   fullWidth
                   label="Contraseña"
                   name="password"
                   type="password"
                   onChange={handleChange}
-                  required
+                  required={!isUpdate}
+                  helperText={isUpdate ? "Dejar en blanco para no cambiar" : ""}
                 />
               </Grid>
             </Grid>

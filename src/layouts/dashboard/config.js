@@ -103,6 +103,10 @@ export const items = [
         title: "Proveedores",
         path: "/suppliers",
       },
+      {
+        title: "Procesos",
+        path: "/processes",
+      },
     ],
   },
   // {
