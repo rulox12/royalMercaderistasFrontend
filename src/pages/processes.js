@@ -10,7 +10,15 @@ import {
   Stack,
   TextField,
   Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  CircularProgress,
 } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { runFullProcess } from 'src/services/processService';
 
@@ -47,10 +55,12 @@ const Page = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [result, setResult] = useState(null);
 
   const handleRun = async () => {
     setError('');
     setSuccess('');
+    setResult(null);
 
     if (!startDate || !endDate) {
       setError('Debes ingresar fecha inicio y fecha fin');
@@ -65,8 +75,8 @@ const Page = () => {
     setLoading(true);
     try {
       const response = await runFullProcess(startDate, endDate);
-      const steps = response?.steps?.map((step) => step.step).join(', ') || 'sales, received, rentability';
-      setSuccess(`Proceso ejecutado correctamente (${steps}).`);
+      setResult(response);
+      setSuccess(`✅ ${response.summary.message}`);
     } catch (runError) {
       setError(runError.message);
     } finally {
@@ -125,10 +135,69 @@ const Page = () => {
                       variant="contained"
                       onClick={handleRun}
                       disabled={loading}
+                      fullWidth
                     >
-                      {loading ? 'Ejecutando...' : 'Ejecutar Full Process'}
+                      {loading ? (
+                        <>
+                          <CircularProgress size={20} sx={{ mr: 1 }} />
+                          Ejecutando...
+                        </>
+                      ) : (
+                        'Ejecutar Full Process'
+                      )}
                     </Button>
                   </Box>
+
+                  {result && (
+                    <>
+                      <Divider sx={{ my: 2 }} />
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
+                        Detalle de ejecución:
+                      </Typography>
+                      <List>
+                        {result.steps.map((step, idx) => (
+                          <ListItem
+                            key={idx}
+                            sx={{
+                              py: 1.5,
+                              px: 1.5,
+                              bgcolor: step.ok ? '#f1f8f4' : '#fdf0f0',
+                              mb: 1,
+                              borderRadius: 1,
+                              border: `1px solid ${step.ok ? '#c8e6c9' : '#ffcdd2'}`,
+                            }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 40 }}>
+                              {step.ok ? (
+                                <CheckCircleIcon sx={{ color: '#2e7d32', fontSize: 28 }} />
+                              ) : (
+                                <ErrorIcon sx={{ color: '#c62828', fontSize: 28 }} />
+                              )}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5 }}>
+                                  {step.step.charAt(0).toUpperCase() + step.step.slice(1)}: {step.status}
+                                </Typography>
+                              }
+                              secondary={
+                                step.error ? (
+                                  <Typography variant="caption" sx={{ color: '#c62828', display: 'block' }}>
+                                    {step.error}
+                                  </Typography>
+                                ) : step.stdout ? (
+                                  <Typography variant="caption" sx={{ color: '#616161', display: 'block', fontSize: '0.75rem' }}>
+                                    {step.stdout.substring(0, 120)}
+                                    {step.stdout.length > 120 ? '...' : ''}
+                                  </Typography>
+                                ) : null
+                              }
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </>
+                  )}
                 </Stack>
               </CardContent>
             </Card>
