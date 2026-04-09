@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { login } from 'src/services/authService';
+import { getCurrentUser, login } from 'src/services/authService';
 
 const HANDLERS = {
   INITIALIZE: 'INITIALIZE',
@@ -89,9 +89,23 @@ export const AuthProvider = (props) => {
       const localAuth = window.localStorage.getItem('authenticated') === 'true';
       const sessionAuth = window.sessionStorage.getItem('authenticated') === 'true';
       user = getStoredUser();
-      isAuthenticated = localAuth || sessionAuth || !!user;
+      const token = window.localStorage.getItem('token');
+      isAuthenticated = localAuth || sessionAuth || !!user || !!token;
+
+      if (token) {
+        const meResponse = await getCurrentUser();
+        user = meResponse?.user || null;
+        if (user) {
+          window.localStorage.setItem('user', JSON.stringify(user));
+        }
+      }
     } catch (err) {
-      console.error(err);
+      window.localStorage.removeItem('user');
+      window.localStorage.removeItem('authenticated');
+      window.sessionStorage.removeItem('authenticated');
+      window.localStorage.removeItem('token');
+      user = null;
+      isAuthenticated = false;
     }
 
     if (isAuthenticated && user) {
@@ -114,6 +128,44 @@ export const AuthProvider = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
+
+  useEffect(() => {
+    const refreshSession = async () => {
+      try {
+        const token = window.localStorage.getItem('token');
+        if (!token) return;
+
+        const meResponse = await getCurrentUser();
+        const freshUser = meResponse?.user || null;
+
+        if (!freshUser) {
+          throw new Error('Usuario inválido');
+        }
+
+        window.localStorage.setItem('user', JSON.stringify(freshUser));
+        dispatch({
+          type: HANDLERS.SIGN_IN,
+          payload: freshUser
+        });
+      } catch (err) {
+        window.localStorage.removeItem('user');
+        window.localStorage.removeItem('authenticated');
+        window.sessionStorage.removeItem('authenticated');
+        window.localStorage.removeItem('token');
+        dispatch({
+          type: HANDLERS.SIGN_OUT
+        });
+      }
+    };
+
+    const intervalId = window.setInterval(refreshSession, 60000);
+    window.addEventListener('focus', refreshSession);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshSession);
+    };
+  }, []);
 
   const skip = () => {
     try {
@@ -172,6 +224,7 @@ export const AuthProvider = (props) => {
       window.localStorage.removeItem('user');
       window.localStorage.removeItem('authenticated');
       window.sessionStorage.removeItem('authenticated');
+      window.localStorage.removeItem('token');
     } catch (err) {
       console.error('Error limpiando almacenamiento:', err);
     }
