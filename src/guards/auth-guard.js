@@ -6,7 +6,7 @@ import { useAuthContext } from 'src/contexts/auth-context';
 export const AuthGuard = (props) => {
   const { children } = props;
   const router = useRouter();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isLoading } = useAuthContext();
   const ignore = useRef(false);
   const [checked, setChecked] = useState(false);
 
@@ -21,12 +21,9 @@ export const AuthGuard = (props) => {
       if (ignore.current) return;
       ignore.current = true;
 
-      // Si `isAuthenticated` aún no ha sido inicializado, esperamos antes de redirigir
-      if (isAuthenticated === undefined) return;
+      if (isLoading) return;
 
-      const user = localStorage.getItem('user');
-
-      if (!isAuthenticated && !user) {
+      if (!isAuthenticated) {
         router
           .replace({
             pathname: '/auth/login',
@@ -37,7 +34,7 @@ export const AuthGuard = (props) => {
         setChecked(true);
       }
     },
-    [router.isReady, isAuthenticated]
+    [router, router.isReady, isAuthenticated, isLoading]
   );
 
   if (!checked) {
