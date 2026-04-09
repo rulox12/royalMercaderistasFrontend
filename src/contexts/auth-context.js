@@ -86,17 +86,21 @@ export const AuthProvider = (props) => {
     let user = null;
 
     try {
-      const localAuth = window.localStorage.getItem('authenticated') === 'true';
-      const sessionAuth = window.sessionStorage.getItem('authenticated') === 'true';
-      user = getStoredUser();
       const token = window.localStorage.getItem('token');
-      isAuthenticated = localAuth || sessionAuth || !!user || !!token;
-
-      if (token) {
+      if (!token) {
+        window.localStorage.removeItem('user');
+        window.localStorage.removeItem('authenticated');
+        window.sessionStorage.removeItem('authenticated');
+        isAuthenticated = false;
+      } else {
         const meResponse = await getCurrentUser();
         user = meResponse?.user || null;
+        isAuthenticated = !!user;
+
         if (user) {
           window.localStorage.setItem('user', JSON.stringify(user));
+          window.localStorage.setItem('authenticated', 'true');
+          window.sessionStorage.setItem('authenticated', 'true');
         }
       }
     } catch (err) {
