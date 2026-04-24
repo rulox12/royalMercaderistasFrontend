@@ -133,44 +133,6 @@ export const AuthProvider = (props) => {
     []
   );
 
-  useEffect(() => {
-    const refreshSession = async () => {
-      try {
-        const token = window.localStorage.getItem('token');
-        if (!token) return;
-
-        const meResponse = await getCurrentUser();
-        const freshUser = meResponse?.user || null;
-
-        if (!freshUser) {
-          throw new Error('Usuario inválido');
-        }
-
-        window.localStorage.setItem('user', JSON.stringify(freshUser));
-        dispatch({
-          type: HANDLERS.SIGN_IN,
-          payload: freshUser
-        });
-      } catch (err) {
-        window.localStorage.removeItem('user');
-        window.localStorage.removeItem('authenticated');
-        window.sessionStorage.removeItem('authenticated');
-        window.localStorage.removeItem('token');
-        dispatch({
-          type: HANDLERS.SIGN_OUT
-        });
-      }
-    };
-
-    const intervalId = window.setInterval(refreshSession, 60000);
-    window.addEventListener('focus', refreshSession);
-
-    return () => {
-      window.clearInterval(intervalId);
-      window.removeEventListener('focus', refreshSession);
-    };
-  }, []);
-
   const skip = () => {
     try {
       window.localStorage.setItem('authenticated', 'true');
