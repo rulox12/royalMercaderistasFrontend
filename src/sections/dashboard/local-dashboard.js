@@ -1,4 +1,4 @@
-import { Box, Card, Container, Grid, Stack, Typography, FormControl, InputLabel, Select, MenuItem, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel } from '@mui/material';
+import { Box, Card, Container, Grid, Typography, FormControl, InputLabel, Select, MenuItem, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { getLocalDashboardData } from 'src/services/localDashboardService';
 import { getPlatforms } from 'src/services/platformService';
@@ -138,12 +138,19 @@ export const LocalDashboard = () => {
     <Container maxWidth="xl">
       {/* Filtros */}
       <Card sx={{ p: 3, mb: 4 }}>
-        <Stack
-          direction="row"
-          spacing={2}
-          flexWrap="wrap"
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              md: 'repeat(4, minmax(0, 1fr))',
+              lg: 'repeat(7, minmax(0, 1fr))',
+            },
+          }}
         >
-          <FormControl sx={{ minWidth: 160 }}>
+          <FormControl fullWidth>
             <InputLabel>Plataforma</InputLabel>
             <Select
               value={platform}
@@ -161,7 +168,7 @@ export const LocalDashboard = () => {
               ))}
             </Select>
           </FormControl>
-          <FormControl sx={{ minWidth: 160 }}>
+          <FormControl fullWidth>
             <InputLabel>Ciudad</InputLabel>
             <Select
               value={city}
@@ -179,7 +186,7 @@ export const LocalDashboard = () => {
               ))}
             </Select>
           </FormControl>
-          <FormControl sx={{ minWidth: 160 }}>
+          <FormControl fullWidth>
             <InputLabel>Local</InputLabel>
             <Select
               value={local}
@@ -198,7 +205,7 @@ export const LocalDashboard = () => {
             </Select>
           </FormControl>
           <TextField
-            sx={{ minWidth: 180 }}
+            fullWidth
             label="Desde Actual (A)"
             type="date"
             value={startDateB}
@@ -206,7 +213,7 @@ export const LocalDashboard = () => {
             InputLabelProps={{ shrink: true }}
           />
           <TextField
-            sx={{ minWidth: 180 }}
+            fullWidth
             label="Hasta Actual (A)"
             type="date"
             value={endDateB}
@@ -214,7 +221,7 @@ export const LocalDashboard = () => {
             InputLabelProps={{ shrink: true }}
           />
           <TextField
-            sx={{ minWidth: 180 }}
+            fullWidth
             label="Desde Comparativo (C)"
             type="date"
             value={startDateA}
@@ -222,22 +229,32 @@ export const LocalDashboard = () => {
             InputLabelProps={{ shrink: true }}
           />
           <TextField
-            sx={{ minWidth: 180 }}
+            fullWidth
             label="Hasta Comparativo (C)"
             type="date"
             value={endDateA}
             onChange={e => setEndDateA(e.target.value)}
             InputLabelProps={{ shrink: true }}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleFilter}
-            disabled={loading}
+          <Box
+            sx={{
+              gridColumn: { xs: '1 / -1', lg: '7 / 8' },
+              display: 'flex',
+              justifyContent: { xs: 'stretch', sm: 'flex-end' },
+              alignItems: 'center',
+            }}
           >
-            Filtrar
-          </Button>
-        </Stack>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleFilter}
+              disabled={loading}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
+              Filtrar
+            </Button>
+          </Box>
+        </Box>
       </Card>
 
       {/* Títulos de períodos */}
