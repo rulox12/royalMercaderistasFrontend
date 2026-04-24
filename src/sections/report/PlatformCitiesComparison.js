@@ -160,7 +160,34 @@ export const PlatformCitiesComparison = () => {
     return `$${roundedValue.toLocaleString("es-CO")}`;
   };
 
-  const reportTotals = (reportData || []).reduce(
+  const orderedCities = [
+    "Bogotá",
+    "Cartagena",
+    "Barranquilla",
+    "Santa Marta",
+    "Bucaramanga",
+  ];
+
+  const sortedReportData = [...(reportData || [])].sort((leftCity, rightCity) => {
+    const leftIndex = orderedCities.indexOf(leftCity.city);
+    const rightIndex = orderedCities.indexOf(rightCity.city);
+
+    if (leftIndex !== -1 && rightIndex !== -1) {
+      return leftIndex - rightIndex;
+    }
+
+    if (leftIndex !== -1) {
+      return -1;
+    }
+
+    if (rightIndex !== -1) {
+      return 1;
+    }
+
+    return leftCity.city.localeCompare(rightCity.city, "es");
+  });
+
+  const reportTotals = sortedReportData.reduce(
     (accumulator, cityReport) => {
       accumulator.ventasActual += Number(cityReport?.monthB?.ventasValor) || 0;
       accumulator.ventasComparativo += Number(cityReport?.monthA?.ventasValor) || 0;
@@ -491,8 +518,8 @@ export const PlatformCitiesComparison = () => {
 
       {/* Gráficos */}
       <Box sx={{ display: "flex", flexDirection: "row", gap: 0, overflowX: "auto", px: 0, py: 1 }}>
-        {reportData &&
-          reportData.map((cityReport) => {
+        {sortedReportData.length > 0 &&
+          sortedReportData.map((cityReport) => {
             if (!cityReport.monthA || !cityReport.monthB) return null;
             return (
               <Box

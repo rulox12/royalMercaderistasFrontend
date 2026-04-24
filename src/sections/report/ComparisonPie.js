@@ -308,7 +308,7 @@ export const ComparisonBarAlt = ({ data, metric, title, periodLabels = ["Compara
         </div>
         <div style={{ color: "#111827", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
           <span style={{ minWidth: 72 }}>Δ Cambio:</span>
-          <span style={{ color: diffAverias < 0 ? "#388E3C" : "#D32F2F" }}>{`${diffAveriasValor < 0 ? "-" : ""}$${Math.abs(Math.round(diffAveriasValor)).toLocaleString("es-CO")}`}</span>
+          <span style={{ color: diffAveriasValor < 0 ? "#388E3C" : "#D32F2F" }}>{`${diffAveriasValor < 0 ? "-" : ""}$${Math.abs(Math.round(diffAveriasValor)).toLocaleString("es-CO")}`}</span>
           <span>|</span>
           <span style={{ color: diffAverias < 0 ? "#388E3C" : "#D32F2F" }}>{`${diffAverias >= 0 ? "+" : ""}${Math.round(diffAverias).toLocaleString("es-CO")} u`}</span>
         </div>
