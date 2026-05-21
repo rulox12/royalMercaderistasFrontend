@@ -32,4 +32,23 @@ const removeProductFromCategory = async (productId) => {
   return response.data;
 };
 
-export { getCategories, createCategory, deleteCategory, updateCategory, addProductToCategory, removeProductFromCategory };
+const getCategorySalesSummary = async ({ startDate, endDate, categoryId }) => {
+  const response = await axios.get(`${API_URL}/categories/sales-summary`, {
+    params: {
+      startDate,
+      endDate,
+      ...(categoryId ? { categoryId } : {}),
+    },
+  });
+  return response.data;
+};
+
+export {
+  getCategories,
+  createCategory,
+  deleteCategory,
+  updateCategory,
+  addProductToCategory,
+  removeProductFromCategory,
+  getCategorySalesSummary,
+};

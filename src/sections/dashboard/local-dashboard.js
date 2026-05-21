@@ -77,7 +77,7 @@ export const LocalDashboard = () => {
     return new Intl.DateTimeFormat('es-CO', {
       timeZone: 'America/Bogota',
       day: '2-digit',
-      month: '2-digit',
+      month: 'long',
       year: 'numeric'
     }).format(new Date(`${date}T00:00:00`));
   };
@@ -97,9 +97,25 @@ export const LocalDashboard = () => {
   };
 
   const sortedProducts = [...products].sort((productA, productB) => {
-    const nameA = productA.name || '';
-    const nameB = productB.name || '';
-    const comparison = nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+    const positionA = Number(productA.position);
+    const positionB = Number(productB.position);
+
+    const hasNumericPositionA = Number.isFinite(positionA) && productA.position !== '';
+    const hasNumericPositionB = Number.isFinite(positionB) && productB.position !== '';
+
+    let comparison = 0;
+
+    if (hasNumericPositionA && hasNumericPositionB) {
+      comparison = positionA - positionB;
+    } else if (hasNumericPositionA) {
+      comparison = -1;
+    } else if (hasNumericPositionB) {
+      comparison = 1;
+    } else {
+      const nameA = productA.name || '';
+      const nameB = productB.name || '';
+      comparison = nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+    }
 
     return productSortDirection === 'asc' ? comparison : -comparison;
   });
@@ -133,6 +149,13 @@ export const LocalDashboard = () => {
 
   const actualColumnSx = { bgcolor: '#e3f2fd' };
   const comparativoColumnSx = { bgcolor: '#f3e5f5' };
+  const indicatorLabels = {
+    pedidos: 'Pedidos',
+    recibidos: 'Recibidos',
+    averias: 'Averías',
+    ventas: 'Ventas',
+    rentabilidad: 'Rentabilidad Neta'
+  };
 
   return (
     <Container maxWidth="xl">
@@ -371,7 +394,7 @@ export const LocalDashboard = () => {
             spacing={2}
             sx={{ mb: 4 }}
           >
-            {['pedidos','recibidos','averias','ventas','rentabilidad'].map((key, idx) => {
+            {['ventas', 'averias', 'pedidos', 'recibidos', 'rentabilidad'].map((key, idx) => {
               const indA = indicators[key]?.monthB || { valor: 0, unidades: 0 };
               return (
                 <Grid
@@ -387,7 +410,7 @@ export const LocalDashboard = () => {
                       color="textSecondary"
                       sx={{ mb: 1 }}
                     >
-                      {key.charAt(0).toUpperCase() + key.slice(1)}
+                      {indicatorLabels[key] || key.charAt(0).toUpperCase() + key.slice(1)}
                     </Typography>
                     <Typography
                       variant="h4"
