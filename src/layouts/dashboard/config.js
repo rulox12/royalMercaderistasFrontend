@@ -10,6 +10,7 @@ import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
 import CompareArrowsOutlinedIcon from '@mui/icons-material/CompareArrowsOutlined';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 
 export const items = [
   {
@@ -21,6 +22,11 @@ export const items = [
     title: "Dashboard Local",
     path: "/local-dashboard",
     icon: <DashboardOutlinedIcon fontSize="small" />,
+  },
+  {
+    title: "Ventas por categoría",
+    path: "/category-sales",
+    icon: <CategoryOutlinedIcon fontSize="small" />,
   },
   {
     title: "Pedidos",
@@ -62,6 +68,7 @@ export const items = [
     path: "/reports",
     icon: <InsightsOutlinedIcon fontSize="small" />,
   },
+
   {
     title: "Comparar Órdenes",
     path: "/orders-comparison",
