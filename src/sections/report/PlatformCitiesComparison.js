@@ -21,34 +21,41 @@ import AddIcon from "@mui/icons-material/Add";
 
 export const PlatformCitiesComparison = () => {
   const toISODate = (date) => date.toISOString().split("T")[0];
+  const shiftMonthKeepingDay = (date, monthOffset) => {
+    const targetMonth = date.getMonth() + monthOffset;
+    const targetYear = date.getFullYear() + Math.floor(targetMonth / 12);
+    const normalizedMonth = ((targetMonth % 12) + 12) % 12;
+    const maxDayInTargetMonth = new Date(targetYear, normalizedMonth + 1, 0).getDate();
+    const targetDay = Math.min(date.getDate(), maxDayInTargetMonth);
+    return new Date(targetYear, normalizedMonth, targetDay);
+  };
 
   // Calcular fechas por defecto con corte 26-25
-  const now = new Date();
-  const currentDay = now.getDate();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const referenceDate = new Date();
+  referenceDate.setDate(referenceDate.getDate() - 2);
+
+  const currentDay = referenceDate.getDate();
+  const currentMonth = referenceDate.getMonth();
+  const currentYear = referenceDate.getFullYear();
 
   let actualStartDate;
   let actualEndDate;
   let comparativeStartDate;
   let comparativeEndDate;
 
-  if (currentDay <= 25) {
-    // Actual: 26 del mes pasado al 25 del mes actual
-    // Comparativo: 26 de hace dos meses al 25 del mes pasado
-    actualStartDate = new Date(currentYear, currentMonth - 1, 26);
-    actualEndDate = new Date(currentYear, currentMonth, 25);
-    comparativeStartDate = new Date(currentYear, currentMonth - 2, 26);
-    comparativeEndDate = new Date(currentYear, currentMonth - 1, 25);
-  } else {
-    // Actual: 26 del mes actual al 25 del siguiente o día actual
-    // Comparativo: 26 del mes pasado al 25 del mes actual
+  if (currentDay >= 26) {
+    // Actual: 26 del mes actual hasta fecha de referencia
+    // Comparativo: mismo rango, un mes atrás
     actualStartDate = new Date(currentYear, currentMonth, 26);
-    const nextCutoffDate = new Date(currentYear, currentMonth + 1, 25);
-    actualEndDate = now < nextCutoffDate ? now : nextCutoffDate;
-    comparativeStartDate = new Date(currentYear, currentMonth - 1, 26);
-    comparativeEndDate = new Date(currentYear, currentMonth, 25);
+  } else {
+    // Actual: 26 del mes pasado hasta fecha de referencia
+    // Comparativo: mismo rango, un mes atrás
+    actualStartDate = new Date(currentYear, currentMonth - 1, 26);
   }
+
+  actualEndDate = new Date(referenceDate);
+  comparativeStartDate = shiftMonthKeepingDay(actualStartDate, -1);
+  comparativeEndDate = shiftMonthKeepingDay(actualEndDate, -1);
 
   const currentMonthStart = toISODate(actualStartDate);
   const currentMonthEnd = toISODate(actualEndDate);
@@ -137,7 +144,7 @@ export const PlatformCitiesComparison = () => {
     return new Intl.DateTimeFormat("es-CO", {
       timeZone: "America/Bogota",
       day: "2-digit",
-      month: "2-digit",
+      month: "long",
       year: "numeric",
     }).format(new Date(`${date}T00:00:00`));
   };
@@ -216,12 +223,12 @@ export const PlatformCitiesComparison = () => {
   );
 
   const totalPctAveriasVentasActual =
-    reportTotals.ventasUnidadesActual > 0
-      ? (reportTotals.averiasActual / reportTotals.ventasUnidadesActual) * 100
+    reportTotals.ventasActual > 0
+      ? (reportTotals.averiasValorActual / reportTotals.ventasActual) * 100
       : 0;
   const totalPctAveriasVentasComparativo =
-    reportTotals.ventasUnidadesComparativo > 0
-      ? (reportTotals.averiasComparativo / reportTotals.ventasUnidadesComparativo) * 100
+    reportTotals.ventasComparativo > 0
+      ? (reportTotals.averiasValorComparativo / reportTotals.ventasComparativo) * 100
       : 0;
 
   return (
@@ -318,7 +325,6 @@ export const PlatformCitiesComparison = () => {
       {/* Resumen superior total */}
       {reportData && (
         <Box sx={{ mb: 3 }}>
-          
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             <Box
               sx={{
@@ -328,19 +334,25 @@ export const PlatformCitiesComparison = () => {
                 borderRadius: 2,
                 bgcolor: "#f9f9f9",
                 border: "1px solid #e5e7eb",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
               }}
             >
               <Typography
                 variant="subtitle1"
-                sx={{ color: "#374151", fontWeight: 700 }}
+                sx={{ color: "#374151", fontWeight: 700, textAlign: "center", fontSize: "1.15rem" }}
               >
                 Ventas Totales
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
-                {formatCurrency(reportTotals.ventasActual)}
+                {formatCurrency(reportTotals.ventasActual)} -{" "}
+                {reportTotals.ventasUnidadesActual.toLocaleString("es-CO")} u
               </Typography>
-              <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
-                Comp: {formatCurrency(reportTotals.ventasComparativo)}
+              <Typography variant="body2" sx={{ color: "#6b7280", mt: 2 }}>
+                Comp: {formatCurrency(reportTotals.ventasComparativo)} ·{" "}
+                {reportTotals.ventasUnidadesComparativo.toLocaleString("es-CO")} u
               </Typography>
             </Box>
 
@@ -352,19 +364,25 @@ export const PlatformCitiesComparison = () => {
                 borderRadius: 2,
                 bgcolor: "#f9f9f9",
                 border: "1px solid #e5e7eb",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
               }}
             >
               <Typography
                 variant="subtitle1"
-                sx={{ color: "#374151", fontWeight: 700 }}
+                sx={{ color: "#374151", fontWeight: 700, textAlign: "center", fontSize: "1.15rem" }}
               >
                 Averías Totales
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
-                {formatCurrency(reportTotals.averiasValorActual)}
+                {formatCurrency(reportTotals.averiasValorActual)} -{" "}
+                {reportTotals.averiasActual.toLocaleString("es-CO")} u
               </Typography>
-              <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
-                Comp: {formatCurrency(reportTotals.averiasValorComparativo)}
+              <Typography variant="body2" sx={{ color: "#6b7280", mt: 2 }}>
+                Comp: {formatCurrency(reportTotals.averiasValorComparativo)} ·{" "}
+                {reportTotals.averiasComparativo.toLocaleString("es-CO")} u
               </Typography>
             </Box>
 
@@ -376,18 +394,22 @@ export const PlatformCitiesComparison = () => {
                 borderRadius: 2,
                 bgcolor: "#f9f9f9",
                 border: "1px solid #e5e7eb",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
               }}
             >
               <Typography
                 variant="subtitle1"
-                sx={{ color: "#374151", fontWeight: 700 }}
+                sx={{ color: "#374151", fontWeight: 700, textAlign: "center", fontSize: "1.15rem" }}
               >
-                % (Averías / Ventas) Totales
+                % (Averías / Ventas) Total
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
                 {totalPctAveriasVentasActual.toFixed(1)}%
               </Typography>
-              <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
+              <Typography variant="body2" sx={{ color: "#6b7280", mt: 2 }}>
                 Comp: {totalPctAveriasVentasComparativo.toFixed(1)}%
               </Typography>
             </Box>
@@ -400,18 +422,22 @@ export const PlatformCitiesComparison = () => {
                 borderRadius: 2,
                 bgcolor: "#f9f9f9",
                 border: "1px solid #e5e7eb",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
               }}
             >
               <Typography
                 variant="subtitle1"
-                sx={{ color: "#374151", fontWeight: 700 }}
+                sx={{ color: "#374151", fontWeight: 700, textAlign: "center", fontSize: "1.15rem" }}
               >
-                Rentabilidad Totales
+                Rentabilidad Neta Total
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
                 {formatCurrency(reportTotals.rentabilidadActual)}
               </Typography>
-              <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
+              <Typography variant="body2" sx={{ color: "#6b7280", mt: 2 }}>
                 Comp: {formatCurrency(reportTotals.rentabilidadComparativo)}
               </Typography>
             </Box>

@@ -248,8 +248,49 @@ export const ComparisonBarAlt = ({ data, metric, title, periodLabels = ["Compara
   const averiasValorActual = Number(data[1]?.averiasValor) || 0;
   const averiasCantidadComparativo = Number(data[0]?.averiasCantidad) || valueComparativo;
   const averiasCantidadActual = Number(data[1]?.averiasCantidad) || valueActual;
-  const labelComparativo = periodLabels[0] || "Comparativo";
+  const ventasCantidadComparativo = Number(data[0]?.ventasCantidad) || 0;
+  const ventasCantidadActual = Number(data[1]?.ventasCantidad) || 0;
+  const labelComparativo = (periodLabels[0] || "Comparativo").replace("Comparativo", "Comp");
   const labelActual = periodLabels[1] || "Actual";
+
+  const pctAveriasActual =
+    ventasCantidadActual > 0 ? (averiasCantidadActual / ventasCantidadActual) * 100 : 0;
+  const pctAveriasComparativo =
+    ventasCantidadComparativo > 0 ? (averiasCantidadComparativo / ventasCantidadComparativo) * 100 : 0;
+
+  const renderAveriasTooltip = ({ active, payload }) => {
+    if (!active || !payload || !payload.length) {
+      return null;
+    }
+
+    return (
+      <div
+        style={{
+          backgroundColor: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 8,
+          padding: "8px 10px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+          fontSize: 12,
+        }}
+      >
+        {payload.map((entry) => {
+          const isActual = entry.dataKey === "actual";
+          const periodLabel = isActual ? labelActual : labelComparativo;
+          const pctValue = isActual ? pctAveriasActual : pctAveriasComparativo;
+
+          return (
+            <div
+              key={entry.dataKey}
+              style={{ color: entry.color, fontWeight: 600 }}
+            >
+              {`${periodLabel}: ${Math.round(Number(entry.value) || 0).toLocaleString("es-CO")} u (${pctValue.toFixed(1)}%)`}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   const diffAverias = valueActual - valueComparativo;
   const diffAveriasValor = averiasValorActual - averiasValorComparativo;
@@ -280,7 +321,7 @@ export const ComparisonBarAlt = ({ data, metric, title, periodLabels = ["Compara
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
         <XAxis tick={{ fontSize: 12 }} />
         <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
-        <Tooltip formatter={(value) => Math.round(Number(value) || 0).toLocaleString("es-CO")} />
+        <Tooltip content={renderAveriasTooltip} />
         <Legend
           wrapperStyle={{ fontSize: 11, columnGap: 8 }}
           formatter={(value) => (value === "actual" ? labelActual : labelComparativo)}
@@ -324,8 +365,31 @@ export const ComparisonProgressAlt = ({ data, metric, title, periodLabels = ["Co
 
   const valueComparativo = Number(data[0]?.[metric]) || 0;
   const valueActual = Number(data[1]?.[metric]) || 0;
+  const averiasValorComparativo = Number(data[0]?.averiasValor) || 0;
+  const averiasValorActual = Number(data[1]?.averiasValor) || 0;
+  const ventasValorComparativo = Number(data[0]?.ventas) || 0;
+  const ventasValorActual = Number(data[1]?.ventas) || 0;
   const labelComparativo = periodLabels[0] || "Comparativo";
   const labelActual = periodLabels[1] || "Actual";
+
+  // Neta viene en RENT. Bruta se estima antes del impacto de averías.
+  const rentabilidadNetaComparativo = valueComparativo;
+  const rentabilidadNetaActual = valueActual;
+  const rentabilidadBrutaComparativo = rentabilidadNetaComparativo + averiasValorComparativo;
+  const rentabilidadBrutaActual = rentabilidadNetaActual + averiasValorActual;
+  const brechaComparativo = rentabilidadBrutaComparativo - rentabilidadNetaComparativo;
+  const brechaActual = rentabilidadBrutaActual - rentabilidadNetaActual;
+
+  const pctBrutaActual =
+    ventasValorActual > 0 ? (rentabilidadBrutaActual / ventasValorActual) * 100 : 0;
+  const pctNetaActual =
+    ventasValorActual > 0 ? (rentabilidadNetaActual / ventasValorActual) * 100 : 0;
+  const pctBrutaComparativo =
+    ventasValorComparativo > 0 ? (rentabilidadBrutaComparativo / ventasValorComparativo) * 100 : 0;
+  const pctNetaComparativo =
+    ventasValorComparativo > 0 ? (rentabilidadNetaComparativo / ventasValorComparativo) * 100 : 0;
+  const impactoPuntosActual = pctBrutaActual - pctNetaActual;
+  const impactoPuntosComparativo = pctBrutaComparativo - pctNetaComparativo;
 
   const ratio = valueComparativo > 0 ? (valueActual / valueComparativo) * 100 : 0;
   const progress = Math.max(Math.min(ratio, 100), 0);
@@ -354,22 +418,66 @@ export const ComparisonProgressAlt = ({ data, metric, title, periodLabels = ["Co
     >
       {title && <div style={{ textAlign: "center", marginBottom: 4, fontSize: 14, fontWeight: 700 }}>{title}</div>}
 
-      <div style={{ width: "100%", height: 18, borderRadius: 999, background: "#C8E6C9", overflow: "hidden" }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
         <div
           style={{
-            width: `${progress}%`,
-            height: "100%",
-            background: color,
-            transition: "width 250ms ease",
+            flex: 1,
+            border: "2px solid #424242",
+            textAlign: "center",
+            padding: "3px 2px",
+            fontWeight: 700,
+            fontSize: 14,
           }}
-        />
-      </div>
-
-      <div style={{ marginTop: 8, textAlign: "right", color: "#111827", fontSize: 12, fontWeight: 700 }}>
-        {ratio.toFixed(0)}%
+        >
+          <div>R. Bruta</div>
+          <div>{`${pctBrutaActual.toFixed(1)}%`}</div>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            border: "2px solid #424242",
+            textAlign: "center",
+            padding: "3px 2px",
+            fontWeight: 700,
+            fontSize: 14,
+          }}
+        >
+          <div>R. Neta</div>
+          <div>{`${pctNetaActual.toFixed(1)}%`}</div>
+        </div>
       </div>
 
       <div style={{ textAlign: "left", marginTop: 8, fontSize: 12, lineHeight: 1.35, padding: 0 }}>
+        <div
+          style={{
+            color: "#111827",
+            fontWeight: 700,
+            marginBottom: 6,
+            padding: "6px 8px",
+            borderRadius: 8,
+            background: "#f3f4f6",
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <div>{`${labelActual}: Bruta ${formatCurrency(rentabilidadBrutaActual)}`}</div>
+          <div>{`${labelActual}: Neta ${formatCurrency(rentabilidadNetaActual)}`}</div>
+          <div style={{ color: "#D32F2F" }}>{`Impacto averías: ${formatCurrency(brechaActual)} | ${impactoPuntosActual.toFixed(1)} pp`}</div>
+        </div>
+        <div
+          style={{
+            color: "#111827",
+            fontWeight: 700,
+            marginBottom: 6,
+            padding: "6px 8px",
+            borderRadius: 8,
+            background: "#f9fafb",
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <div>{`${labelComparativo.replace("Comparativo", "Comp")}: Bruta ${formatCurrency(rentabilidadBrutaComparativo)}`}</div>
+          <div>{`${labelComparativo.replace("Comparativo", "Comp")}: Neta ${formatCurrency(rentabilidadNetaComparativo)}`}</div>
+          <div style={{ color: "#D32F2F" }}>{`Impacto averías: ${formatCurrency(brechaComparativo)} | ${impactoPuntosComparativo.toFixed(1)} pp`}</div>
+        </div>
         <div style={{ color: "#111827", fontWeight: 400, display: "flex", alignItems: "center", gap: 4 }}>
           <span style={{ minWidth: 72 }}>{`${labelActual === "Actual" ? "R. Actual" : labelActual}:`}</span>
           <span>{formatCurrency(valueActual)}</span>
