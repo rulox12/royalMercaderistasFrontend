@@ -6,35 +6,48 @@ import { getCities } from 'src/services/cityService';
 import { getShops } from 'src/services/shopService';
 
 export const LocalDashboard = () => {
-  const toISODate = (date) => date.toISOString().split('T')[0];
+  const toISODate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const shiftMonthKeepingDay = (date, monthOffset) => {
+    const targetMonth = date.getMonth() + monthOffset;
+    const targetYear = date.getFullYear() + Math.floor(targetMonth / 12);
+    const normalizedMonth = ((targetMonth % 12) + 12) % 12;
+    const maxDayInTargetMonth = new Date(targetYear, normalizedMonth + 1, 0).getDate();
+    const targetDay = Math.min(date.getDate(), maxDayInTargetMonth);
+    return new Date(targetYear, normalizedMonth, targetDay);
+  };
 
   // Calcular fechas por defecto con corte 26-25
-  const now = new Date();
-  const currentDay = now.getDate();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const referenceDate = new Date();
+  referenceDate.setDate(referenceDate.getDate() - 2);
+  referenceDate.setHours(0, 0, 0, 0);
+
+  const currentDay = referenceDate.getDate();
+  const currentMonth = referenceDate.getMonth();
+  const currentYear = referenceDate.getFullYear();
 
   let actualStartDate;
   let actualEndDate;
   let comparativeStartDate;
   let comparativeEndDate;
 
-  if (currentDay <= 25) {
-    // Actual: 26 del mes pasado al 25 del mes actual
-    // Comparativo: 26 de hace dos meses al 25 del mes pasado
-    actualStartDate = new Date(currentYear, currentMonth - 1, 26);
-    actualEndDate = new Date(currentYear, currentMonth, 25);
-    comparativeStartDate = new Date(currentYear, currentMonth - 2, 26);
-    comparativeEndDate = new Date(currentYear, currentMonth - 1, 25);
-  } else {
-    // Actual: 26 del mes actual al 25 del siguiente o día actual
-    // Comparativo: 26 del mes pasado al 25 del mes actual
+  if (currentDay >= 26) {
+    // Actual: 26 del mes actual hasta fecha de referencia
+    // Comparativo: mismo rango, un mes atrás
     actualStartDate = new Date(currentYear, currentMonth, 26);
-    const nextCutoffDate = new Date(currentYear, currentMonth + 1, 25);
-    actualEndDate = now < nextCutoffDate ? now : nextCutoffDate;
-    comparativeStartDate = new Date(currentYear, currentMonth - 1, 26);
-    comparativeEndDate = new Date(currentYear, currentMonth, 25);
+  } else {
+    // Actual: 26 del mes pasado hasta fecha de referencia
+    // Comparativo: mismo rango, un mes atrás
+    actualStartDate = new Date(currentYear, currentMonth - 1, 26);
   }
+
+  actualEndDate = new Date(referenceDate);
+  comparativeStartDate = shiftMonthKeepingDay(actualStartDate, -1);
+  comparativeEndDate = shiftMonthKeepingDay(actualEndDate, -1);
 
   const currentMonthStart = toISODate(actualStartDate);
   const currentMonthEnd = toISODate(actualEndDate);
