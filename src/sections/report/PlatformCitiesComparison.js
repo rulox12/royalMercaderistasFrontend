@@ -20,7 +20,12 @@ import { ComparisonPieAlt, ComparisonBarAlt, ComparisonProgressAlt } from "src/s
 import AddIcon from "@mui/icons-material/Add";
 
 export const PlatformCitiesComparison = () => {
-  const toISODate = (date) => date.toISOString().split("T")[0];
+  const toISODate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
   const shiftMonthKeepingDay = (date, monthOffset) => {
     const targetMonth = date.getMonth() + monthOffset;
     const targetYear = date.getFullYear() + Math.floor(targetMonth / 12);
@@ -33,6 +38,7 @@ export const PlatformCitiesComparison = () => {
   // Calcular fechas por defecto con corte 26-25
   const referenceDate = new Date();
   referenceDate.setDate(referenceDate.getDate() - 2);
+  referenceDate.setHours(0, 0, 0, 0);
 
   const currentDay = referenceDate.getDate();
   const currentMonth = referenceDate.getMonth();

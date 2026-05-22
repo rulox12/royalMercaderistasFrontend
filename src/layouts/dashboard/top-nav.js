@@ -1,39 +1,58 @@
 import PropTypes from 'prop-types';
-import BellIcon from '@heroicons/react/24/solid/BellIcon';
-import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
 import Bars3Icon from '@heroicons/react/24/solid/Bars3Icon';
-import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
 import {
-  Avatar,
-  Badge,
   Box,
+  Divider,
   IconButton,
   Stack,
+  Typography,
   SvgIcon,
-  Tooltip,
   useMediaQuery
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import { usePopover } from 'src/hooks/use-popover';
-import { AccountPopover } from './account-popover';
 
-const SIDE_NAV_WIDTH = 280;
-const TOP_NAV_HEIGHT = 0;
+const TOP_NAV_HEIGHT = 64;
 
 export const TopNav = (props) => {
   const { onNavOpen } = props;
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
-  const accountPopover = usePopover();
 
   return (
-    <>
-      
-      <AccountPopover
-        anchorEl={accountPopover.anchorRef.current}
-        open={accountPopover.open}
-        onClose={accountPopover.handleClose}
-      />
-    </>
+    <Box
+      component="header"
+      sx={{
+        backgroundColor: 'background.paper',
+        borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+        height: TOP_NAV_HEIGHT,
+        px: 2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}
+    >
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+      >
+        {!lgUp && (
+          <IconButton
+            onClick={onNavOpen}
+            aria-label="Abrir menú"
+          >
+            <SvgIcon>
+              <Bars3Icon />
+            </SvgIcon>
+          </IconButton>
+        )}
+        <Typography
+          variant="subtitle1"
+          sx={{ fontWeight: 700 }}
+        >
+          Royal Fruit
+        </Typography>
+      </Stack>
+      {!lgUp && <Divider orientation="vertical" flexItem sx={{ my: 1 }} />}
+    </Box>
   );
 };
 
