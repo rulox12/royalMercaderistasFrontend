@@ -11,6 +11,7 @@ import CompareArrowsOutlinedIcon from '@mui/icons-material/CompareArrowsOutlined
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import PointOfSaleOutlinedIcon from '@mui/icons-material/PointOfSaleOutlined';
 
 export const items = [
   {
@@ -27,6 +28,11 @@ export const items = [
     title: "Ventas por categoría",
     path: "/category-sales",
     icon: <CategoryOutlinedIcon fontSize="small" />,
+  },
+  {
+    title: 'Ventas Reales',
+    path: '/real-sales',
+    icon: <PointOfSaleOutlinedIcon fontSize="small" />,
   },
   {
     title: "Pedidos",
