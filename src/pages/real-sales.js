@@ -5,6 +5,8 @@ import {
   Button,
   Card,
   Container,
+  Collapse,
+  Divider,
   FormControl,
   InputLabel,
   MenuItem,
@@ -21,6 +23,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import * as XLSX from 'xlsx';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { getPlatforms } from 'src/services/platformService';
 import { getCities } from 'src/services/cityService';
@@ -182,6 +185,7 @@ const Page = () => {
 
   const [categories, setCategories] = useState([]);
   const [existingRealSaleId, setExistingRealSaleId] = useState(null);
+  const [showOrderedProducts, setShowOrderedProducts] = useState(false);
 
   const [loadingFilters, setLoadingFilters] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
@@ -207,6 +211,56 @@ const Page = () => {
       open: false,
     }));
   }, []);
+
+  const orderedProducts = useMemo(() => {
+    return categories
+      .flatMap((category) => (category.products || []).map((product) => ({
+        ...product,
+        categoryName: category.name,
+      })))
+      .sort((a, b) => {
+        const positionA = toNumber(a.position);
+        const positionB = toNumber(b.position);
+
+        if (positionA !== positionB) {
+          return positionA - positionB;
+        }
+
+        return String(a.displayName || a.name).localeCompare(String(b.displayName || b.name));
+      });
+  }, [categories]);
+
+  const handleExportOrderedProducts = useCallback(() => {
+    if (!orderedProducts.length || typeof window === 'undefined') {
+      return;
+    }
+
+    const rows = orderedProducts.map((product) => ({
+      Posición: toNumber(product.position),
+      Producto: product.displayName || product.name || '',
+      Categoría: product.categoryName || '',
+      'Venta real': toNumber(product.realSale),
+      'Venta calculada': toNumber(product.calculatedSale),
+      'Dif. unidades': toNumber(product.unitDifference),
+      'Dif. %': toNumber(product.percentageDifference),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+
+    worksheet['!cols'] = [
+      { wch: 12 },
+      { wch: 32 },
+      { wch: 24 },
+      { wch: 14 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 10 },
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos en orden');
+    XLSX.writeFile(workbook, 'productos-en-orden.xlsx');
+  }, [orderedProducts]);
 
   const loadFiltersData = useCallback(async () => {
     setLoadingFilters(true);
@@ -366,6 +420,7 @@ const Page = () => {
     setEndDate(range.endDate);
     setCategories([]);
     setExistingRealSaleId(null);
+    setShowOrderedProducts(false);
   }, [selectedPeriod, selectedYear]);
 
   useEffect(() => {
@@ -381,7 +436,10 @@ const Page = () => {
       <Head>
         <title>Ventas Reales</title>
       </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Box
+        component="main"
+        sx={{ flexGrow: 1, py: 8 }}
+      >
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Typography variant="h4">Ventas Reales</Typography>
@@ -411,7 +469,10 @@ const Page = () => {
                       disabled={loadingFilters}
                     >
                       {platforms.map((platform) => (
-                        <MenuItem key={platform._id} value={platform._id}>
+                        <MenuItem
+                          key={platform._id}
+                          value={platform._id}
+                        >
                           {platform.name}
                         </MenuItem>
                       ))}
@@ -431,7 +492,10 @@ const Page = () => {
                       disabled={loadingFilters}
                     >
                       {cities.map((city) => (
-                        <MenuItem key={city._id} value={city._id}>
+                        <MenuItem
+                          key={city._id}
+                          value={city._id}
+                        >
                           {city.name}
                         </MenuItem>
                       ))}
@@ -448,7 +512,10 @@ const Page = () => {
                       disabled={!platformId || !cityId}
                     >
                       {shops.map((shop) => (
-                        <MenuItem key={shop._id} value={shop._id}>
+                        <MenuItem
+                          key={shop._id}
+                          value={shop._id}
+                        >
                           {shop.name}
                         </MenuItem>
                       ))}
@@ -464,7 +531,10 @@ const Page = () => {
                       onChange={(event) => setSelectedPeriod(Number(event.target.value))}
                     >
                       {PERIODS.map((period) => (
-                        <MenuItem key={period.id} value={period.id}>
+                        <MenuItem
+                          key={period.id}
+                          value={period.id}
+                        >
                           {`${period.id}. ${period.name}`}
                         </MenuItem>
                       ))}
@@ -480,7 +550,10 @@ const Page = () => {
                       onChange={(event) => setSelectedYear(Number(event.target.value))}
                     >
                       {yearOptions.map((year) => (
-                        <MenuItem key={year} value={year}>
+                        <MenuItem
+                          key={year}
+                          value={year}
+                        >
                           {year}
                         </MenuItem>
                       ))}
@@ -535,12 +608,18 @@ const Page = () => {
                       <Fragment key={`category-block-${category._id}`}>
                         <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.03)' }}>
                           <TableCell>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{ fontWeight: 700 }}
+                            >
                               {category.name}
                             </Typography>
                           </TableCell>
                           <TableCell align="right">{formatNumber(category.realSale)}</TableCell>
-                          <TableCell align="right" sx={{ width: 220 }}>
+                          <TableCell
+                            align="right"
+                            sx={{ width: 220 }}
+                          >
                             <TextField
                               fullWidth
                               size="small"
@@ -558,7 +637,10 @@ const Page = () => {
                           <TableCell align="right">{formatNumber(category.percentageDifference)}%</TableCell>
                         </TableRow>
                         {(category.products || []).map((product) => (
-                          <TableRow hover key={`product-${product._id}`}>
+                          <TableRow
+                            hover
+                            key={`product-${product._id}`}
+                          >
                             <TableCell sx={{ pl: 4 }}>{product.displayName || product.name}</TableCell>
                             <TableCell align="right">{formatNumber(product.realSale)}</TableCell>
                             <TableCell align="right">{formatNumber(product.calculatedSale)}</TableCell>
@@ -569,7 +651,10 @@ const Page = () => {
                       </Fragment>
                     )) : (
                       <TableRow>
-                        <TableCell colSpan={5} align="center">
+                        <TableCell
+                          colSpan={5}
+                          align="center"
+                        >
                           Consulta primero para listar categorías, productos y ventas reales.
                         </TableCell>
                       </TableRow>
@@ -578,6 +663,87 @@ const Page = () => {
                 </Table>
               </TableContainer>
             </Card>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => setShowOrderedProducts((previous) => !previous)}
+              sx={{ py: 1.25 }}
+            >
+              {showOrderedProducts ? 'Ocultar productos en orden' : 'Ver productos en orden'}
+            </Button>
+
+            <Collapse
+              in={showOrderedProducts}
+              timeout="auto"
+              unmountOnExit
+            >
+              <Card sx={{ mt: 2 }}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ p: 2.5 }}
+                >
+                  <Box>
+                    <Typography variant="h6">Productos en orden</Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      Se muestran ordenados por posición para validar el flujo real y calculado.
+                    </Typography>
+                  </Box>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={handleExportOrderedProducts}
+                    disabled={!orderedProducts.length}
+                    sx={{ minWidth: 0, px: 2 }}
+                  >
+                    Exportar Excel
+                  </Button>
+                </Stack>
+                <Divider />
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Posición</TableCell>
+                        <TableCell>Producto</TableCell>
+                        <TableCell>Categoría</TableCell>
+                        <TableCell align="right">Venta real</TableCell>
+                        <TableCell align="right">Venta calculada</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {orderedProducts.length ? orderedProducts.map((product) => (
+                        <TableRow
+                          hover
+                          key={`ordered-${product._id}`}
+                        >
+                          <TableCell>{formatNumber(product.position)}</TableCell>
+                          <TableCell>{product.displayName || product.name}</TableCell>
+                          <TableCell>{product.categoryName}</TableCell>
+                          <TableCell align="right">{formatNumber(product.realSale)}</TableCell>
+                          <TableCell align="right">{formatNumber(product.calculatedSale)}</TableCell>
+                        </TableRow>
+                      )) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            align="center"
+                          >
+                            No hay productos para mostrar.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Card>
+            </Collapse>
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button
@@ -598,7 +764,11 @@ const Page = () => {
         onClose={closeNotification}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Alert onClose={closeNotification} severity={notification.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={closeNotification}
+          severity={notification.severity}
+          sx={{ width: '100%' }}
+        >
           {notification.message}
         </Alert>
       </Snackbar>
