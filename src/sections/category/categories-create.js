@@ -7,6 +7,8 @@ import {
   CardContent,
   CardHeader,
   Divider,
+  FormControlLabel,
+  Switch,
   TextField,
   Snackbar,
   Alert,
@@ -15,7 +17,7 @@ import {
 import { createCategory } from 'src/services/categoryService';
 
 export const CategoriesCreate = () => {
-  const [category, setCategory] = useState({ name: '' });
+  const [category, setCategory] = useState({ name: '', groupForSale: true });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
@@ -26,7 +28,11 @@ export const CategoriesCreate = () => {
   };
 
   const handleChange = useCallback((event) => {
-    setCategory((prev) => ({ ...prev, [event.target.name]: event.target.value }));
+    const { name, value, type, checked } = event.target;
+    setCategory((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   }, []);
 
   const handleSubmit = useCallback(async (event) => {
@@ -64,6 +70,18 @@ export const CategoriesCreate = () => {
                   onChange={handleChange}
                   required
                   value={category.name}
+                />
+              </Grid>
+              <Grid xs={12}>
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={category.groupForSale}
+                      name="groupForSale"
+                      onChange={handleChange}
+                    />
+                  )}
+                  label="Agrupar para venta"
                 />
               </Grid>
             </Grid>
