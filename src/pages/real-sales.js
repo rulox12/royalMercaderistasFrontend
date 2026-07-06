@@ -49,7 +49,44 @@ const calculatePercent = (realSale, calculatedSale) => {
 
 const formatNumber = (value) => new Intl.NumberFormat('es-CO').format(toNumber(value));
 
+const formatDisplayDate = (dateString) => {
+  if (!dateString) {
+    return '';
+  }
+
+  const parsedDate = new Date(`${dateString}T00:00:00`);
+  return new Intl.DateTimeFormat('es-CO').format(parsedDate);
+};
+
 const toISODate = (date) => date.toISOString().split('T')[0];
+
+const salesInputSx = {
+  width: 120,
+  '& input': {
+    textAlign: 'center',
+    padding: '4px 10px',
+  },
+};
+
+const salesInputProps = {
+  sx: {
+    backgroundColor: '#ecfdf5',
+    borderRadius: 1.5,
+    height: 34,
+    fontWeight: 600,
+    '& fieldset': {
+      borderColor: '#10b981 !important',
+      borderWidth: '2px !important',
+    },
+    '&:hover fieldset': {
+      borderColor: '#059669 !important',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#047857 !important',
+      boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.20)',
+    },
+  },
+};
 
 const PERIODS = [
   { id: 1, name: 'Enero', startMonth: 0, startDay: 1, endMonth: 0, endDay: 25 },
@@ -100,18 +137,25 @@ const buildPeriodRange = (periodId, year) => {
   return { startDate, endDate };
 };
 
-const distributeCalculatedSaleByRealWeight = (category, categoryCalculatedSaleValue) => {
+const formatPeriodOptionLabel = (period, year) => {
+  const { startDate, endDate } = buildPeriodRange(period.id, year);
+  const rangeLabel = startDate && endDate ? ` ${formatDisplayDate(startDate)} a ${formatDisplayDate(endDate)}` : '';
+
+  return `${period.id}. ${period.name}${rangeLabel}`;
+};
+
+const distributeRealSaleByCalculatedWeight = (category, categoryRealSaleValue) => {
   const products = category.products || [];
-  const totalRealSale = products.reduce((sum, product) => sum + toNumber(product.realSale), 0);
-  const categoryCalculatedSale = Math.max(0, Math.round(toNumber(categoryCalculatedSaleValue)));
+  const totalCalculatedSale = products.reduce((sum, product) => sum + toNumber(product.calculatedSale), 0);
+  const categoryRealSale = Math.max(0, Math.round(toNumber(categoryRealSaleValue)));
 
   let allocatedByProductId = {};
 
   if (products.length > 0) {
-    if (totalRealSale > 0) {
+    if (totalCalculatedSale > 0) {
       const weighted = products.map((product) => {
-        const productRealSale = toNumber(product.realSale);
-        const raw = (productRealSale / totalRealSale) * categoryCalculatedSale;
+        const productCalculatedSale = toNumber(product.calculatedSale);
+        const raw = (productCalculatedSale / totalCalculatedSale) * categoryRealSale;
         const base = Math.floor(raw);
         return {
           productId: product._id,
@@ -122,7 +166,7 @@ const distributeCalculatedSaleByRealWeight = (category, categoryCalculatedSaleVa
       });
 
       const baseSum = weighted.reduce((sum, item) => sum + item.base, 0);
-      let remainder = categoryCalculatedSale - baseSum;
+      const remainder = categoryRealSale - baseSum;
 
       weighted.sort((a, b) => b.fraction - a.fraction);
 
@@ -130,8 +174,8 @@ const distributeCalculatedSaleByRealWeight = (category, categoryCalculatedSaleVa
         allocatedByProductId[item.productId] = item.base + (index < remainder ? 1 : 0);
       });
     } else {
-      const base = Math.floor(categoryCalculatedSale / products.length);
-      let remainder = categoryCalculatedSale - (base * products.length);
+      const base = Math.floor(categoryRealSale / products.length);
+      let remainder = categoryRealSale - (base * products.length);
 
       products.forEach((product) => {
         const extra = remainder > 0 ? 1 : 0;
@@ -142,27 +186,41 @@ const distributeCalculatedSaleByRealWeight = (category, categoryCalculatedSaleVa
   }
 
   const distributedProducts = products.map((product) => {
-    const productRealSale = toNumber(product.realSale);
-    const productCalculatedSale = allocatedByProductId[product._id] || 0;
+    const productCalculatedSale = toNumber(product.calculatedSale);
+    const productRealSale = allocatedByProductId[product._id] || 0;
     const unitDifference = productRealSale - productCalculatedSale;
 
     return {
       ...product,
-      calculatedSale: productCalculatedSale,
+      realSale: productRealSale,
       unitDifference,
       percentageDifference: calculatePercent(productRealSale, productCalculatedSale),
     };
   });
 
-  const categoryRealSale = toNumber(category.realSale);
+  const categoryCalculatedSale = toNumber(category.calculatedSale);
   const categoryUnitDifference = categoryRealSale - categoryCalculatedSale;
 
   return {
     ...category,
-    calculatedSale: categoryCalculatedSale,
+    realSale: categoryRealSale,
     unitDifference: categoryUnitDifference,
     percentageDifference: calculatePercent(categoryRealSale, categoryCalculatedSale),
     products: distributedProducts,
+  };
+};
+
+const recalculateCategoryFromProducts = (category, products) => {
+  const totalRealSale = products.reduce((sum, product) => sum + toNumber(product.realSale), 0);
+  const totalCalculatedSale = products.reduce((sum, product) => sum + toNumber(product.calculatedSale), 0);
+
+  return {
+    ...category,
+    realSale: totalRealSale,
+    calculatedSale: totalCalculatedSale,
+    unitDifference: totalRealSale - totalCalculatedSale,
+    percentageDifference: calculatePercent(totalRealSale, totalCalculatedSale),
+    products,
   };
 };
 
@@ -229,6 +287,16 @@ const Page = () => {
         return String(a.displayName || a.name).localeCompare(String(b.displayName || b.name));
       });
   }, [categories]);
+
+  const selectedPeriodLabel = useMemo(() => {
+    const period = PERIODS.find((item) => item.id === selectedPeriod);
+
+    if (!period) {
+      return '';
+    }
+
+    return formatPeriodOptionLabel(period, selectedYear);
+  }, [selectedPeriod, selectedYear]);
 
   const handleExportOrderedProducts = useCallback(() => {
     if (!orderedProducts.length || typeof window === 'undefined') {
@@ -326,10 +394,7 @@ const Page = () => {
       });
 
       setExistingRealSaleId(response.existingRealSaleId || null);
-      setCategories((response.categories || []).map((category) => {
-        const initialCategoryCalculated = toNumber(category.calculatedSale);
-        return distributeCalculatedSaleByRealWeight(category, initialCategoryCalculated);
-      }));
+      setCategories(response.categories || []);
     } catch (loadError) {
       setError('No fue posible cargar las categorías y ventas reales para el rango seleccionado.');
     } finally {
@@ -337,15 +402,43 @@ const Page = () => {
     }
   }, [platformId, cityId, shopId, startDate, endDate]);
 
-  const handleCategoryCalculatedSaleChange = (categoryId, rawValue) => {
-    const newCategoryCalculatedSale = rawValue === '' ? 0 : Math.round(toNumber(rawValue));
+  const handleCategoryRealSaleChange = (categoryId, rawValue) => {
+    const newCategoryRealSale = rawValue === '' ? 0 : Math.round(toNumber(rawValue));
 
     setCategories((previousCategories) => previousCategories.map((category) => {
-      if (category._id !== categoryId) {
+      if (category._id !== categoryId || category.groupForSale === false) {
         return category;
       }
 
-      return distributeCalculatedSaleByRealWeight(category, newCategoryCalculatedSale);
+      return distributeRealSaleByCalculatedWeight(category, newCategoryRealSale);
+    }));
+  };
+
+  const handleProductRealSaleChange = (categoryId, productId, rawValue) => {
+    const newProductRealSale = rawValue === '' ? 0 : Math.round(toNumber(rawValue));
+
+    setCategories((previousCategories) => previousCategories.map((category) => {
+      if (category._id !== categoryId || category.groupForSale !== false) {
+        return category;
+      }
+
+      const updatedProducts = (category.products || []).map((product) => {
+        if (product._id !== productId) {
+          return product;
+        }
+
+        const productCalculatedSale = toNumber(product.calculatedSale);
+        const productRealSale = Math.max(0, newProductRealSale);
+
+        return {
+          ...product,
+          realSale: productRealSale,
+          unitDifference: productRealSale - productCalculatedSale,
+          percentageDifference: calculatePercent(productRealSale, productCalculatedSale),
+        };
+      });
+
+      return recalculateCategoryFromProducts(category, updatedProducts);
     }));
   };
 
@@ -438,7 +531,7 @@ const Page = () => {
       </Head>
       <Box
         component="main"
-        sx={{ flexGrow: 1, py: 8 }}
+        sx={{ flexGrow: 1, py: { xs: 2, md: 3 } }}
       >
         <Container maxWidth="xl">
           <Stack spacing={3}>
@@ -479,48 +572,48 @@ const Page = () => {
                     </Select>
                   </FormControl>
 
-                  <FormControl fullWidth>
-                    <InputLabel id="city-select-label">Ciudad</InputLabel>
-                    <Select
-                      labelId="city-select-label"
-                      value={cityId}
-                      label="Ciudad"
-                      onChange={(event) => {
-                        setCityId(event.target.value);
-                        setShopId('');
-                      }}
-                      disabled={loadingFilters}
-                    >
-                      {cities.map((city) => (
-                        <MenuItem
-                          key={city._id}
-                          value={city._id}
-                        >
-                          {city.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                        <FormControl fullWidth>
+                          <InputLabel id="city-select-label">Ciudad</InputLabel>
+                          <Select
+                            labelId="city-select-label"
+                            value={cityId}
+                            label="Ciudad"
+                            onChange={(event) => {
+                              setCityId(event.target.value);
+                              setShopId('');
+                            }}
+                            disabled={loadingFilters}
+                          >
+                            {cities.map((city) => (
+                              <MenuItem
+                                key={city._id}
+                                value={city._id}
+                              >
+                                {city.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
 
-                  <FormControl fullWidth>
-                    <InputLabel id="shop-select-label">Local</InputLabel>
-                    <Select
-                      labelId="shop-select-label"
-                      value={shopId}
-                      label="Local"
-                      onChange={(event) => setShopId(event.target.value)}
-                      disabled={!platformId || !cityId}
-                    >
-                      {shops.map((shop) => (
-                        <MenuItem
-                          key={shop._id}
-                          value={shop._id}
-                        >
-                          {shop.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                        <FormControl fullWidth>
+                          <InputLabel id="shop-select-label">Local</InputLabel>
+                          <Select
+                            labelId="shop-select-label"
+                            value={shopId}
+                            label="Local"
+                            onChange={(event) => setShopId(event.target.value)}
+                            disabled={!platformId || !cityId}
+                          >
+                            {shops.map((shop) => (
+                              <MenuItem
+                                key={shop._id}
+                                value={shop._id}
+                              >
+                                {shop.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
 
                   <FormControl fullWidth>
                     <InputLabel id="period-select-label">Periodo</InputLabel>
@@ -528,6 +621,7 @@ const Page = () => {
                       labelId="period-select-label"
                       value={selectedPeriod}
                       label="Periodo"
+                      renderValue={() => selectedPeriodLabel || 'Periodo'}
                       onChange={(event) => setSelectedPeriod(Number(event.target.value))}
                     >
                       {PERIODS.map((period) => (
@@ -535,7 +629,7 @@ const Page = () => {
                           key={period.id}
                           value={period.id}
                         >
-                          {`${period.id}. ${period.name}`}
+                          {formatPeriodOptionLabel(period, selectedYear)}
                         </MenuItem>
                       ))}
                     </Select>
@@ -560,24 +654,6 @@ const Page = () => {
                     </Select>
                   </FormControl>
 
-                  <TextField
-                    fullWidth
-                    label="Fecha inicio"
-                    type="date"
-                    value={startDate}
-                    disabled
-                    InputLabelProps={{ shrink: true }}
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Fecha fin"
-                    type="date"
-                    value={endDate}
-                    disabled
-                    InputLabelProps={{ shrink: true }}
-                  />
-
                   <Button
                     variant="contained"
                     onClick={handleLoadRealSalesData}
@@ -593,67 +669,257 @@ const Page = () => {
 
             <Card>
               <TableContainer>
-                <Table>
+                <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Producto / Categoría</TableCell>
-                      <TableCell align="right">Venta real</TableCell>
-                      <TableCell align="right">Venta calculada</TableCell>
-                      <TableCell align="right">Dif. unidades</TableCell>
-                      <TableCell align="right">Dif. %</TableCell>
+                      <TableCell sx={{ py: 1, px: 1.5 }}>
+                        Producto / Categoría
+                      </TableCell>
+                      <TableCell
+                        sx={{ py: 1, px: 1.5 }}
+                        align="left"
+                      >
+                        Venta real
+                      </TableCell>
+                      <TableCell
+                        sx={{ py: 1, px: 1.5 }}
+                        align="left"
+                      >
+                        Venta calculada
+                      </TableCell>
+                      <TableCell
+                        sx={{ py: 1, px: 1.5 }}
+                        align="left"
+                      >
+                        Dif. unidades
+                      </TableCell>
+                      <TableCell
+                        sx={{ py: 1, px: 1.5 }}
+                        align="left"
+                      >
+                        Dif. %
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {categories.length ? categories.map((category) => (
-                      <Fragment key={`category-block-${category._id}`}>
-                        <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.03)' }}>
-                          <TableCell>
-                            <Typography
-                              variant="subtitle2"
-                              sx={{ fontWeight: 700 }}
-                            >
-                              {category.name}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">{formatNumber(category.realSale)}</TableCell>
-                          <TableCell
-                            align="right"
-                            sx={{ width: 220 }}
-                          >
-                            <TextField
-                              fullWidth
-                              size="small"
-                              type="number"
-                              value={toNumber(category.calculatedSale)}
-                              onChange={(event) => {
-                                handleCategoryCalculatedSaleChange(
-                                  category._id,
-                                  event.target.value,
-                                );
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell align="right">{formatNumber(category.unitDifference)}</TableCell>
-                          <TableCell align="right">{formatNumber(category.percentageDifference)}%</TableCell>
-                        </TableRow>
-                        {(category.products || []).map((product) => (
+                    {categories.length ? categories.map((category) => {
+                      const products = category.products || [];
+                      const isGroupedForSale = category.groupForSale !== false;
+
+                      if (isGroupedForSale && products.length === 1) {
+                        const product = products[0];
+
+                        return (
                           <TableRow
                             hover
-                            key={`product-${product._id}`}
+                            key={`category-single-${category._id}`}
+                            sx={{ backgroundColor: 'rgba(0, 0, 0, 0.03)' }}
                           >
-                            <TableCell sx={{ pl: 4 }}>{product.displayName || product.name}</TableCell>
-                            <TableCell align="right">{formatNumber(product.realSale)}</TableCell>
-                            <TableCell align="right">{formatNumber(product.calculatedSale)}</TableCell>
-                            <TableCell align="right">{formatNumber(product.unitDifference)}</TableCell>
-                            <TableCell align="right">{formatNumber(product.percentageDifference)}%</TableCell>
+                            <TableCell sx={{ py: 0.75, px: 1.5 }}>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700 }}
+                              >
+                                {category.name}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {product.displayName || product.name}
+                              </Typography>
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              <TextField
+                                size="small"
+                                type="text"
+                                value={toNumber(category.realSale)}
+                                sx={salesInputSx}
+                                InputProps={salesInputProps}
+                                inputProps={{
+                                  inputMode: 'numeric',
+                                  pattern: '[0-9]*',
+                                }}
+                                onChange={(event) => {
+                                  handleCategoryRealSaleChange(category._id, event.target.value);
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              {formatNumber(category.calculatedSale)}
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              {formatNumber(category.unitDifference)}
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              {formatNumber(category.percentageDifference)}%
+                            </TableCell>
                           </TableRow>
-                        ))}
-                      </Fragment>
-                    )) : (
+                        );
+                      }
+
+                      if (!isGroupedForSale) {
+                        return (
+                          <Fragment key={`category-block-${category._id}`}>
+                            {products.map((product) => (
+                              <TableRow
+                                hover
+                                key={`product-${product._id}`}
+                              >
+                                <TableCell sx={{ py: 0.5, px: 1.5, pl: 3 }}>
+                                  {product.displayName || product.name}
+                                </TableCell>
+                                <TableCell
+                                  sx={{ py: 0.5, px: 1.5 }}
+                                  align="left"
+                                >
+                                  <TextField
+                                    size="small"
+                                    type="text"
+                                    value={toNumber(product.realSale)}
+                                    sx={salesInputSx}
+                                    InputProps={salesInputProps}
+                                    inputProps={{
+                                      inputMode: 'numeric',
+                                      pattern: '[0-9]*',
+                                    }}
+                                    onChange={(event) => {
+                                      handleProductRealSaleChange(category._id, product._id, event.target.value);
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell
+                                  sx={{ py: 0.5, px: 1.5 }}
+                                  align="left"
+                                >
+                                  {formatNumber(product.calculatedSale)}
+                                </TableCell>
+                                <TableCell
+                                  sx={{ py: 0.5, px: 1.5 }}
+                                  align="left"
+                                >
+                                  {formatNumber(product.unitDifference)}
+                                </TableCell>
+                                <TableCell
+                                  sx={{ py: 0.5, px: 1.5 }}
+                                  align="left"
+                                >
+                                  {formatNumber(product.percentageDifference)}%
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </Fragment>
+                        );
+                      }
+
+                      return (
+                        <Fragment key={`category-block-${category._id}`}>
+                          <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.03)' }}>
+                            <TableCell sx={{ py: 0.75, px: 1.5 }}>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700 }}
+                              >
+                                {category.name}
+                              </Typography>
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              <TextField
+                                size="small"
+                                type="text"
+                                value={toNumber(category.realSale)}
+                                sx={salesInputSx}
+                                InputProps={salesInputProps}
+                                inputProps={{
+                                  inputMode: 'numeric',
+                                  pattern: '[0-9]*',
+                                }}
+                                onChange={(event) => {
+                                  handleCategoryRealSaleChange(category._id, event.target.value);
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              {formatNumber(category.calculatedSale)}
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              {formatNumber(category.unitDifference)}
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              {formatNumber(category.percentageDifference)}%
+                            </TableCell>
+                          </TableRow>
+                          {products.map((product) => (
+                            <TableRow
+                              hover
+                              key={`product-${product._id}`}
+                              sx={{
+                                backgroundColor: 'rgba(168, 85, 247, 0.10)',
+                                '&.MuiTableRow-hover:hover': {
+                                  backgroundColor: 'rgba(168, 85, 247, 0.16)',
+                                },
+                              }}
+                            >
+                              <TableCell sx={{ py: 0.5, px: 1.5, pl: 3 }}>
+                                {product.displayName || product.name}
+                              </TableCell>
+                              <TableCell
+                                sx={{ py: 0.5, px: 1.5 }}
+                                align="left"
+                              >
+                                {formatNumber(product.realSale)}
+                              </TableCell>
+                              <TableCell
+                                sx={{ py: 0.5, px: 1.5 }}
+                                align="left"
+                              >
+                                {formatNumber(product.calculatedSale)}
+                              </TableCell>
+                              <TableCell
+                                sx={{ py: 0.5, px: 1.5 }}
+                                align="left"
+                              >
+                                {formatNumber(product.unitDifference)}
+                              </TableCell>
+                              <TableCell
+                                sx={{ py: 0.5, px: 1.5 }}
+                                align="left"
+                              >
+                                {formatNumber(product.percentageDifference)}%
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </Fragment>
+                      );
+                    }) : (
                       <TableRow>
                         <TableCell
                           colSpan={5}
-                          align="center"
+                          align="left"
                         >
                           Consulta primero para listar categorías, productos y ventas reales.
                         </TableCell>
@@ -664,15 +930,6 @@ const Page = () => {
               </TableContainer>
             </Card>
 
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => setShowOrderedProducts((previous) => !previous)}
-              sx={{ py: 1.25 }}
-            >
-              {showOrderedProducts ? 'Ocultar productos en orden' : 'Ver productos en orden'}
-            </Button>
-
             <Collapse
               in={showOrderedProducts}
               timeout="auto"
@@ -680,68 +937,91 @@ const Page = () => {
             >
               <Card sx={{ mt: 2 }}>
                 <Stack
-                  direction="row"
                   spacing={2}
-                  alignItems="center"
-                  justifyContent="space-between"
                   sx={{ p: 2.5 }}
                 >
-                  <Box>
-                    <Typography variant="h6">Productos en orden</Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                    >
-                      Se muestran ordenados por posición para validar el flujo real y calculado.
-                    </Typography>
-                  </Box>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    onClick={handleExportOrderedProducts}
-                    disabled={!orderedProducts.length}
-                    sx={{ minWidth: 0, px: 2 }}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 2,
+                      flexWrap: 'wrap',
+                    }}
                   >
-                    Exportar Excel
-                  </Button>
-                </Stack>
-                <Divider />
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Posición</TableCell>
-                        <TableCell>Producto</TableCell>
-                        <TableCell>Categoría</TableCell>
-                        <TableCell align="right">Venta real</TableCell>
-                        <TableCell align="right">Venta calculada</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {orderedProducts.length ? orderedProducts.map((product) => (
-                        <TableRow
-                          hover
-                          key={`ordered-${product._id}`}
-                        >
-                          <TableCell>{formatNumber(product.position)}</TableCell>
-                          <TableCell>{product.displayName || product.name}</TableCell>
-                          <TableCell>{product.categoryName}</TableCell>
-                          <TableCell align="right">{formatNumber(product.realSale)}</TableCell>
-                          <TableCell align="right">{formatNumber(product.calculatedSale)}</TableCell>
-                        </TableRow>
-                      )) : (
+                    <Typography variant="h6">Ver productos en orden</Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={handleExportOrderedProducts}
+                    >
+                      Exportar a Excel
+                    </Button>
+                  </Box>
+
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
                         <TableRow>
+                          <TableCell sx={{ py: 1, px: 1.5 }}>Pos.</TableCell>
+                          <TableCell sx={{ py: 1, px: 1.5 }}>Producto</TableCell>
+                          <TableCell sx={{ py: 1, px: 1.5 }}>Categoría</TableCell>
                           <TableCell
-                            colSpan={5}
-                            align="center"
+                            sx={{ py: 1, px: 1.5 }}
+                            align="left"
                           >
-                            No hay productos para mostrar.
+                            Venta real
+                          </TableCell>
+                          <TableCell
+                            sx={{ py: 1, px: 1.5 }}
+                            align="left"
+                          >
+                            Venta calculada
                           </TableCell>
                         </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                      </TableHead>
+                      <TableBody>
+                        {orderedProducts.length ? orderedProducts.map((product) => (
+                          <TableRow
+                            hover
+                            key={`ordered-${product._id}`}
+                          >
+                            <TableCell sx={{ py: 0.5, px: 1.5 }}>
+                              {formatNumber(product.position)}
+                            </TableCell>
+                            <TableCell sx={{ py: 0.5, px: 1.5 }}>
+                              {product.displayName || product.name}
+                            </TableCell>
+                            <TableCell sx={{ py: 0.5, px: 1.5 }}>
+                              {product.categoryName}
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.5, px: 1.5 }}
+                              align="left"
+                            >
+                              {formatNumber(product.realSale)}
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.5, px: 1.5 }}
+                              align="left"
+                            >
+                              {formatNumber(product.calculatedSale)}
+                            </TableCell>
+                          </TableRow>
+                        )) : (
+                          <TableRow>
+                            <TableCell
+                              colSpan={5}
+                              align="left"
+                            >
+                              No hay productos para mostrar.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Stack>
               </Card>
             </Collapse>
 

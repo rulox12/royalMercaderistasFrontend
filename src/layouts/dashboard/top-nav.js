@@ -16,11 +16,15 @@ export const TopNav = (props) => {
   const { onNavOpen } = props;
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
 
+  if (lgUp) {
+    return null;
+  }
+
   return (
     <Box
       component="header"
       sx={{
-        backgroundColor: 'background.paper',
+        backgroundColor: 'transparent',
         borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
         height: TOP_NAV_HEIGHT,
         px: 2,

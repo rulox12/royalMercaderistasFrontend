@@ -30,11 +30,6 @@ export const items = [
     icon: <CategoryOutlinedIcon fontSize="small" />,
   },
   {
-    title: 'Ventas Reales',
-    path: '/real-sales',
-    icon: <PointOfSaleOutlinedIcon fontSize="small" />,
-  },
-  {
     title: "Pedidos",
     path: "/big-orders",
     icon: <AssignmentOutlinedIcon fontSize="small" />,
@@ -79,6 +74,11 @@ export const items = [
     title: "Comparar Órdenes",
     path: "/orders-comparison",
     icon: <CompareArrowsOutlinedIcon fontSize="small" />,
+  },
+  {
+    title: 'Ventas Reales',
+    path: '/real-sales',
+    icon: <PointOfSaleOutlinedIcon fontSize="small" />,
   },
   {
     title: "Configuración",
