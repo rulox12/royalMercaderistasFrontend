@@ -288,6 +288,39 @@ const Page = () => {
       });
   }, [categories]);
 
+  const mainTableTotals = useMemo(() => {
+    const totals = categories.reduce((accumulator, category) => {
+      const realSale = toNumber(category.realSale);
+      const calculatedSale = toNumber(category.calculatedSale);
+      const unitDifference = toNumber(category.unitDifference);
+
+      return {
+        realSale: accumulator.realSale + realSale,
+        calculatedSale: accumulator.calculatedSale + calculatedSale,
+        unitDifference: accumulator.unitDifference + unitDifference,
+      };
+    }, {
+      realSale: 0,
+      calculatedSale: 0,
+      unitDifference: 0,
+    });
+
+    return {
+      ...totals,
+      percentageDifference: calculatePercent(totals.realSale, totals.calculatedSale),
+    };
+  }, [categories]);
+
+  const orderedProductsTotals = useMemo(() => {
+    return orderedProducts.reduce((accumulator, product) => ({
+      realSale: accumulator.realSale + toNumber(product.realSale),
+      calculatedSale: accumulator.calculatedSale + toNumber(product.calculatedSale),
+    }), {
+      realSale: 0,
+      calculatedSale: 0,
+    });
+  }, [orderedProducts]);
+
   const selectedPeriodLabel = useMemo(() => {
     const period = PERIODS.find((item) => item.id === selectedPeriod);
 
@@ -925,10 +958,78 @@ const Page = () => {
                         </TableCell>
                       </TableRow>
                     )}
+
+                    {categories.length ? (
+                      <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.06)' }}>
+                        <TableCell sx={{ py: 0.75, px: 1.5 }}>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
+                          >
+                            Totales
+                          </Typography>
+                        </TableCell>
+                        <TableCell
+                          sx={{ py: 0.75, px: 1.5 }}
+                          align="left"
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
+                          >
+                            {formatNumber(mainTableTotals.realSale)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell
+                          sx={{ py: 0.75, px: 1.5 }}
+                          align="left"
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
+                          >
+                            {formatNumber(mainTableTotals.calculatedSale)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell
+                          sx={{ py: 0.75, px: 1.5 }}
+                          align="left"
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
+                          >
+                            {formatNumber(mainTableTotals.unitDifference)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell
+                          sx={{ py: 0.75, px: 1.5 }}
+                          align="left"
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
+                          >
+                            {formatNumber(mainTableTotals.percentageDifference)}%
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
                   </TableBody>
                 </Table>
               </TableContainer>
             </Card>
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setShowOrderedProducts((previous) => !previous)}
+                disabled={!categories.length}
+              >
+                {showOrderedProducts ? 'Ocultar productos en orden' : 'Ver productos en orden'}
+              </Button>
+            </Box>
 
             <Collapse
               in={showOrderedProducts}
@@ -1018,6 +1119,44 @@ const Page = () => {
                             </TableCell>
                           </TableRow>
                         )}
+
+                        {orderedProducts.length ? (
+                          <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.06)' }}>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              colSpan={3}
+                            >
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700 }}
+                              >
+                                Totales
+                              </Typography>
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700 }}
+                              >
+                                {formatNumber(orderedProductsTotals.realSale)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell
+                              sx={{ py: 0.75, px: 1.5 }}
+                              align="left"
+                            >
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700 }}
+                              >
+                                {formatNumber(orderedProductsTotals.calculatedSale)}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ) : null}
                       </TableBody>
                     </Table>
                   </TableContainer>
