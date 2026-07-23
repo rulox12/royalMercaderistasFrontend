@@ -105,6 +105,23 @@ export const OrdersTable = (props) => {
     day: 'numeric'
   };
 
+  const formatDateTime = (dateValue) => {
+    if (!dateValue) {
+      return '-';
+    }
+
+    return new Date(dateValue).toLocaleString('es-CO', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  };
+
   return (
     <Card>
       <Box component={Paper} >
@@ -122,6 +139,12 @@ export const OrdersTable = (props) => {
               </TableCell>
               <TableCell sx={{ padding: 0 }}>
                 Ciudad
+              </TableCell>
+              <TableCell sx={{ padding: 0 }}>
+                Creado
+              </TableCell>
+              <TableCell sx={{ padding: 0 }}>
+                Actualizado
               </TableCell>
               <TableCell sx={{ padding: 0 }}>
                 Acciones
@@ -150,6 +173,12 @@ export const OrdersTable = (props) => {
                   </TableCell>
                   <TableCell sx={{ padding: 0 }}>
                     {order.cityId.name}
+                  </TableCell>
+                  <TableCell sx={{ padding: 0 }}>
+                    {formatDateTime(order.createdAt)}
+                  </TableCell>
+                  <TableCell sx={{ padding: 0 }}>
+                    {formatDateTime(order.updatedAt)}
                   </TableCell>
                   <TableCell sx={{ padding: 0 }}>
                     <Stack direction="row" spacing={1} alignItems="center">
