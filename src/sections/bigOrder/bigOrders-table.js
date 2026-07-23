@@ -40,6 +40,23 @@ export const BigOrdersTable = (props) => {
     day: 'numeric'
   };
 
+  const formatDateTime = (dateValue) => {
+    if (!dateValue) {
+      return '-';
+    }
+
+    return new Date(dateValue).toLocaleString('es-CO', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  };
+
   return (
     <Card>
       <Scrollbar>
@@ -53,6 +70,8 @@ export const BigOrdersTable = (props) => {
                 <TableCell sx={{ padding: 0 }}>Estado</TableCell>
                 <TableCell sx={{ padding: 0 }}>Ciudad</TableCell>
                 <TableCell sx={{ padding: 0 }}>Plataforma</TableCell>
+                <TableCell sx={{ padding: 0 }}>Creado</TableCell>
+                <TableCell sx={{ padding: 0 }}>Actualizado</TableCell>
                 <TableCell sx={{ padding: 0 }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -70,6 +89,8 @@ export const BigOrdersTable = (props) => {
                     <TableCell sx={{ padding: 0 }}>{bigOrder.status}</TableCell>
                     <TableCell sx={{ padding: 0 }}>{bigOrder.cityId.name}</TableCell>
                     <TableCell sx={{ padding: 0 }}>{bigOrder.platformId?.name}</TableCell>
+                    <TableCell sx={{ padding: 0 }}>{formatDateTime(bigOrder.createdAt)}</TableCell>
+                    <TableCell sx={{ padding: 0 }}>{formatDateTime(bigOrder.updatedAt)}</TableCell>
                     <TableCell sx={{ padding: 0 }}>
                       <Link
                         href={`/big-order-details?id=${bigOrder._id}&cityId=${bigOrder.cityId._id}`}
