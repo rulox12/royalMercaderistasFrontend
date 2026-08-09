@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Card,
+  Chip,
   Stack,
   Table,
   TableBody,
@@ -124,29 +125,42 @@ export const OrdersTable = (props) => {
 
   return (
     <Card>
-      <Box component={Paper} >
+      <TableContainer component={Paper} sx={{ maxHeight: '70vh' }}>
         <Table stickyHeader aria-label="sticky table">
-          <TableHead>
+          <TableHead
+            sx={{
+              background: 'linear-gradient(90deg, #0f2a43, #13385a, #0f2a43)',
+              '& .MuiTableCell-root': {
+                position: 'sticky',
+                top: 0,
+                zIndex: 3,
+                backgroundColor: 'rgba(17, 52, 81, 0.98)',
+                color: '#f7fbff',
+                borderBottom: '2px solid rgba(143, 185, 227, 0.45)',
+                boxShadow: 'inset 0 -1px 0 rgba(173, 206, 238, 0.25)'
+              }
+            }}
+          >
             <TableRow>
-              <TableCell sx={{ padding: 2 }}>
+              <TableCell sx={{ padding: 2, fontWeight: 900, fontSize: 14, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Fecha
               </TableCell>
-              <TableCell sx={{ padding: 0 }}>
+              <TableCell sx={{ padding: 0, fontWeight: 900, fontSize: 14, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Tienda
               </TableCell>
-              <TableCell sx={{ padding: 0 }}>
+              <TableCell sx={{ padding: 0, fontWeight: 900, fontSize: 14, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Usuario
               </TableCell>
-              <TableCell sx={{ padding: 0 }}>
+              <TableCell sx={{ padding: 0, fontWeight: 900, fontSize: 14, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Ciudad
               </TableCell>
-              <TableCell sx={{ padding: 0 }}>
+              <TableCell sx={{ padding: 0, fontWeight: 900, fontSize: 14, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Creado
               </TableCell>
-              <TableCell sx={{ padding: 0 }}>
+              <TableCell sx={{ padding: 0, fontWeight: 900, fontSize: 14, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Actualizado
               </TableCell>
-              <TableCell sx={{ padding: 0 }}>
+              <TableCell sx={{ padding: 0, fontWeight: 900, fontSize: 14, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Acciones
               </TableCell>
             </TableRow>
@@ -214,6 +228,7 @@ export const OrdersTable = (props) => {
             })}
           </TableBody>
         </Table>
+      </TableContainer>
         <Modal
           open={openModal}
           onClose={handleCloseModal}
@@ -282,7 +297,6 @@ export const OrdersTable = (props) => {
             </Button>
           </Box>
         </Modal>
-      </Box>
       <Modal
         open={showDetailModal}
         onClose={() => setShowDetailModal(false)}

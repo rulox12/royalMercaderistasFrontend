@@ -77,8 +77,17 @@ export const items = [
   },
   {
     title: 'Ventas Reales',
-    path: '/real-sales',
     icon: <PointOfSaleOutlinedIcon fontSize="small" />,
+    subItems: [
+      {
+        title: 'Carga ventas reales',
+        path: '/real-sales',
+      },
+      {
+        title: 'Exporte ventas reales masivo',
+        path: '/real-sales-massive',
+      },
+    ],
   },
   {
     title: "Configuración",
