@@ -41,6 +41,59 @@ const BigOrderDetailsPage = () => {
     const [bigOrder, setBigOrder] = useState([]);
     const [editedQuantities, setEditedQuantities] = useState({});
     const [isLoading, setIsLoading] = useState(true);
+    
+    const handleQuantityChange = (productId, shopId, value) => {
+      setEditedQuantities((prevQuantities) => ({
+        ...prevQuantities,
+        [`${productId}_${shopId}`]: parseInt(value, 10) || 0
+      }));
+    };
+
+    const handleRowPaste = (productId, startShopId, event) => {
+      const rawText = event.clipboardData?.getData('text/plain') || '';
+      if (!rawText) {
+        return;
+      }
+
+      const firstLine = rawText.split(/\r?\n/).find((line) => line.trim() !== '');
+      if (!firstLine) {
+        return;
+      }
+
+      const startIndex = shops.findIndex((shop) => shop._id === startShopId);
+      if (startIndex < 0) {
+        return;
+      }
+
+      const values = firstLine
+        .split('\t')
+        .map((value) => {
+          const cleaned = String(value).replace(/[^0-9-]/g, '');
+          const parsed = parseInt(cleaned, 10);
+          return Number.isFinite(parsed) ? parsed : 0;
+        });
+
+      if (!values.length) {
+        return;
+      }
+
+      event.preventDefault();
+
+      setEditedQuantities((prevQuantities) => {
+        const nextQuantities = { ...prevQuantities };
+
+        values.forEach((value, offset) => {
+          const targetShop = shops[startIndex + offset];
+          if (!targetShop) {
+            return;
+          }
+
+          nextQuantities[`${productId}_${targetShop._id}`] = value;
+        });
+
+        return nextQuantities;
+      });
+    };
 
     const getBigOrderService = async () => {
       try {
@@ -166,6 +219,7 @@ const BigOrderDetailsPage = () => {
               type="number"
               value={displayedValue}
               onChange={(e) => handleQuantityChange(product._id, shop, e.target.value)}
+              onPaste={(event) => handleRowPaste(product._id, shop, event)}
               variant="outlined"
               className={`${styles['custom-textfield']}`}
               InputProps={{
@@ -280,13 +334,6 @@ const BigOrderDetailsPage = () => {
       let dateOnly = `${year}-${month}-${day}`;
       const fileName = 'BigOrder'+ '-' +  platform.name + '-' + city.name + '-' + dateOnly;
       XLSX.writeFile(wb, fileName + '.xlsx');
-    };
-
-    const handleQuantityChange = (productId, shopId, value) => {
-      setEditedQuantities((prevQuantities) => ({
-        ...prevQuantities,
-        [`${productId}_${shopId}`]: parseInt(value, 10) || 0
-      }));
     };
 
     const handleSave = async () => {

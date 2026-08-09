@@ -58,6 +58,16 @@ const formatDisplayDate = (dateString) => {
   return new Intl.DateTimeFormat('es-CO').format(parsedDate);
 };
 
+const sanitizeFileNamePart = (value) => {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9\-_]/g, '')
+    .toLowerCase();
+};
+
 const toISODate = (date) => date.toISOString().split('T')[0];
 
 const salesInputSx = {
@@ -360,8 +370,31 @@ const Page = () => {
     ];
 
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos en orden');
-    XLSX.writeFile(workbook, 'productos-en-orden.xlsx');
-  }, [orderedProducts]);
+
+    const selectedPlatform = platforms.find((item) => item._id === platformId);
+    const selectedCity = cities.find((item) => item._id === cityId);
+    const selectedShop = shops.find((item) => item._id === shopId);
+    const selectedPeriodData = PERIODS.find((item) => item.id === selectedPeriod);
+
+    const platformPart = sanitizeFileNamePart(selectedPlatform?.name || 'sin-plataforma');
+    const cityPart = sanitizeFileNamePart(selectedCity?.name || 'sin-ciudad');
+    const shopPart = sanitizeFileNamePart(selectedShop?.name || 'sin-local');
+    const periodPart = sanitizeFileNamePart(selectedPeriodData?.name || `periodo-${selectedPeriod}`);
+    const yearPart = sanitizeFileNamePart(String(selectedYear || 'sin-anio'));
+
+    const fileName = `${shopPart}_${cityPart}_${platformPart}_${periodPart}_${yearPart}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  }, [
+    cityId,
+    cities,
+    orderedProducts,
+    platformId,
+    platforms,
+    selectedPeriod,
+    selectedYear,
+    shopId,
+    shops,
+  ]);
 
   const loadFiltersData = useCallback(async () => {
     setLoadingFilters(true);
@@ -473,6 +506,127 @@ const Page = () => {
 
       return recalculateCategoryFromProducts(category, updatedProducts);
     }));
+  };
+
+  const getEditableTargets = useCallback(() => {
+    const targets = [];
+
+    categories.forEach((category) => {
+      const products = category.products || [];
+      const isGroupedForSale = category.groupForSale !== false;
+
+      if (isGroupedForSale) {
+        targets.push({
+          type: 'category',
+          categoryId: category._id,
+        });
+        return;
+      }
+
+      products.forEach((product) => {
+        targets.push({
+          type: 'product',
+          categoryId: category._id,
+          productId: product._id,
+        });
+      });
+    });
+
+    return targets;
+  }, [categories]);
+
+  const getTargetKey = (target) => {
+    if (target.type === 'category') {
+      return `category:${target.categoryId}`;
+    }
+
+    return `product:${target.categoryId}:${target.productId}`;
+  };
+
+  const applyBulkValueToCategories = (previousCategories, target, rawValue) => {
+    const normalizedValue = Math.max(0, Math.round(toNumber(rawValue)));
+
+    return previousCategories.map((category) => {
+      if (category._id !== target.categoryId) {
+        return category;
+      }
+
+      if (target.type === 'category') {
+        if (category.groupForSale === false) {
+          return category;
+        }
+
+        return distributeRealSaleByCalculatedWeight(category, normalizedValue);
+      }
+
+      if (category.groupForSale !== false) {
+        return category;
+      }
+
+      const updatedProducts = (category.products || []).map((product) => {
+        if (product._id !== target.productId) {
+          return product;
+        }
+
+        const productCalculatedSale = toNumber(product.calculatedSale);
+        const productRealSale = normalizedValue;
+
+        return {
+          ...product,
+          realSale: productRealSale,
+          unitDifference: productRealSale - productCalculatedSale,
+          percentageDifference: calculatePercent(productRealSale, productCalculatedSale),
+        };
+      });
+
+      return recalculateCategoryFromProducts(category, updatedProducts);
+    });
+  };
+
+  const handlePasteRealSaleValues = (startTarget, event) => {
+    const rawText = event.clipboardData?.getData('text/plain') || '';
+    if (!rawText) {
+      return;
+    }
+
+    const cells = rawText
+      .split(/\r?\n/)
+      .filter((line) => line !== '')
+      .flatMap((line) => line.split('\t'));
+
+    if (!cells.length) {
+      return;
+    }
+
+    const values = cells.map((cell) => {
+      const cleaned = String(cell).replace(/[^0-9-]/g, '');
+      const parsed = parseInt(cleaned, 10);
+      return Number.isFinite(parsed) ? parsed : 0;
+    });
+
+    const targets = getEditableTargets();
+    const startIndex = targets.findIndex((target) => getTargetKey(target) === getTargetKey(startTarget));
+
+    if (startIndex < 0) {
+      return;
+    }
+
+    event.preventDefault();
+
+    setCategories((previousCategories) => {
+      let nextCategories = previousCategories;
+
+      values.forEach((value, offset) => {
+        const target = targets[startIndex + offset];
+        if (!target) {
+          return;
+        }
+
+        nextCategories = applyBulkValueToCategories(nextCategories, target, value);
+      });
+
+      return nextCategories;
+    });
   };
 
   const handleSave = useCallback(async () => {
@@ -701,6 +855,25 @@ const Page = () => {
             </Card>
 
             <Card>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  px: 1.5,
+                  py: 1,
+                  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                >
+                  Puedes pegar una columna/fila desde Excel en cualquier campo de &quot;Venta real&quot;.
+                </Typography>
+              </Box>
               <TableContainer>
                 <Table size="small">
                   <TableHead>
@@ -776,6 +949,10 @@ const Page = () => {
                                   inputMode: 'numeric',
                                   pattern: '[0-9]*',
                                 }}
+                                onPaste={(event) => handlePasteRealSaleValues({
+                                  type: 'category',
+                                  categoryId: category._id,
+                                }, event)}
                                 onChange={(event) => {
                                   handleCategoryRealSaleChange(category._id, event.target.value);
                                 }}
@@ -828,6 +1005,11 @@ const Page = () => {
                                       inputMode: 'numeric',
                                       pattern: '[0-9]*',
                                     }}
+                                    onPaste={(event) => handlePasteRealSaleValues({
+                                      type: 'product',
+                                      categoryId: category._id,
+                                      productId: product._id,
+                                    }, event)}
                                     onChange={(event) => {
                                       handleProductRealSaleChange(category._id, product._id, event.target.value);
                                     }}
@@ -882,6 +1064,10 @@ const Page = () => {
                                   inputMode: 'numeric',
                                   pattern: '[0-9]*',
                                 }}
+                                onPaste={(event) => handlePasteRealSaleValues({
+                                  type: 'category',
+                                  categoryId: category._id,
+                                }, event)}
                                 onChange={(event) => {
                                   handleCategoryRealSaleChange(category._id, event.target.value);
                                 }}

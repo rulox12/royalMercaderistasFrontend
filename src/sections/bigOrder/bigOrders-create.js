@@ -24,6 +24,11 @@ export const BigOrdersCreate = () => {
     platformId: '',
     date: new Date().toISOString().split('T')[0]
   });
+  const [fieldErrors, setFieldErrors] = useState({
+    date: false,
+    cityId: false,
+    platformId: false
+  });
   const [open, setOpen] = useState(false);
   const [alertType, setAlertType] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
@@ -45,13 +50,32 @@ export const BigOrdersCreate = () => {
 
   const handleChange = useCallback(
     (event) => {
+      const { name, value } = event.target;
       setBigOrder((prevBigOrder) => ({
         ...prevBigOrder,
-        [event.target.name]: event.target.value
+        [name]: value
       }));
+
+      if (name === 'date' || name === 'cityId' || name === 'platformId') {
+        setFieldErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: !value
+        }));
+      }
     },
     []
   );
+
+  const validateRequiredFields = () => {
+    const errors = {
+      date: !bigOrder.date,
+      cityId: !bigOrder.cityId,
+      platformId: !bigOrder.platformId
+    };
+
+    setFieldErrors(errors);
+    return !errors.date && !errors.cityId && !errors.platformId;
+  };
 
   const getCitiesService = async () => {
     try {
@@ -74,8 +98,14 @@ export const BigOrdersCreate = () => {
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
+
+      if (!validateRequiredFields()) {
+        handleClick('error', 'Fecha, ciudad y plataforma son obligatorios');
+        return;
+      }
+
       try {
-        const response = await createBigOrder({
+        await createBigOrder({
           date: formatDateString(bigOrder.date),
           cityId: bigOrder.cityId,
           platformId: bigOrder.platformId
@@ -118,6 +148,8 @@ export const BigOrdersCreate = () => {
                   name="date"
                   onChange={handleChange}
                   required
+                  error={fieldErrors.date}
+                  helperText={fieldErrors.date ? 'La fecha es obligatoria' : ''}
                   value={bigOrder.date}
                 />
               </Grid>
@@ -131,6 +163,8 @@ export const BigOrdersCreate = () => {
                   name="cityId"
                   onChange={handleChange}
                   required
+                  error={fieldErrors.cityId}
+                  helperText={fieldErrors.cityId ? 'La ciudad es obligatoria' : ''}
                   select
                   SelectProps={{ native: true }}
                   value={bigOrder.cityId}
@@ -156,6 +190,8 @@ export const BigOrdersCreate = () => {
                   name="platformId"
                   onChange={handleChange}
                   required
+                  error={fieldErrors.platformId}
+                  helperText={fieldErrors.platformId ? 'La plataforma es obligatoria' : ''}
                   select
                   SelectProps={{ native: true }}
                   value={bigOrder.platformId}
@@ -176,7 +212,7 @@ export const BigOrdersCreate = () => {
         </CardContent>
         <Divider/>
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button variant="contained" type="submit">
             Generar pedido
           </Button>
         </CardActions>
