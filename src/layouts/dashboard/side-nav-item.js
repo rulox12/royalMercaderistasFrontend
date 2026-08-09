@@ -1,11 +1,34 @@
 import NextLink from 'next/link';
 import PropTypes from 'prop-types';
-import { useState } from 'react'; // Importa useState
-import { Box, ButtonBase, List, ListItem, Collapse } from '@mui/material'; // Importa List, ListItem y Collapse
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import {
+  Box,
+  ButtonBase,
+  Collapse,
+  List,
+  ListItem,
+  SvgIcon,
+} from '@mui/material';
 
 export const SideNavItem = (props) => {
   const { active = false, disabled, external, icon, path, title, subItems } = props;
-  const [open, setOpen] = useState(false); // Estado para controlar la expansión de los subelementos
+  const router = useRouter();
+  const pathname = router.pathname;
+
+  const isSubItemActive = useMemo(
+    () => Boolean(subItems?.some((subItem) => pathname === subItem.path)),
+    [pathname, subItems]
+  );
+
+  const [open, setOpen] = useState(isSubItemActive);
+
+  useEffect(() => {
+    if (isSubItemActive) {
+      setOpen(true);
+    }
+  }, [isSubItemActive]);
 
   const handleToggle = () => {
     setOpen(!open);
@@ -26,7 +49,7 @@ export const SideNavItem = (props) => {
 
   return (
     <li>
-      {subItems ? ( // Si hay subelementos, renderiza un elemento de lista con un botón para expandir/cerrar
+      {subItems ? (
         <>
           <ButtonBase
             sx={{
@@ -42,11 +65,14 @@ export const SideNavItem = (props) => {
               ...(active && {
                 backgroundColor: 'rgba(255, 255, 255, 0.04)',
               }),
+              ...(isSubItemActive && {
+                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+              }),
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.04)',
               },
             }}
-            onClick={handleToggle} // Agrega un controlador de clic para expandir/cerrar
+            onClick={handleToggle}
           >
             {icon && (
               <Box
@@ -81,22 +107,78 @@ export const SideNavItem = (props) => {
                 ...(disabled && {
                   color: 'neutral.500',
                 }),
+                ...(isSubItemActive && {
+                  color: 'common.white',
+                }),
               }}
             >
               {title}
             </Box>
+            <SvgIcon
+              fontSize="small"
+              sx={{
+                color: 'neutral.400',
+                transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s ease-in-out',
+              }}
+            >
+              <ExpandMoreOutlinedIcon />
+            </SvgIcon>
           </ButtonBase>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {subItems.map((subItem) => (
-                <ListItem button key={subItem.title} component={NextLink} href={subItem.path}>
-                  {subItem.title}
-                </ListItem>
-              ))}
+            <List
+              component="div"
+              disablePadding
+              sx={{
+                mt: 0.5,
+                pl: 5.5,
+                pr: 1,
+              }}
+            >
+              {subItems.map((subItem) => {
+                const subItemActive = pathname === subItem.path;
+
+                return (
+                  <ListItem
+                    key={subItem.title}
+                    disablePadding
+                    sx={{ mb: 0.25 }}
+                  >
+                    <ButtonBase
+                      component={NextLink}
+                      href={subItem.path}
+                      sx={{
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        borderRadius: 1,
+                        px: 1.5,
+                        py: 0.7,
+                        color: subItemActive ? 'common.white' : 'neutral.300',
+                        fontSize: 13,
+                        fontWeight: subItemActive ? 700 : 500,
+                        lineHeight: '20px',
+                        backgroundColor: subItemActive
+                          ? 'rgba(99, 102, 241, 0.25)'
+                          : 'transparent',
+                        borderLeft: subItemActive
+                          ? '2px solid rgba(129, 140, 248, 0.95)'
+                          : '2px solid transparent',
+                        transition: 'all 0.18s ease',
+                        '&:hover': {
+                          color: 'common.white',
+                          backgroundColor: 'rgba(99, 102, 241, 0.16)',
+                        },
+                      }}
+                    >
+                      {subItem.title}
+                    </ButtonBase>
+                  </ListItem>
+                );
+              })}
             </List>
           </Collapse>
         </>
-      ) : ( // Si no hay subelementos, renderiza un botón base sin capacidad de expandirse
+      ) : (
         <ButtonBase
           sx={{
             alignItems: 'center',
@@ -167,7 +249,7 @@ SideNavItem.propTypes = {
   icon: PropTypes.node,
   path: PropTypes.string,
   title: PropTypes.string.isRequired,
-  subItems: PropTypes.arrayOf(PropTypes.shape({ // Propiedad para pasar subelementos
+  subItems: PropTypes.arrayOf(PropTypes.shape({
     title: PropTypes.string.isRequired,
     path: PropTypes.string.isRequired,
   })),

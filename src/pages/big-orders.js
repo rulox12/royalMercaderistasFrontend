@@ -84,16 +84,14 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>
-          Pedidos
-        </title>
+        <title>Pedidos</title>
       </Head>
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          py: 8,
-          padding: 0
+          py: 2,
+          padding: 0,
         }}
       >
         <Container maxWidth="xl">
@@ -104,41 +102,20 @@ const Page = () => {
               alignItems="center"
               spacing={2}
               sx={{
-                position: 'sticky',
+                position: "sticky",
                 top: 0,
-                backgroundColor: 'white', // Para evitar que el contenido se superponga
+                backgroundColor: "white", // Para evitar que el contenido se superponga
                 zIndex: 1, // Asegura que se mantenga arriba de otros elementos
-                paddingTop: 8 // Espaciado para que no se vea cortado
+                paddingTop: 1.5,
+                paddingBottom: 1,
               }}
             >
               <Stack spacing={1}>
-                <Typography variant="h4">
-                  Pedidos
-                </Typography>
+                <Typography variant="h4">Pedidos</Typography>
               </Stack>
 
               <Stack direction="row" justifyContent="flex-end" flexWrap="nowrap" gap={2}>
                 {/* Filtro de Ciudades */}
-                <FormControl sx={{ width: 200 }}>
-                  <InputLabel id="city-select-label">Ciudad</InputLabel>
-                  <Select
-                    labelId="city-select-label"
-                    value={selectedCity}
-                    onChange={(e) => {
-                      setSelectedCity(e.target.value);
-                      setPage(1);
-                    }}
-                  >
-                    <MenuItem value="">
-                      <em>Todos</em>
-                    </MenuItem>
-                    {cities.map((city) => (
-                      <MenuItem key={city._id} value={city._id}>
-                        {city.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
 
                 {/* Filtro de Plataformas */}
                 <FormControl sx={{ width: 200 }}>
@@ -162,23 +139,41 @@ const Page = () => {
                   </Select>
                 </FormControl>
 
+                <FormControl sx={{ width: 200 }}>
+                  <InputLabel id="city-select-label">Ciudad</InputLabel>
+                  <Select
+                    labelId="city-select-label"
+                    value={selectedCity}
+                    onChange={(e) => {
+                      setSelectedCity(e.target.value);
+                      setPage(1);
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>Todos</em>
+                    </MenuItem>
+                    {cities.map((city) => (
+                      <MenuItem key={city._id} value={city._id}>
+                        {city.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
                 <Button
                   onClick={handleOpen}
-                  startIcon={(
+                  startIcon={
                     <SvgIcon fontSize="small">
-                      <PlusIcon/>
+                      <PlusIcon />
                     </SvgIcon>
-                  )}
+                  }
                   variant="contained"
                 >
                   Agregar nuevo pedido
                 </Button>
               </Stack>
             </Stack>
-            <BigOrdersTable
-              count={bigOrders.length}
-              items={bigOrders}
-            />
+            <BigOrdersTable count={bigOrders.length} items={bigOrders} />
             <Stack direction="row" justifyContent="space-between" spacing={2}>
               <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
                 Siguiente
@@ -201,7 +196,7 @@ const Page = () => {
                   Crear pedido
                 </Typography>
                 <div id="modal-modal-description" sx={{ mt: 2 }}>
-                  <BigOrdersCreate/>
+                  <BigOrdersCreate />
                 </div>
               </Box>
             </Modal>
