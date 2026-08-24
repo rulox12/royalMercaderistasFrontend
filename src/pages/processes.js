@@ -105,7 +105,7 @@ const Page = () => {
                 <Stack spacing={2}>
                   <Typography variant="h6">Full Process</Typography>
                   <Typography color="text.secondary" variant="body2">
-                    Ejecuta secuencialmente: ventas, recibidas y rentabilidad para el rango seleccionado.
+                    Ejecuta secuencialmente: recibidas, ventas y rentabilidad para el rango seleccionado.
                   </Typography>
 
                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
