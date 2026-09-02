@@ -23,8 +23,20 @@ const Page = () => {
 
   const [roles, setRoles] = useState([]);
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const handleOpen = () => {
+    setSelectedRole(null);
+    setOpen(true);
+  };
   const handleClose = () => setOpen(false);
+  const handleEdit = (role) => {
+    setSelectedRole(role);
+    setOpen(true);
+  };
+  const handleSaved = async () => {
+    await getRolesService();
+    setOpen(false);
+  };
 
   const getRolesService = async () => { 
     try {
@@ -62,7 +74,7 @@ const Page = () => {
             >
               <Stack spacing={1}>
                 <Typography variant="h4">
-                  Roles
+                  Roles y permisos
                 </Typography>
               </Stack>
               <div>
@@ -75,13 +87,14 @@ const Page = () => {
                   )}
                   variant="contained"
                 >
-                  Agregar un nuevo rol
+                  Agregar rol
                 </Button>
               </div>
             </Stack>
             <RolesTable
               count={roles.length} 
               items={roles}
+              onEdit={handleEdit}
               />
             <Modal
               open={open}
@@ -90,11 +103,17 @@ const Page = () => {
               aria-describedby="modal-modal-description"
             >
               <Box sx={style}>
-                <Typography id="modal-modal-title" variant="h6" component="h2">
-                  Crear Rol
+                <Typography id="modal-modal-title"
+variant="h6"
+component="h2">
+                  {selectedRole ? 'Editar Rol' : 'Crear Rol'}
                 </Typography>
-                <div id="modal-modal-description" sx={{ mt: 2 }}>
-                  <RolesCreate />
+                <div id="modal-modal-description"
+sx={{ mt: 2 }}>
+                  <RolesCreate
+                    roleToEdit={selectedRole}
+                    onSaved={handleSaved}
+                  />
                 </div>
               </Box>
             </Modal>

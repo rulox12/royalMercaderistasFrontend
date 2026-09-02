@@ -5,11 +5,12 @@ import { LocalDashboard } from 'src/sections/dashboard/local-dashboard';
 import { useAuthContext } from 'src/contexts/auth-context';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import { hasPermission } from 'src/utils/permissions';
 
 const Page = () => {
   const { user } = useAuthContext();
   const router = useRouter();
-  const canViewLocalDashboard = user?.canViewLocalDashboard === true;
+  const canViewLocalDashboard = hasPermission(user, 'dashboard.local');
 
   useEffect(() => {
     if (user && !canViewLocalDashboard) {
@@ -28,7 +29,7 @@ const Page = () => {
       </Head>
       <Box
         component="main"
-        sx={{ flexGrow: 1, py: 8 }}
+        sx={{ flexGrow: 1, py: 0 }}
       >
         <LocalDashboard />
       </Box>

@@ -22,6 +22,16 @@ const createRole = async (role) => {
     }
 };
 
+const updateRole = async (roleId, role) => {
+    try {
+        const response = await axios.put(`${API_URL}/roles/${roleId}`, role);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating rol:', error);
+        throw error;
+    }
+};
+
 const deleteRole = async (roleId) => {
     try {
         const response = await axios.delete(`${API_URL}/roles`, { data: { roleId } });
@@ -35,4 +45,4 @@ const deleteRole = async (roleId) => {
 
 
 
-export { getRoles, createRole, deleteRole };
+export { getRoles, createRole, updateRole, deleteRole };

@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import { useAuthContext } from 'src/contexts/auth-context';
+import { canAccessPath } from 'src/utils/permissions';
 
 export const AuthGuard = (props) => {
   const { children } = props;
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthContext();
-  const ignore = useRef(false);
+  const { isAuthenticated, isLoading, user } = useAuthContext();
   const [checked, setChecked] = useState(false);
 
   // Only do authentication check on component mount.
@@ -18,23 +18,26 @@ export const AuthGuard = (props) => {
     () => {
       if (!router.isReady) return;
 
-      if (ignore.current) return;
-      ignore.current = true;
-
       if (isLoading) return;
 
       if (!isAuthenticated) {
+        setChecked(false);
         router
           .replace({
             pathname: '/auth/login',
             query: router.asPath !== '/' ? { continueUrl: router.asPath } : undefined
           })
           .catch(console.error);
+      } else if (!canAccessPath(user, router.pathname)) {
+        setChecked(false);
+        router
+          .replace('/')
+          .catch(console.error);
       } else {
         setChecked(true);
       }
     },
-    [router, router.isReady, isAuthenticated, isLoading]
+    [router, router.isReady, isAuthenticated, isLoading, user]
   );
 
   if (!checked) {
