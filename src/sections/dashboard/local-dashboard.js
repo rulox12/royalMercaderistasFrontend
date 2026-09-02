@@ -1,58 +1,81 @@
 import { Box, Card, Container, Grid, Typography, FormControl, InputLabel, Select, MenuItem, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getLocalDashboardData } from 'src/services/localDashboardService';
 import { getPlatforms } from 'src/services/platformService';
 import { getCities } from 'src/services/cityService';
 import { getShops } from 'src/services/shopService';
 
-export const LocalDashboard = () => {
-  const toISODate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  const shiftMonthKeepingDay = (date, monthOffset) => {
-    const targetMonth = date.getMonth() + monthOffset;
-    const targetYear = date.getFullYear() + Math.floor(targetMonth / 12);
-    const normalizedMonth = ((targetMonth % 12) + 12) % 12;
-    const maxDayInTargetMonth = new Date(targetYear, normalizedMonth + 1, 0).getDate();
-    const targetDay = Math.min(date.getDate(), maxDayInTargetMonth);
-    return new Date(targetYear, normalizedMonth, targetDay);
-  };
+const toISODate = (date) => date.toISOString().split('T')[0];
 
-  // Calcular fechas por defecto con corte 26-25
+const PERIODS = [
+  { id: 1, name: 'Enero', startMonth: 0, startDay: 1, endMonth: 0, endDay: 25 },
+  { id: 2, name: 'Febrero', startMonth: 0, startDay: 26, endMonth: 1, endDay: 25 },
+  { id: 3, name: 'Marzo', startMonth: 1, startDay: 26, endMonth: 2, endDay: 25 },
+  { id: 4, name: 'Abril', startMonth: 2, startDay: 26, endMonth: 3, endDay: 25 },
+  { id: 5, name: 'Mayo', startMonth: 3, startDay: 26, endMonth: 4, endDay: 25 },
+  { id: 6, name: 'Junio', startMonth: 4, startDay: 26, endMonth: 5, endDay: 25 },
+  { id: 7, name: 'Julio', startMonth: 5, startDay: 26, endMonth: 6, endDay: 25 },
+  { id: 8, name: 'Agosto', startMonth: 6, startDay: 26, endMonth: 7, endDay: 25 },
+  { id: 9, name: 'Septiembre', startMonth: 7, startDay: 26, endMonth: 8, endDay: 25 },
+  { id: 10, name: 'Octubre', startMonth: 8, startDay: 26, endMonth: 9, endDay: 25 },
+  { id: 11, name: 'Noviembre', startMonth: 9, startDay: 26, endMonth: 10, endDay: 25 },
+  { id: 12, name: 'Diciembre', startMonth: 10, startDay: 26, endMonth: 11, endDay: 25 },
+  { id: 13, name: 'Fin Diciembre', startMonth: 11, startDay: 26, endMonth: 11, endDay: 31 },
+];
+
+const getCurrentPeriodId = (date = new Date()) => {
+  const month = date.getMonth();
+  const day = date.getDate();
+
+  if (month === 0 && day <= 25) return 1;
+  if (month === 11 && day >= 26) return 13;
+  if (day >= 26) return month + 2;
+  return month + 1;
+};
+
+const getPreviousPeriodSelection = (periodId, year) => {
+  if (periodId === 1) {
+    return { periodId: 13, year: year - 1 };
+  }
+
+  return { periodId: periodId - 1, year };
+};
+
+const buildPeriodRange = (periodId, year) => {
+  const period = PERIODS.find((item) => item.id === periodId);
+
+  if (!period) {
+    return { startDate: '', endDate: '' };
+  }
+
+  return {
+    startDate: toISODate(new Date(Date.UTC(year, period.startMonth, period.startDay))),
+    endDate: toISODate(new Date(Date.UTC(year, period.endMonth, period.endDay))),
+  };
+};
+
+const formatDisplayDate = (dateString) => {
+  if (!dateString) return '';
+  return new Intl.DateTimeFormat('es-CO').format(new Date(`${dateString}T00:00:00`));
+};
+
+const formatPeriodOptionLabel = (period, year) => {
+  const { startDate, endDate } = buildPeriodRange(period.id, year);
+  const rangeLabel = startDate && endDate ? ` ${formatDisplayDate(startDate)} a ${formatDisplayDate(endDate)}` : '';
+
+  return `${period.id}. ${period.name}${rangeLabel}`;
+};
+
+export const LocalDashboard = () => {
   const referenceDate = new Date();
   referenceDate.setDate(referenceDate.getDate() - 2);
   referenceDate.setHours(0, 0, 0, 0);
 
-  const currentDay = referenceDate.getDate();
-  const currentMonth = referenceDate.getMonth();
   const currentYear = referenceDate.getFullYear();
-
-  let actualStartDate;
-  let actualEndDate;
-  let comparativeStartDate;
-  let comparativeEndDate;
-
-  if (currentDay >= 26) {
-    // Actual: 26 del mes actual hasta fecha de referencia
-    // Comparativo: mismo rango, un mes atrás
-    actualStartDate = new Date(currentYear, currentMonth, 26);
-  } else {
-    // Actual: 26 del mes pasado hasta fecha de referencia
-    // Comparativo: mismo rango, un mes atrás
-    actualStartDate = new Date(currentYear, currentMonth - 1, 26);
-  }
-
-  actualEndDate = new Date(referenceDate);
-  comparativeStartDate = shiftMonthKeepingDay(actualStartDate, -1);
-  comparativeEndDate = shiftMonthKeepingDay(actualEndDate, -1);
-
-  const currentMonthStart = toISODate(actualStartDate);
-  const currentMonthEnd = toISODate(actualEndDate);
-  const prevMonthStart = toISODate(comparativeStartDate);
-  const prevMonthEnd = toISODate(comparativeEndDate);
+  const defaultPeriodId = getCurrentPeriodId(referenceDate);
+  const defaultComparison = getPreviousPeriodSelection(defaultPeriodId, currentYear);
+  const defaultCurrentRange = buildPeriodRange(defaultPeriodId, currentYear);
+  const defaultComparisonRange = buildPeriodRange(defaultComparison.periodId, defaultComparison.year);
   
   // Estados para filtros
   const [platform, setPlatform] = useState('');
@@ -61,10 +84,21 @@ export const LocalDashboard = () => {
   const [platforms, setPlatforms] = useState([]);
   const [cities, setCities] = useState([]);
   const [locals, setLocals] = useState([]);
-  const [startDateA, setStartDateA] = useState(prevMonthStart);
-  const [endDateA, setEndDateA] = useState(prevMonthEnd);
-  const [startDateB, setStartDateB] = useState(currentMonthStart);
-  const [endDateB, setEndDateB] = useState(currentMonthEnd);
+  const [selectedPeriod, setSelectedPeriod] = useState(defaultPeriodId);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [comparisonPeriod, setComparisonPeriod] = useState(defaultComparison.periodId);
+  const [comparisonYear, setComparisonYear] = useState(defaultComparison.year);
+  const [startDateA, setStartDateA] = useState(defaultComparisonRange.startDate);
+  const [endDateA, setEndDateA] = useState(defaultComparisonRange.endDate);
+  const [startDateB, setStartDateB] = useState(defaultCurrentRange.startDate);
+  const [endDateB, setEndDateB] = useState(defaultCurrentRange.endDate);
+  const [showDateFields, setShowDateFields] = useState(false);
+
+  const yearOptions = useMemo(() => ([
+    currentYear - 1,
+    currentYear,
+    currentYear + 1,
+  ]), [currentYear]);
 
   useEffect(() => {
     getPlatforms().then(setPlatforms);
@@ -72,12 +106,11 @@ export const LocalDashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (city) {
-      getShops({ cityId: city }).then(setLocals);
-    } else {
-      setLocals([]);
-    }
-  }, [city]);
+    getShops({
+      ...(platform ? { platformId: platform } : {}),
+      ...(city ? { cityId: city } : {}),
+    }).then(setLocals);
+  }, [city, platform]);
 
   const [indicators, setIndicators] = useState(null);
   const [products, setProducts] = useState([]);
@@ -109,6 +142,46 @@ export const LocalDashboard = () => {
     setProductSortDirection((prevDirection) => (prevDirection === 'asc' ? 'desc' : 'asc'));
   };
 
+  const selectedPeriodLabel = useMemo(() => {
+    const period = PERIODS.find((item) => item.id === selectedPeriod);
+
+    return period ? formatPeriodOptionLabel(period, selectedYear) : 'Periodo actual';
+  }, [selectedPeriod, selectedYear]);
+
+  const comparisonPeriodLabel = useMemo(() => {
+    const period = PERIODS.find((item) => item.id === comparisonPeriod);
+
+    return period ? formatPeriodOptionLabel(period, comparisonYear) : 'Periodo comparativo';
+  }, [comparisonPeriod, comparisonYear]);
+
+  const handlePeriodChange = (periodId, year) => {
+    const range = buildPeriodRange(periodId, year);
+    setSelectedPeriod(periodId);
+    setStartDateB(range.startDate);
+    setEndDateB(range.endDate);
+  };
+
+  const handleYearChange = (year) => {
+    const range = buildPeriodRange(selectedPeriod, year);
+    setSelectedYear(year);
+    setStartDateB(range.startDate);
+    setEndDateB(range.endDate);
+  };
+
+  const handleComparisonPeriodChange = (periodId, year) => {
+    const range = buildPeriodRange(periodId, year);
+    setComparisonPeriod(periodId);
+    setStartDateA(range.startDate);
+    setEndDateA(range.endDate);
+  };
+
+  const handleComparisonYearChange = (year) => {
+    const range = buildPeriodRange(comparisonPeriod, year);
+    setComparisonYear(year);
+    setStartDateA(range.startDate);
+    setEndDateA(range.endDate);
+  };
+
   const sortedProducts = [...products].sort((productA, productB) => {
     const positionA = Number(productA.position);
     const positionB = Number(productB.position);
@@ -134,7 +207,7 @@ export const LocalDashboard = () => {
   });
 
   const handleFilter = async () => {
-    if (!local || !startDateA || !endDateA || !startDateB || !endDateB) return;
+    if (!startDateA || !endDateA || !startDateB || !endDateB) return;
 
     if (startDateA > endDateA || startDateB > endDateB) {
       setError('Rango de fechas inválido: la fecha desde no puede ser mayor que la fecha hasta');
@@ -146,6 +219,8 @@ export const LocalDashboard = () => {
     try {
       const data = await getLocalDashboardData({
         shopId: local,
+        platformId: platform,
+        cityId: city,
         startDateA,
         endDateA,
         startDateB,
@@ -182,18 +257,156 @@ export const LocalDashboard = () => {
               xs: '1fr',
               sm: 'repeat(2, minmax(0, 1fr))',
               md: 'repeat(4, minmax(0, 1fr))',
-              lg: 'repeat(7, minmax(0, 1fr))',
             },
           }}
         >
           <FormControl fullWidth>
-            <InputLabel>Plataforma</InputLabel>
+            <InputLabel id="current-period-label">Periodo actual</InputLabel>
             <Select
-              value={platform}
-              onChange={e => setPlatform(e.target.value)}
-              label="Plataforma"
+              labelId="current-period-label"
+              value={selectedPeriod}
+              label="Periodo actual"
+              renderValue={() => selectedPeriodLabel}
+              onChange={(event) => handlePeriodChange(Number(event.target.value), selectedYear)}
             >
-              <MenuItem value=""><em>Selecciona</em></MenuItem>
+              {PERIODS.map((period) => (
+                <MenuItem
+                  key={period.id}
+                  value={period.id}
+                >
+                  {formatPeriodOptionLabel(period, selectedYear)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="current-year-label">Año actual</InputLabel>
+            <Select
+              labelId="current-year-label"
+              value={selectedYear}
+              label="Año actual"
+              onChange={(event) => handleYearChange(Number(event.target.value))}
+            >
+              {yearOptions.map((year) => (
+                <MenuItem
+                  key={year}
+                  value={year}
+                >
+                  {year}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="comparison-period-label">Periodo comparativo</InputLabel>
+            <Select
+              labelId="comparison-period-label"
+              value={comparisonPeriod}
+              label="Periodo comparativo"
+              renderValue={() => comparisonPeriodLabel}
+              onChange={(event) => handleComparisonPeriodChange(Number(event.target.value), comparisonYear)}
+            >
+              {PERIODS.map((period) => (
+                <MenuItem
+                  key={period.id}
+                  value={period.id}
+                >
+                  {formatPeriodOptionLabel(period, comparisonYear)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="comparison-year-label">Año comparativo</InputLabel>
+            <Select
+              labelId="comparison-year-label"
+              value={comparisonYear}
+              label="Año comparativo"
+              onChange={(event) => handleComparisonYearChange(Number(event.target.value))}
+            >
+              {yearOptions.map((year) => (
+                <MenuItem
+                  key={year}
+                  value={year}
+                >
+                  {year}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Button
+            color="inherit"
+            onClick={() => setShowDateFields((previous) => !previous)}
+            sx={{
+              gridColumn: '1 / -1',
+              minHeight: 32,
+              py: 0.5,
+              borderColor: 'divider',
+              color: 'text.secondary',
+              fontWeight: 600,
+            }}
+            variant="outlined"
+          >
+            {showDateFields ? 'Ocultar fechas manuales' : 'Editar fechas manuales'}
+          </Button>
+          {showDateFields ? (
+            <>
+              <TextField
+                fullWidth
+                label="Desde Actual"
+                type="date"
+                value={startDateB}
+                onChange={e => setStartDateB(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                label="Hasta Actual"
+                type="date"
+                value={endDateB}
+                onChange={e => setEndDateB(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                label="Desde Comparativo"
+                type="date"
+                value={startDateA}
+                onChange={e => setStartDateA(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                label="Hasta Comparativo"
+                type="date"
+                value={endDateA}
+                onChange={e => setEndDateA(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </>
+          ) : null}
+          <FormControl fullWidth>
+            <InputLabel
+              id="platform-label"
+              shrink
+            >
+              Plataforma
+            </InputLabel>
+            <Select
+              displayEmpty
+              labelId="platform-label"
+              value={platform}
+              label="Plataforma"
+              renderValue={(value) => {
+                if (!value) return 'Todas';
+                return platforms.find((item) => item._id === value)?.name || 'Todas';
+              }}
+              onChange={(event) => {
+                setPlatform(event.target.value);
+                setLocal('');
+              }}
+            >
+              <MenuItem value="">Todas</MenuItem>
               {platforms.map((p) => (
                 <MenuItem
                   key={p._id}
@@ -205,13 +418,27 @@ export const LocalDashboard = () => {
             </Select>
           </FormControl>
           <FormControl fullWidth>
-            <InputLabel>Ciudad</InputLabel>
-            <Select
-              value={city}
-              onChange={e => setCity(e.target.value)}
-              label="Ciudad"
+            <InputLabel
+              id="city-label"
+              shrink
             >
-              <MenuItem value=""><em>Selecciona</em></MenuItem>
+              Ciudad
+            </InputLabel>
+            <Select
+              displayEmpty
+              labelId="city-label"
+              value={city}
+              label="Ciudad"
+              renderValue={(value) => {
+                if (!value) return 'Todas';
+                return cities.find((item) => item._id === value)?.name || 'Todas';
+              }}
+              onChange={(event) => {
+                setCity(event.target.value);
+                setLocal('');
+              }}
+            >
+              <MenuItem value="">Todas</MenuItem>
               {cities.map((c) => (
                 <MenuItem
                   key={c._id}
@@ -223,13 +450,24 @@ export const LocalDashboard = () => {
             </Select>
           </FormControl>
           <FormControl fullWidth>
-            <InputLabel>Local</InputLabel>
+            <InputLabel
+              id="local-label"
+              shrink
+            >
+              Local
+            </InputLabel>
             <Select
+              displayEmpty
+              labelId="local-label"
               value={local}
               onChange={e => setLocal(e.target.value)}
               label="Local"
+              renderValue={(value) => {
+                if (!value) return 'Todos los locales';
+                return locals.find((item) => item._id === value)?.name || 'Todos los locales';
+              }}
             >
-              <MenuItem value=""><em>Selecciona</em></MenuItem>
+              <MenuItem value="">Todos los locales</MenuItem>
               {locals.map((l) => (
                 <MenuItem
                   key={l._id}
@@ -240,41 +478,9 @@ export const LocalDashboard = () => {
               ))}
             </Select>
           </FormControl>
-          <TextField
-            fullWidth
-            label="Desde Actual (A)"
-            type="date"
-            value={startDateB}
-            onChange={e => setStartDateB(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            fullWidth
-            label="Hasta Actual (A)"
-            type="date"
-            value={endDateB}
-            onChange={e => setEndDateB(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            fullWidth
-            label="Desde Comparativo (C)"
-            type="date"
-            value={startDateA}
-            onChange={e => setStartDateA(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            fullWidth
-            label="Hasta Comparativo (C)"
-            type="date"
-            value={endDateA}
-            onChange={e => setEndDateA(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
           <Box
             sx={{
-              gridColumn: { xs: '1 / -1', lg: '7 / 8' },
+              gridColumn: { xs: '1 / -1', md: '4 / 5' },
               display: 'flex',
               justifyContent: { xs: 'stretch', sm: 'flex-end' },
               alignItems: 'center',

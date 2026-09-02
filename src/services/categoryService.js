@@ -32,12 +32,15 @@ const removeProductFromCategory = async (productId) => {
   return response.data;
 };
 
-const getCategorySalesSummary = async ({ startDate, endDate, categoryId }) => {
+const getCategorySalesSummary = async ({ startDate, endDate, categoryId, platformId, cityId, shopId }) => {
   const response = await axios.get(`${API_URL}/categories/sales-summary`, {
     params: {
       startDate,
       endDate,
       ...(categoryId ? { categoryId } : {}),
+      ...(platformId ? { platformId } : {}),
+      ...(cityId ? { cityId } : {}),
+      ...(shopId ? { shopId } : {}),
     },
   });
   return response.data;
