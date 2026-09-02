@@ -15,6 +15,7 @@ import {
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useAuthContext } from 'src/contexts/auth-context';
+import { hasPermission } from 'src/utils/permissions';
 import { items } from './config';
 import { SideNavItem } from './side-nav-item';
 
@@ -24,6 +25,7 @@ export const SideNav = (props) => {
   const pathname = router.pathname;
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   const { user, signOut } = useAuthContext();
+  const userDisplayName = [user?.name, user?.surname].filter(Boolean).join(' ') || user?.email || 'Royal Fruit';
 
   const handleSignOut = () => {
     signOut();
@@ -35,16 +37,24 @@ export const SideNav = (props) => {
     window.location.href = '/auth/login';
   };
 
-  const restrictedMenuTitles = new Set([
-    'Dashboard Local',
-    'Grafica Comparación de meses',
-    'Comparar Órdenes'
-  ]);
+  const visibleItems = items
+    .map((item) => {
+      if (!item.subItems) {
+        return hasPermission(user, item.permission) ? item : null;
+      }
 
-  const canSeeRestrictedItems = user?.canViewLocalDashboard === true;
-  const visibleItems = canSeeRestrictedItems
-    ? items
-    : items.filter((item) => !restrictedMenuTitles.has(item.title));
+      const subItems = item.subItems.filter((subItem) => hasPermission(user, subItem.permission));
+
+      if (!subItems.length && !hasPermission(user, item.permission)) {
+        return null;
+      }
+
+      return {
+        ...item,
+        subItems,
+      };
+    })
+    .filter(Boolean);
 
   const content = (
     <Scrollbar
@@ -94,7 +104,7 @@ export const SideNav = (props) => {
                 color="inherit"
                 variant="subtitle1"
               >
-                Royal Fruit
+                {userDisplayName}
               </Typography>
             </div>
           </Box>

@@ -5,12 +5,13 @@ import { useEffect, useState } from 'react';
 import { getStatisticsHome } from '../services/statisticsService';
 import { useAuthContext } from 'src/contexts/auth-context';
 import { PlatformCitiesComparison } from "src/sections/report/PlatformCitiesComparison";
+import { hasPermission } from 'src/utils/permissions';
 
 const Page = () => {
   const [statistics, setStatistics] = useState([]);
   const { user } = useAuthContext();
 
-  const canViewLocalDashboard = user?.canViewLocalDashboard === true;
+  const canViewLocalDashboard = hasPermission(user, 'dashboard.local');
 
   const getStatisticsHomeService = async () => {
     try {
@@ -44,7 +45,7 @@ const Page = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          py: 8
+          py: 0
         }}
       >
         <Container maxWidth="xl">
