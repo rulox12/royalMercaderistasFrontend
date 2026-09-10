@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -16,11 +16,18 @@ import {
   ListItemText,
   Divider,
   CircularProgress,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-import { runFullProcess } from 'src/services/processService';
+import { getSalesCalculationLogs, runFullProcess } from 'src/services/processService';
 
 const toISODate = (date) => date.toISOString().split('T')[0];
 
@@ -48,6 +55,39 @@ const getDefaultRange = () => {
   };
 };
 
+const getLatestBySource = (logs, source) => logs
+  .filter((log) => log.source === source)
+  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0] || null;
+
+const buildComparisonRows = (logs) => {
+  const groups = new Map();
+  logs.forEach((log) => {
+    const key = `${log.targetDate}-${log.shop}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(log);
+  });
+
+  return Array.from(groups.values()).map((group) => {
+    const automatic = getLatestBySource(group, 'scheduled_job');
+    const manual = getLatestBySource(group, 'manual_admin');
+    const automaticValues = new Map((automatic?.calculations || []).map((item) => [item.product, item.venta]));
+    const manualValues = new Map((manual?.calculations || []).map((item) => [item.product, item.venta]));
+    let differences = 0;
+    manualValues.forEach((value, product) => {
+      if (automaticValues.get(product) !== value) differences += 1;
+    });
+
+    return {
+      key: `${group[0].targetDate}-${group[0].shop}`,
+      targetDate: group[0].targetDate,
+      shop: group[0].shop,
+      automatic,
+      manual,
+      differences,
+    };
+  }).sort((a, b) => b.targetDate.localeCompare(a.targetDate));
+};
+
 const Page = () => {
   const defaults = useMemo(() => getDefaultRange(), []);
   const [startDate, setStartDate] = useState(defaults.startDate);
@@ -56,6 +96,31 @@ const Page = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [result, setResult] = useState(null);
+  const [auditDate, setAuditDate] = useState('');
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditError, setAuditError] = useState('');
+  const [auditLogs, setAuditLogs] = useState([]);
+
+  const loadAudit = async () => {
+    setAuditLoading(true);
+    setAuditError('');
+    try {
+      const logs = await getSalesCalculationLogs(auditDate ? { targetDate: auditDate, limit: 200 } : { limit: 200 });
+      setAuditLogs(logs);
+    } catch (auditRequestError) {
+      setAuditError(auditRequestError.response?.data?.error || auditRequestError.message);
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getSalesCalculationLogs({ limit: 200 })
+      .then(setAuditLogs)
+      .catch((auditRequestError) => {
+        setAuditError(auditRequestError.response?.data?.error || auditRequestError.message);
+      });
+  }, []);
 
   const handleRun = async () => {
     setError('');
@@ -198,6 +263,60 @@ const Page = () => {
                       </List>
                     </>
                   )}
+                </Stack>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <Stack spacing={2}>
+                  <Typography variant="h6">Comparación de cálculo de ventas</Typography>
+                  <Typography color="text.secondary" variant="body2">
+                    Compara la última ejecución automática y manual por fecha y tienda.
+                  </Typography>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <TextField
+                      fullWidth
+                      label="Fecha a revisar"
+                      type="date"
+                      value={auditDate}
+                      onChange={(event) => setAuditDate(event.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                    <Button variant="outlined" onClick={loadAudit} disabled={auditLoading}>
+                      {auditLoading ? <CircularProgress size={20} /> : 'Consultar auditoría'}
+                    </Button>
+                  </Stack>
+                  {auditError ? <Alert severity="error">{auditError}</Alert> : null}
+                  <TableContainer component={Paper} variant="outlined">
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Fecha</TableCell>
+                          <TableCell>Tienda</TableCell>
+                          <TableCell>Automático</TableCell>
+                          <TableCell>Manual</TableCell>
+                          <TableCell>Productos diferentes</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {buildComparisonRows(auditLogs).map((row) => (
+                          <TableRow key={row.key}>
+                            <TableCell>{row.targetDate}</TableCell>
+                            <TableCell>{String(row.shop)}</TableCell>
+                            <TableCell>{row.automatic ? `${row.automatic.status} (${row.automatic.calculations?.length || 0})` : 'Sin registro'}</TableCell>
+                            <TableCell>{row.manual ? `${row.manual.status} (${row.manual.calculations?.length || 0})` : 'Sin registro'}</TableCell>
+                            <TableCell>{row.differences}</TableCell>
+                          </TableRow>
+                        ))}
+                        {!auditLoading && auditLogs.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5}>No hay registros de auditoría.</TableCell>
+                          </TableRow>
+                        ) : null}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </Stack>
               </CardContent>
             </Card>
