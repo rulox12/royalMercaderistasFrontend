@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -23,9 +23,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Collapse,
+  IconButton,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { getSalesCalculationLogs, runFullProcess } from 'src/services/processService';
 
@@ -70,12 +74,16 @@ const buildComparisonRows = (logs) => {
   return Array.from(groups.values()).map((group) => {
     const automatic = getLatestBySource(group, 'scheduled_job');
     const manual = getLatestBySource(group, 'manual_admin');
-    const automaticValues = new Map((automatic?.calculations || []).map((item) => [item.product, item.venta]));
-    const manualValues = new Map((manual?.calculations || []).map((item) => [item.product, item.venta]));
-    let differences = 0;
-    manualValues.forEach((value, product) => {
-      if (automaticValues.get(product) !== value) differences += 1;
-    });
+    const automaticValues = new Map((automatic?.calculations || []).map((item) => [String(item.product), item]));
+    const manualValues = new Map((manual?.calculations || []).map((item) => [String(item.product), item]));
+    const products = new Set([...automaticValues.keys(), ...manualValues.keys()]);
+    const details = Array.from(products).map((product) => ({
+      product,
+      automatic: automaticValues.get(product),
+      manual: manualValues.get(product),
+      difference: (manualValues.get(product)?.venta ?? null) - (automaticValues.get(product)?.venta ?? null),
+    }));
+    const differences = details.filter((detail) => detail.automatic?.venta !== detail.manual?.venta).length;
 
     return {
       key: `${group[0].targetDate}-${group[0].shop}`,
@@ -84,6 +92,7 @@ const buildComparisonRows = (logs) => {
       automatic,
       manual,
       differences,
+      details,
     };
   }).sort((a, b) => b.targetDate.localeCompare(a.targetDate));
 };
@@ -100,6 +109,7 @@ const Page = () => {
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditError, setAuditError] = useState('');
   const [auditLogs, setAuditLogs] = useState([]);
+  const [expandedAuditRows, setExpandedAuditRows] = useState({});
 
   const loadAudit = async () => {
     setAuditLoading(true);
@@ -301,13 +311,63 @@ const Page = () => {
                       </TableHead>
                       <TableBody>
                         {buildComparisonRows(auditLogs).map((row) => (
-                          <TableRow key={row.key}>
-                            <TableCell>{row.targetDate}</TableCell>
-                            <TableCell>{String(row.shop)}</TableCell>
-                            <TableCell>{row.automatic ? `${row.automatic.status} (${row.automatic.calculations?.length || 0})` : 'Sin registro'}</TableCell>
-                            <TableCell>{row.manual ? `${row.manual.status} (${row.manual.calculations?.length || 0})` : 'Sin registro'}</TableCell>
-                            <TableCell>{row.differences}</TableCell>
-                          </TableRow>
+                          <Fragment key={row.key}>
+                            <TableRow>
+                              <TableCell>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => setExpandedAuditRows((current) => ({
+                                    ...current,
+                                    [row.key]: !current[row.key],
+                                  }))}
+                                >
+                                  {expandedAuditRows[row.key] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                                </IconButton>
+                                {row.targetDate}
+                              </TableCell>
+                              <TableCell>{String(row.shop)}</TableCell>
+                              <TableCell>{row.automatic ? `${row.automatic.status} (${row.automatic.calculations?.length || 0})` : 'Sin registro'}</TableCell>
+                              <TableCell>{row.manual ? `${row.manual.status} (${row.manual.calculations?.length || 0})` : 'Sin registro'}</TableCell>
+                              <TableCell>{row.differences}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell colSpan={5} sx={{ py: 0 }}>
+                                <Collapse in={expandedAuditRows[row.key]} timeout="auto" unmountOnExit>
+                                  <Box sx={{ py: 2 }}>
+                                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                                      Detalle por producto
+                                    </Typography>
+                                    <Table size="small">
+                                      <TableHead>
+                                        <TableRow>
+                                          <TableCell>Producto</TableCell>
+                                          <TableCell>Venta automática</TableCell>
+                                          <TableCell>Venta manual</TableCell>
+                                          <TableCell>Diferencia</TableCell>
+                                          <TableCell>Valores usados</TableCell>
+                                        </TableRow>
+                                      </TableHead>
+                                      <TableBody>
+                                        {row.details.map((detail) => (
+                                          <TableRow key={detail.product} sx={{ bgcolor: detail.difference !== 0 ? '#fff8e1' : undefined }}>
+                                            <TableCell>{detail.product}</TableCell>
+                                            <TableCell>{detail.automatic?.venta ?? 'Sin registro'}</TableCell>
+                                            <TableCell>{detail.manual?.venta ?? 'Sin registro'}</TableCell>
+                                            <TableCell>{detail.difference || 0}</TableCell>
+                                            <TableCell>
+                                              {detail.manual || detail.automatic
+                                                ? `INVE ${detail.manual?.inveInicial ?? detail.automatic?.inveInicial ?? '-'} / AVER ${detail.manual?.averiaInicial ?? detail.automatic?.averiaInicial ?? '-'} / RECI ${detail.manual?.recibidoInicial ?? detail.automatic?.recibidoInicial ?? '-'} / INVE final ${detail.manual?.inveFinal ?? detail.automatic?.inveFinal ?? '-'}`
+                                                : '-'}
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </Box>
+                                </Collapse>
+                              </TableCell>
+                            </TableRow>
+                          </Fragment>
                         ))}
                         {!auditLoading && auditLogs.length === 0 ? (
                           <TableRow>
