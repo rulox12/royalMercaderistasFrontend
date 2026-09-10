@@ -34,6 +34,7 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { getSalesCalculationLogs, runFullProcess } from 'src/services/processService';
 
 const toISODate = (date) => date.toISOString().split('T')[0];
+const SALES_AUDIT_LOG_LIMIT = 5000;
 
 const getDefaultRange = () => {
   const now = new Date();
@@ -115,7 +116,10 @@ const Page = () => {
     setAuditLoading(true);
     setAuditError('');
     try {
-      const logs = await getSalesCalculationLogs(auditDate ? { targetDate: auditDate, limit: 200 } : { limit: 200 });
+      const logs = await getSalesCalculationLogs({
+        ...(auditDate ? { targetDate: auditDate } : {}),
+        limit: SALES_AUDIT_LOG_LIMIT,
+      });
       setAuditLogs(logs);
     } catch (auditRequestError) {
       setAuditError(auditRequestError.response?.data?.error || auditRequestError.message);
@@ -125,7 +129,7 @@ const Page = () => {
   };
 
   useEffect(() => {
-    getSalesCalculationLogs({ limit: 200 })
+    getSalesCalculationLogs({ limit: SALES_AUDIT_LOG_LIMIT })
       .then(setAuditLogs)
       .catch((auditRequestError) => {
         setAuditError(auditRequestError.response?.data?.error || auditRequestError.message);
