@@ -130,4 +130,9 @@ const runFullProcess = async (startDate, endDate) => {
   }
 };
 
-export { runFullProcess };
+const getSalesCalculationLogs = async (params = {}) => {
+  const response = await axios.get(`${API_URL}/statistics/sales-calculation-logs`, { params });
+  return response.data;
+};
+
+export { getSalesCalculationLogs, runFullProcess };
