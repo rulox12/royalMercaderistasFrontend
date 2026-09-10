@@ -171,7 +171,7 @@ const Page = () => {
           py: 8
         }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, lg: 4 } }}>
           <Stack spacing={3}>
             <Typography variant="h4">Procesos</Typography>
 
@@ -298,8 +298,8 @@ const Page = () => {
                     </Button>
                   </Stack>
                   {auditError ? <Alert severity="error">{auditError}</Alert> : null}
-                  <TableContainer component={Paper} variant="outlined">
-                    <Table size="small">
+                  <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
+                    <Table size="small" sx={{ minWidth: 760 }}>
                       <TableHead>
                         <TableRow>
                           <TableCell>Fecha</TableCell>
@@ -337,7 +337,7 @@ const Page = () => {
                                     <Typography variant="subtitle2" sx={{ mb: 1 }}>
                                       Detalle por producto
                                     </Typography>
-                                    <Table size="small">
+                                    <Table size="small" sx={{ minWidth: 760 }}>
                                       <TableHead>
                                         <TableRow>
                                           <TableCell>Producto</TableCell>
