@@ -34,6 +34,7 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { getSalesCalculationLogs, runFullProcess } from 'src/services/processService';
 
 const toISODate = (date) => date.toISOString().split('T')[0];
+const SALES_AUDIT_LOG_LIMIT = 5000;
 
 const getDefaultRange = () => {
   const now = new Date();
@@ -63,10 +64,22 @@ const getLatestBySource = (logs, source) => logs
   .filter((log) => log.source === source)
   .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0] || null;
 
+const getId = (value) => String(value?._id || value);
+
+const getShopLabel = (shop) => {
+  if (!shop || typeof shop !== 'object') return String(shop || 'Sin tienda');
+  return shop.name || (shop.shopNumber ? `Tienda ${shop.shopNumber}` : String(shop._id));
+};
+
+const getProductLabel = (product) => {
+  if (!product || typeof product !== 'object') return String(product || 'Sin producto');
+  return product.displayName || product.name || product.internalProductNumber || String(product._id);
+};
+
 const buildComparisonRows = (logs) => {
   const groups = new Map();
   logs.forEach((log) => {
-    const key = `${log.targetDate}-${log.shop}`;
+    const key = `${log.targetDate}-${getId(log.shop)}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(log);
   });
@@ -74,11 +87,12 @@ const buildComparisonRows = (logs) => {
   return Array.from(groups.values()).map((group) => {
     const automatic = getLatestBySource(group, 'scheduled_job');
     const manual = getLatestBySource(group, 'manual_admin');
-    const automaticValues = new Map((automatic?.calculations || []).map((item) => [String(item.product), item]));
-    const manualValues = new Map((manual?.calculations || []).map((item) => [String(item.product), item]));
+    const automaticValues = new Map((automatic?.calculations || []).map((item) => [getId(item.product), item]));
+    const manualValues = new Map((manual?.calculations || []).map((item) => [getId(item.product), item]));
     const products = new Set([...automaticValues.keys(), ...manualValues.keys()]);
     const details = Array.from(products).map((product) => ({
       product,
+      productLabel: getProductLabel(automaticValues.get(product)?.product || manualValues.get(product)?.product || product),
       automatic: automaticValues.get(product),
       manual: manualValues.get(product),
       difference: (manualValues.get(product)?.venta ?? null) - (automaticValues.get(product)?.venta ?? null),
@@ -86,7 +100,7 @@ const buildComparisonRows = (logs) => {
     const differences = details.filter((detail) => detail.automatic?.venta !== detail.manual?.venta).length;
 
     return {
-      key: `${group[0].targetDate}-${group[0].shop}`,
+      key: `${group[0].targetDate}-${getId(group[0].shop)}`,
       targetDate: group[0].targetDate,
       shop: group[0].shop,
       automatic,
@@ -115,7 +129,10 @@ const Page = () => {
     setAuditLoading(true);
     setAuditError('');
     try {
-      const logs = await getSalesCalculationLogs(auditDate ? { targetDate: auditDate, limit: 200 } : { limit: 200 });
+      const logs = await getSalesCalculationLogs({
+        ...(auditDate ? { targetDate: auditDate } : {}),
+        limit: SALES_AUDIT_LOG_LIMIT,
+      });
       setAuditLogs(logs);
     } catch (auditRequestError) {
       setAuditError(auditRequestError.response?.data?.error || auditRequestError.message);
@@ -125,7 +142,7 @@ const Page = () => {
   };
 
   useEffect(() => {
-    getSalesCalculationLogs({ limit: 200 })
+    getSalesCalculationLogs({ limit: SALES_AUDIT_LOG_LIMIT })
       .then(setAuditLogs)
       .catch((auditRequestError) => {
         setAuditError(auditRequestError.response?.data?.error || auditRequestError.message);
@@ -171,7 +188,7 @@ const Page = () => {
           py: 8
         }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, lg: 4 } }}>
           <Stack spacing={3}>
             <Typography variant="h4">Procesos</Typography>
 
@@ -298,8 +315,8 @@ const Page = () => {
                     </Button>
                   </Stack>
                   {auditError ? <Alert severity="error">{auditError}</Alert> : null}
-                  <TableContainer component={Paper} variant="outlined">
-                    <Table size="small">
+                  <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
+                    <Table size="small" sx={{ minWidth: 760 }}>
                       <TableHead>
                         <TableRow>
                           <TableCell>Fecha</TableCell>
@@ -325,7 +342,14 @@ const Page = () => {
                                 </IconButton>
                                 {row.targetDate}
                               </TableCell>
-                              <TableCell>{String(row.shop)}</TableCell>
+                              <TableCell>
+                                {getShopLabel(row.shop)}
+                                {row.shop?._id ? (
+                                  <Typography variant="caption" display="block" color="text.secondary">
+                                    {row.shop._id}
+                                  </Typography>
+                                ) : null}
+                              </TableCell>
                               <TableCell>{row.automatic ? `${row.automatic.status} (${row.automatic.calculations?.length || 0})` : 'Sin registro'}</TableCell>
                               <TableCell>{row.manual ? `${row.manual.status} (${row.manual.calculations?.length || 0})` : 'Sin registro'}</TableCell>
                               <TableCell>{row.differences}</TableCell>
@@ -337,7 +361,7 @@ const Page = () => {
                                     <Typography variant="subtitle2" sx={{ mb: 1 }}>
                                       Detalle por producto
                                     </Typography>
-                                    <Table size="small">
+                                    <Table size="small" sx={{ minWidth: 760 }}>
                                       <TableHead>
                                         <TableRow>
                                           <TableCell>Producto</TableCell>
@@ -350,7 +374,12 @@ const Page = () => {
                                       <TableBody>
                                         {row.details.map((detail) => (
                                           <TableRow key={detail.product} sx={{ bgcolor: detail.difference !== 0 ? '#fff8e1' : undefined }}>
-                                            <TableCell>{detail.product}</TableCell>
+                                            <TableCell>
+                                              {detail.productLabel}
+                                              <Typography variant="caption" display="block" color="text.secondary">
+                                                {detail.product}
+                                              </Typography>
+                                            </TableCell>
                                             <TableCell>{detail.automatic?.venta ?? 'Sin registro'}</TableCell>
                                             <TableCell>{detail.manual?.venta ?? 'Sin registro'}</TableCell>
                                             <TableCell>{detail.difference || 0}</TableCell>
